@@ -1,0 +1,79 @@
+Quick Start (Windows + Docker)
+
+Prerequisites
+- Docker Desktop
+- Windows PowerShell
+
+1) Start core services
+# From repo root
+docker compose up -d db minio
+
+2) Apply database migrations
+# From repo root
+./db/apply-migrations.ps1
+
+3) Start API and worker
+docker compose up -d --build api worker
+
+4) Verify
+- API health: http://localhost:8000/healthz
+- MinIO console: http://localhost:9001 (user: minioadmin, pass: minioadmin)
+
+5) Basic receipt flow
+- Signup, then login to get a token:
+  POST http://localhost:8000/v1/auth/signup
+    {"email":"test@example.com","password":"secret"}
+  POST http://localhost:8000/v1/auth/login
+    → copy the "token" field
+
+- Get presigned upload URL:
+  POST http://localhost:8000/v1/receipts/upload
+  Headers: Authorization: Bearer <token>
+  → Response includes: upload_url, receipt_id, object_key
+
+- Upload the file to upload_url (HTTP PUT)
+  Set Content-Type to match your file (e.g., image/jpeg or application/pdf)
+
+- Confirm the receipt:
+  POST http://localhost:8000/v1/receipts/confirm
+  Body: {"receipt_id":"...","object_key":"..."}
+  Headers: Authorization: Bearer <token>
+
+- The worker will OCR the file and insert a transaction.
+
+Add-ons
+- Metrics: API /metrics, worker on :9100
+- Rate limit: 120 req/min/IP (in-memory)
+- JSON logs: set LOG_JSON=true (includes x-request-id)
+- Upload validation: UPLOAD_MAX_BYTES, UPLOAD_ALLOWED_MIME control size/type on confirm
+
+Stripe (optional)
+- Set env: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_ID
+- Start: docker compose up -d --build api
+- Create checkout: POST /v1/subscription/checkout (Bearer token)
+- Expose webhook: POST /v1/subscription/webhook (configure in Stripe)
+
+Google / Apple Sign-In (optional)
+- Google: set GOOGLE_CLIENT_IDS to your OAuth client ID(s)
+- Apple: set APPLE_AUDIENCE to your bundle/service ID
+- Endpoints: POST /v1/auth/google {id_token}, POST /v1/auth/apple {identity_token}
+
+Exports
+- Create: POST /v1/export/csv {from_date, to_date}
+- Poll: GET /v1/export/csv/{job_id} → download_url when done
+
+Tests
+- Run locally: pip install -r backend/requirements.txt && pip install pytest requests
+- Start stack: docker compose up -d --build db minio api worker
+- Execute: pytest -q backend/tests
+
+Useful commands
+- View logs:
+  docker compose logs -f api
+  docker compose logs -f worker
+
+- Stop services:
+  docker compose down
+
+- Reset DB and storage (DESTROYS data):
+  docker compose down -v

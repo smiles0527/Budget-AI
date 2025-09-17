@@ -1,0 +1,105 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\testapp.xcodeproj\\project.pbxproj||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:testapp.xcodeproj\\project.pbxproj||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\testappUITests\\testappUITestsLaunchTests.swift||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:testappUITests\\testappUITestsLaunchTests.swift||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\testappUITests\\testappUITests.swift||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:testappUITests\\testappUITests.swift||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\testappTests\\testappTests.swift||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:testappTests\\testappTests.swift||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\testapp\\testappApp.swift||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:testapp\\testappApp.swift||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "project.pbxproj",
+              "DocumentMoniker": "C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\testapp.xcodeproj\\project.pbxproj",
+              "RelativeDocumentMoniker": "testapp.xcodeproj\\project.pbxproj",
+              "ToolTip": "C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\testapp.xcodeproj\\project.pbxproj",
+              "RelativeToolTip": "testapp.xcodeproj\\project.pbxproj",
+              "ViewState": "AgIAAFgCAAAAAAAAAAAAACECAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-09-10T16:18:01.839Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "testappUITestsLaunchTests.swift",
+              "DocumentMoniker": "C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\testappUITests\\testappUITestsLaunchTests.swift",
+              "RelativeDocumentMoniker": "testappUITests\\testappUITestsLaunchTests.swift",
+              "ToolTip": "C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\testappUITests\\testappUITestsLaunchTests.swift",
+              "RelativeToolTip": "testappUITests\\testappUITestsLaunchTests.swift",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-09-10T16:17:47.014Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "testappApp.swift",
+              "DocumentMoniker": "C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\testapp\\testappApp.swift",
+              "RelativeDocumentMoniker": "testapp\\testappApp.swift",
+              "ToolTip": "C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\testapp\\testappApp.swift",
+              "RelativeToolTip": "testapp\\testappApp.swift",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-09-10T16:17:39.316Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "testappUITests.swift",
+              "DocumentMoniker": "C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\testappUITests\\testappUITests.swift",
+              "RelativeDocumentMoniker": "testappUITests\\testappUITests.swift",
+              "ToolTip": "C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\testappUITests\\testappUITests.swift",
+              "RelativeToolTip": "testappUITests\\testappUITests.swift",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-09-10T16:17:35.996Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "testappTests.swift",
+              "DocumentMoniker": "C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\testappTests\\testappTests.swift",
+              "RelativeDocumentMoniker": "testappTests\\testappTests.swift",
+              "ToolTip": "C:\\Users\\iscur\\OneDrive\\My Surface docs\\Desktop\\testapp-main\\testappTests\\testappTests.swift",
+              "RelativeToolTip": "testappTests\\testappTests.swift",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-09-10T16:17:34.089Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

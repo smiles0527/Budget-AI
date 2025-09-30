@@ -11,7 +11,8 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from prometheus_client import Counter, Histogram, start_http_server
 
 from app.config import settings
-from app.utils.storage import download_bytes, upload_bytes
+from app.utils.storage import download_bytes, upload_bytes, delete_prefix
+from app.utils.categorize import determine_category
 
 
 engine = create_async_engine(settings.database_url, echo=False, pool_pre_ping=True)
@@ -104,6 +105,8 @@ async def process_receipt_job(db: AsyncSession, job: dict):
         )
 
         if total_cents > 0:
+            # Try to categorize using rules; we only have OCR text at this stage
+            category = await determine_category(db, merchant=None, raw_text=text_blob)
             await db.execute(
                 text(
                     """
@@ -193,6 +196,13 @@ async def process_deletion_job(db: AsyncSession, job: dict):
         await db.execute(text("DELETE FROM export_jobs WHERE user_id=:uid"), {"uid": uid})
         await db.execute(text("DELETE FROM linked_accounts WHERE user_id=:uid"), {"uid": uid})
         await db.execute(text("DELETE FROM account_balances USING linked_accounts la WHERE account_balances.linked_account_id = la.id AND la.user_id=:uid"), {"uid": uid})
+        # Remove S3 assets for the user (best-effort)
+        try:
+            delete_prefix(f"receipts/{uid}/")
+            delete_prefix(f"exports/{uid}/")
+        except Exception:
+            pass
+
         await db.execute(text("DELETE FROM deletion_jobs WHERE id=:id"), {"id": job["id"]})
         await db.execute(text("UPDATE users SET deleted_at=now() WHERE id=:uid"), {"uid": uid})
         await db.commit()

@@ -1,0 +1,93 @@
+{
+  "info": {
+    "name": "SnapBudget API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {"name": "healthz", "request": {"method": "GET", "url": "{{base_url}}/healthz"}},
+        {"name": "readyz", "request": {"method": "GET", "url": "{{base_url}}/readyz"}},
+        {"name": "metrics", "request": {"method": "GET", "url": "{{base_url}}/metrics"}}
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {"name": "signup", "request": {"method": "POST", "url": "{{base_url}}/v1/auth/signup", "body": {"mode": "raw", "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"secret\"\n}"}}},
+        {"name": "login", "request": {"method": "POST", "url": "{{base_url}}/v1/auth/login", "body": {"mode": "raw", "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"secret\"\n}"}}},
+        {"name": "me", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/auth/me"}},
+        {"name": "logout", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/auth/logout"}},
+        {"name": "logout_all", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/auth/logout_all"}},
+        {"name": "rotate", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/auth/rotate"}}
+      ]
+    },
+    {
+      "name": "Receipts",
+      "item": [
+        {"name": "upload", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/receipts/upload", "body": {"mode": "raw", "raw": "{\n  \"mime\": \"image/jpeg\"\n}"}}},
+        {"name": "confirm", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/receipts/confirm", "body": {"mode": "raw", "raw": "{\n  \"receipt_id\": \"<id>\",\n  \"object_key\": \"<key>\"\n}"}}},
+        {"name": "get", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/receipts/{{receipt_id}}"}}
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {"name": "list", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": {"raw": "{{base_url}}/v1/transactions?limit=25", "host": ["{{base_url}}"], "path": ["v1","transactions"], "query": [{"key": "limit", "value": "25"}]}}},
+        {"name": "get", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/transactions/{{txn_id}}"}},
+        {"name": "manual", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/transactions/manual", "body": {"mode": "raw", "raw": "{\n  \"txn_date\": \"2025-01-01\",\n  \"total_cents\": 100\n}"}}},
+        {"name": "update", "request": {"method": "PATCH", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/transactions/{{txn_id}}", "body": {"mode": "raw", "raw": "{\n  \"category\": \"dining\"\n}"}}},
+        {"name": "delete", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/transactions/{{txn_id}}"}}
+      ]
+    },
+    {
+      "name": "Budgets & Dashboard",
+      "item": [
+        {"name": "put budget", "request": {"method": "PUT", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/budgets", "body": {"mode": "raw", "raw": "{\n  \"period_start\": \"2025-01-01\",\n  \"period_end\": \"2025-01-31\",\n  \"category\": \"dining\",\n  \"limit_cents\": 5000\n}"}}},
+        {"name": "get budgets", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/budgets"}},
+        {"name": "summary", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/dashboard/summary?period=month"}},
+        {"name": "categories", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/dashboard/categories?period=month"}}
+      ]
+    },
+    {
+      "name": "Badges & Usage",
+      "item": [
+        {"name": "badges", "request": {"method": "GET", "url": "{{base_url}}/v1/badges"}},
+        {"name": "user badges", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/user/badges"}},
+        {"name": "usage", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/usage"}}
+      ]
+    },
+    {
+      "name": "Exports",
+      "item": [
+        {"name": "create export", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/export/csv", "body": {"mode": "raw", "raw": "{\n  \"from_date\": \"2000-01-01\",\n  \"to_date\": \"2100-01-01\",\n  \"wait\": true,\n  \"timeout_seconds\": 20\n}"}}},
+        {"name": "export status", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/export/csv/{{job_id}}"}}
+      ]
+    },
+    {
+      "name": "Subscription",
+      "item": [
+        {"name": "get subscription", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/subscription"}},
+        {"name": "checkout", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{token}}"}], "url": "{{base_url}}/v1/subscription/checkout"}},
+        {"name": "webhook", "request": {"method": "POST", "url": "{{base_url}}/v1/subscription/webhook"}}
+      ]
+    },
+    {
+      "name": "Admin Rules",
+      "item": [
+        {"name": "list merchant rules", "request": {"method": "GET", "url": "{{base_url}}/v1/rules/merchant"}},
+        {"name": "create merchant rule", "request": {"method": "POST", "header": [{"key": "X-Admin-Secret", "value": "{{admin_secret}}"}], "url": "{{base_url}}/v1/rules/merchant", "body": {"mode": "raw", "raw": "{\n  \"merchant_pattern\": \"Starbucks\",\n  \"category\": \"dining\",\n  \"confidence\": 0.9,\n  \"active\": true\n}"}}},
+        {"name": "list keyword rules", "request": {"method": "GET", "url": "{{base_url}}/v1/rules/keyword"}},
+        {"name": "create keyword rule", "request": {"method": "POST", "header": [{"key": "X-Admin-Secret", "value": "{{admin_secret}}"}], "url": "{{base_url}}/v1/rules/keyword", "body": {"mode": "raw", "raw": "{\n  \"keyword\": \"coffee\",\n  \"scope\": \"both\",\n  \"category\": \"dining\",\n  \"confidence\": 0.85,\n  \"active\": true\n}"}}}
+      ]
+    }
+  ],
+  "variable": [
+    {"key": "base_url", "value": "http://localhost:8000"},
+    {"key": "token", "value": ""},
+    {"key": "admin_secret", "value": ""}
+  ]
+}
+

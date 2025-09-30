@@ -1,6 +1,7 @@
 import secrets
 from datetime import datetime, timedelta, timezone
 from passlib.hash import bcrypt
+from typing import Tuple
 
 
 def hash_password(password: str) -> str:
@@ -14,7 +15,7 @@ def verify_password(password: str, password_hash: str) -> bool:
         return False
 
 
-def generate_session_token() -> tuple[str, str]:
+def generate_session_token() -> Tuple[str, str]:
     """Returns tuple (secret, hashed) using bcrypt."""
     secret = secrets.token_urlsafe(32)
     hashed = bcrypt.hash(secret)

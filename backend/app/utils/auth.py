@@ -30,17 +30,17 @@ async def get_current_user(
         """
     )
     res = await db.execute(q, {"sid": session_id})
-    row = res.first()
+    row = res.mappings().first()
     if not row:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
-    if not verify_password(secret, row.refresh_token_hash):
+    if not verify_password(secret, row["refresh_token_hash"]):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token secret")
 
     u = await db.execute(
         text(
             "SELECT id, email, created_at FROM users WHERE id = :uid AND deleted_at IS NULL"
         ),
-        {"uid": row.user_id},
+        {"uid": row["user_id"]},
     )
     user = u.mappings().first()
     if not user:

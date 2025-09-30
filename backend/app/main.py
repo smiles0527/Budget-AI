@@ -4,7 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
 from .routers.v1 import router as v1_router
-from .utils.storage import ensure_bucket
+from .routers.admin import router as admin_router
+from .utils.storage import ensure_bucket, s3_ready
+from .db import AsyncSessionLocal
+from sqlalchemy import text
 from .errors import register_error_handlers
 from .utils.observability import RequestIdMiddleware, MetricsMiddleware, RateLimiter, metrics_endpoint, JsonLoggingMiddleware
 
@@ -65,11 +68,27 @@ def create_app() -> FastAPI:
     async def healthz():
         return {"status": "ok", "app": settings.app_name}
 
+    @app.get("/readyz")
+    async def readyz():
+        # DB check
+        db_ok = False
+        try:
+            async with AsyncSessionLocal() as s:
+                await s.execute(text("SELECT 1"))
+                db_ok = True
+        except Exception:
+            db_ok = False
+        # S3 check
+        storage_ok = s3_ready()
+        ok = db_ok and storage_ok
+        return {"ready": ok, "db": db_ok, "storage": storage_ok}
+
     @app.get("/metrics")
     async def metrics():
         return metrics_endpoint()
 
     app.include_router(v1_router)
+    app.include_router(admin_router)
 
     @app.on_event("startup")
     async def _startup():

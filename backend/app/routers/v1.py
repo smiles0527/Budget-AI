@@ -13,6 +13,7 @@ from ..utils.cursor import encode_cursor, decode_cursor
 from ..utils.auth import get_current_user
 from ..errors import AppError
 from ..utils.oauth import verify_google, verify_apple
+from ..utils.categorize import determine_category
 
 
 router = APIRouter(prefix="/v1")
@@ -233,7 +234,7 @@ class RotateRequest(BaseModel):
 
 @router.post("/auth/rotate")
 async def rotate_session(
-    _: RotateRequest | None = None,
+    _ : Optional[RotateRequest] = None,
     authorization: Optional[str] = Header(default=None),
     request: Request = None,
     db: AsyncSession = Depends(get_db),
@@ -368,36 +369,53 @@ async def transactions_list(
     db: AsyncSession = Depends(get_db),
     limit: int = 50,
     cursor: Optional[str] = None,
+    from_date: Optional[str] = None,
+    to_date: Optional[str] = None,
+    category: Optional[str] = None,
 ):
     limit = max(1, min(limit, 200))
     cur = decode_cursor(cursor)
     if cur:
-        q = text(
-            """
-            SELECT * FROM transactions
-            WHERE user_id = :uid
-              AND (txn_date, created_at, id) < (:cd, :cc, :cid)
-            ORDER BY txn_date DESC, created_at DESC, id DESC
-            LIMIT :lim
-            """
-        )
-        params = {
-            "uid": user["id"],
-            "cd": cur.get("txn_date"),
-            "cc": cur.get("created_at"),
-            "cid": cur.get("id"),
-            "lim": limit + 1,
-        }
+        base = "SELECT * FROM transactions WHERE user_id = :uid"
+        filters = []
+        if from_date:
+            filters.append("txn_date >= :from_date")
+        if to_date:
+            filters.append("txn_date <= :to_date")
+        if category:
+            filters.append("category = :category")
+        filters.append("(txn_date, created_at, id) < (:cd, :cc, :cid)")
+        where = " AND ".join(filters)
+        sql = f"{base} AND {where} ORDER BY txn_date DESC, created_at DESC, id DESC LIMIT :lim"
+        q = text(sql)
+        params = {"uid": user["id"], "cd": cur.get("txn_date"), "cc": cur.get("created_at"), "cid": cur.get("id"), "lim": limit + 1}
+        if from_date:
+            params["from_date"] = from_date
+        if to_date:
+            params["to_date"] = to_date
+        if category:
+            params["category"] = category
     else:
-        q = text(
-            """
-            SELECT * FROM transactions
-            WHERE user_id = :uid
-            ORDER BY txn_date DESC, created_at DESC, id DESC
-            LIMIT :lim
-            """
-        )
+        base = "SELECT * FROM transactions WHERE user_id = :uid"
+        filters = []
+        if from_date:
+            filters.append("txn_date >= :from_date")
+        if to_date:
+            filters.append("txn_date <= :to_date")
+        if category:
+            filters.append("category = :category")
+        where = (" AND ".join(filters))
+        if where:
+            base = f"{base} AND {where}"
+        sql = f"{base} ORDER BY txn_date DESC, created_at DESC, id DESC LIMIT :lim"
+        q = text(sql)
         params = {"uid": user["id"], "lim": limit + 1}
+        if from_date:
+            params["from_date"] = from_date
+        if to_date:
+            params["to_date"] = to_date
+        if category:
+            params["category"] = category
 
     res = await db.execute(q, params)
     rows = [dict(r) for r in res.mappings().all()]
@@ -436,6 +454,20 @@ class TransactionManual(BaseModel):
 
 @router.post("/transactions/manual")
 async def transactions_manual(body: TransactionManual, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    # Premium gating example: require active premium to create manual transactions
+    sub = await db.execute(text("SELECT plan, status FROM subscriptions WHERE user_id=:uid"), {"uid": user["id"]})
+    s = sub.mappings().first()
+    if not s or s.get("plan") != "premium" or s.get("status") != "active":
+        raise HTTPException(status_code=402, detail="Premium required")
+    # Premium gating: allow manual transactions for premium users only (bypass in dev)
+    if settings.env != "dev":
+        subrow = await db.execute(text("SELECT plan, status FROM subscriptions WHERE user_id = :uid"), {"uid": user["id"]})
+        sub = subrow.mappings().first()
+        if not sub or sub.get("plan") != "premium" or sub.get("status") != "active":
+            raise HTTPException(status_code=402, detail="Premium required for manual transactions")
+    # Determine category using rules if not provided
+    auto_category = await determine_category(db, merchant=body.merchant, raw_text=None)
+
     res = await db.execute(
         text(
             """
@@ -452,7 +484,7 @@ async def transactions_manual(body: TransactionManual, user=Depends(get_current_
             "tax": body.tax_cents or 0,
             "tip": body.tip_cents or 0,
             "cur": body.currency_code,
-            "cat": body.category,
+            "cat": body.category or auto_category,
             "sub": body.subcategory,
         },
     )
@@ -469,6 +501,82 @@ class TransactionPatch(BaseModel):
     tip_cents: Optional[int] = None
     category: Optional[str] = None
     subcategory: Optional[str] = None
+
+
+# -----------------
+# Rules management
+# -----------------
+
+class MerchantRuleCreate(BaseModel):
+    merchant_pattern: str
+    category: str
+    confidence: float = 0.9
+    active: bool = True
+
+
+class KeywordRuleCreate(BaseModel):
+    keyword: str
+    scope: str = "both"  # 'merchant' | 'line_item' | 'both'
+    category: str
+    confidence: float = 0.8
+    active: bool = True
+
+
+def _assert_admin(request: Request):
+    # Allow writes in dev env without secret; otherwise require X-Admin-Secret header matching config
+    if settings.env == "dev":
+        return
+    secret = request.headers.get("x-admin-secret")
+    if not settings.admin_secret or secret != settings.admin_secret:
+        raise HTTPException(status_code=401, detail="Admin authentication required")
+
+
+@router.get("/rules/merchant")
+async def list_merchant_rules(db: AsyncSession = Depends(get_db)):
+    res = await db.execute(text("SELECT id, merchant_pattern, category, confidence, active, created_at FROM merchant_rules ORDER BY created_at DESC"))
+    return {"items": [dict(r) for r in res.mappings().all()]}
+
+
+@router.post("/rules/merchant")
+async def create_merchant_rule(payload: MerchantRuleCreate, request: Request, db: AsyncSession = Depends(get_db)):
+    _assert_admin(request)
+    row = await db.execute(
+        text(
+            """
+            INSERT INTO merchant_rules(merchant_pattern, category, confidence, active)
+            VALUES (:p, :c, :conf, :a)
+            RETURNING id
+            """
+        ),
+        {"p": payload.merchant_pattern, "c": payload.category, "conf": payload.confidence, "a": payload.active},
+    )
+    rid = row.scalar_one()
+    await db.commit()
+    return {"id": str(rid)}
+
+
+@router.get("/rules/keyword")
+async def list_keyword_rules(db: AsyncSession = Depends(get_db)):
+    res = await db.execute(text("SELECT id, keyword, scope, category, confidence, active, created_at FROM keyword_rules ORDER BY created_at DESC"))
+    return {"items": [dict(r) for r in res.mappings().all()]}
+
+
+@router.post("/rules/keyword")
+async def create_keyword_rule(payload: KeywordRuleCreate, request: Request, db: AsyncSession = Depends(get_db)):
+    _assert_admin(request)
+    row = await db.execute(
+        text(
+            """
+            INSERT INTO keyword_rules(keyword, scope, category, confidence, active)
+            VALUES (:k, :s, :c, :conf, :a)
+            RETURNING id
+            """
+        ),
+        {"k": payload.keyword, "s": payload.scope, "c": payload.category, "conf": payload.confidence, "a": payload.active},
+    )
+    rid = row.scalar_one()
+    await db.commit()
+    return {"id": str(rid)}
 
 
 @router.patch("/transactions/{txn_id}")
@@ -601,10 +709,22 @@ async def usage_get(user=Depends(get_current_user), db: AsyncSession = Depends(g
 class ExportCSV(BaseModel):
     from_date: str
     to_date: str
+    wait: Optional[bool] = False
+    timeout_seconds: Optional[int] = 20
 
 
 @router.post("/export/csv")
 async def export_csv(body: ExportCSV, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    sub = await db.execute(text("SELECT plan, status FROM subscriptions WHERE user_id=:uid"), {"uid": user["id"]})
+    s = sub.mappings().first()
+    if not s or s.get("plan") != "premium" or s.get("status") != "active":
+        raise HTTPException(status_code=402, detail="Premium required")
+    # Premium gating: CSV exports require premium (bypass in dev)
+    if settings.env != "dev":
+        subrow = await db.execute(text("SELECT plan, status FROM subscriptions WHERE user_id = :uid"), {"uid": user["id"]})
+        sub = subrow.mappings().first()
+        if not sub or sub.get("plan") != "premium" or sub.get("status") != "active":
+            raise HTTPException(status_code=402, detail="Premium required for CSV export")
     res = await db.execute(
         text(
             "INSERT INTO export_jobs(user_id, from_date, to_date) VALUES (:uid, :fd, :td) RETURNING id"
@@ -613,6 +733,18 @@ async def export_csv(body: ExportCSV, user=Depends(get_current_user), db: AsyncS
     )
     jid = res.scalar_one()
     await db.commit()
+    if body.wait:
+        # Poll until ready or timeout
+        import asyncio
+        import time
+        deadline = time.time() + max(1, int(body.timeout_seconds or 20))
+        while time.time() < deadline:
+            row = await db.execute(text("SELECT status, storage_uri FROM export_jobs WHERE id=:id AND user_id=:uid"), {"id": jid, "uid": user["id"]})
+            rec = row.mappings().first()
+            if rec and rec.get("status") == "done" and rec.get("storage_uri"):
+                from ..utils.storage import presign_get
+                return {"job_id": str(jid), "download_url": presign_get(rec.get("storage_uri"))}
+            await asyncio.sleep(1)
     return {"job_id": str(jid)}
 
 
@@ -693,8 +825,8 @@ async def subscription_webhook(request: Request, db: AsyncSession = Depends(get_
                 {"uid": uid, "cust": customer_id, "sub": subscription_id},
             )
             await db.commit()
-    # Handle subscription updates
-    if et in ("customer.subscription.updated", "customer.subscription.deleted"):
+    # Handle subscription updates and billing events
+    if et in ("customer.subscription.updated", "customer.subscription.deleted", "customer.subscription.created"):
         sub_id = obj.get("id")
         status_val = obj.get("status") or "canceled"
         cpe = obj.get("current_period_end")
@@ -711,11 +843,31 @@ async def subscription_webhook(request: Request, db: AsyncSession = Depends(get_
         )
         await db.commit()
 
+    if et == "invoice.payment_succeeded":
+        # ensure user stays active; find user via customer
+        cust = obj.get("customer")
+        if cust:
+            await db.execute(
+                text("UPDATE subscriptions SET status='active' WHERE stripe_customer_id=:cust"),
+                {"cust": cust},
+            )
+            await db.commit()
+
+    if et in ("invoice.payment_failed", "customer.subscription.paused"):
+        cust = obj.get("customer")
+        if cust:
+            await db.execute(
+                text("UPDATE subscriptions SET status='past_due' WHERE stripe_customer_id=:cust"),
+                {"cust": cust},
+            )
+            await db.commit()
+
     return {"ok": True}
 
 
 @router.delete("/account")
 async def account_delete(user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    # Best-effort S3 cleanup scheduled along with deletion job
     await db.execute(text("INSERT INTO deletion_jobs(user_id) VALUES (:uid)"), {"uid": user["id"]})
     await db.commit()
     return {"scheduled": True}

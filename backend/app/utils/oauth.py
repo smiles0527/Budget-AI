@@ -4,6 +4,7 @@ import requests
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 import jwt
+from jwt import PyJWKClient
 
 from ..config import settings
 
@@ -22,16 +23,31 @@ def verify_google(id_token: str) -> Optional[dict]:
 
 
 def verify_apple(identity_token: str) -> Optional[dict]:
+    """Verify Apple identity token against Apple's JWKS and optional audience.
+
+    Falls back to unverified decode only in dev when APPLE_AUDIENCE is empty.
+    """
     try:
-        # Apple uses JWT signed by their keys; PyJWT can auto-fetch via jwks URL using algorithms
-        # Simpler approach here: decode without verification if keys not configured; in production, verify
-        # For brevity, rely on non-verified decode then audience check if provided
-        unverified = jwt.decode(identity_token, options={"verify_signature": False, "verify_aud": False, "verify_iss": False}, algorithms=["RS256", "ES256"])
-        aud = settings.apple_audience
-        if aud and unverified.get("aud") != aud:
-            return None
-        return unverified
+        jwks_url = "https://appleid.apple.com/auth/keys"
+        jwk_client = PyJWKClient(jwks_url)
+        signing_key = jwk_client.get_signing_key_from_jwt(identity_token)
+        options = {"verify_aud": bool(settings.apple_audience), "verify_iss": True}
+        payload = jwt.decode(
+            identity_token,
+            signing_key.key,
+            algorithms=["RS256", "ES256"],
+            audience=settings.apple_audience if settings.apple_audience else None,
+            issuer="https://appleid.apple.com",
+            options=options,
+        )
+        return payload
     except Exception:
+        # Dev fallback: allow unverified if no audience configured
+        try:
+            if not settings.apple_audience and settings.env == "dev":
+                return jwt.decode(identity_token, options={"verify_signature": False})
+        except Exception:
+            pass
         return None
 
 

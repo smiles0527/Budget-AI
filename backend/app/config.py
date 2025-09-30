@@ -36,6 +36,10 @@ class Settings(BaseSettings):
 
     google_client_ids: str = ""  # comma-separated
     apple_audience: str = ""  # bundle or service id
+    admin_secret: str = ""
+
+    # Admin operations (rules management). If empty, write operations allowed only in dev.
+    admin_secret: str = ""
 
     @property
     def database_url(self) -> str:
@@ -62,4 +66,4 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-
+    

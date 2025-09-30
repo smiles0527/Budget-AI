@@ -5,14 +5,14 @@ from fastapi.exceptions import HTTPException
 
 
 class AppError(Exception):
-    def __init__(self, code: str, message: str, details: Dict[str, Any] | None = None, status_code: int = 400):
+    def __init__(self, code: str, message: str, details: Dict[str, Any] = None, status_code: int = 400):
         self.code = code
         self.message = message
         self.details = details or {}
         self.status_code = status_code
 
 
-def _format_error(code: str, message: str, details: Dict[str, Any] | None = None) -> Dict[str, Any]:
+def _format_error(code: str, message: str, details: Dict[str, Any] = None) -> Dict[str, Any]:
     return {"error": {"code": code, "message": message, "details": details or {}}}
 
 

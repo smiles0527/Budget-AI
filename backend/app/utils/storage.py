@@ -1,6 +1,7 @@
 import boto3
 from botocore.client import Config
 from datetime import timedelta
+from typing import Optional, List
 from ..config import settings
 from ..errors import AppError
 from urllib.parse import urlparse, urlunparse
@@ -20,12 +21,23 @@ def _client():
 
 def ensure_bucket():
     s3 = _client()
-    buckets = s3.list_buckets().get("Buckets", [])
-    if not any(b["Name"] == settings.s3_bucket for b in buckets):
-        s3.create_bucket(Bucket=settings.s3_bucket)
+    try:
+        s3.head_bucket(Bucket=settings.s3_bucket)
+        return
+    except Exception:
+        pass
+    # Create if missing. On AWS, non-us-east-1 requires LocationConstraint.
+    try:
+        params = {"Bucket": settings.s3_bucket}
+        if settings.s3_region and settings.s3_region != "us-east-1":
+            params["CreateBucketConfiguration"] = {"LocationConstraint": settings.s3_region}
+        s3.create_bucket(**params)
+    except Exception:
+        # Best-effort; ignore if exists or permissions limited
+        pass
 
 
-def presign_put(object_key: str, content_type: str | None = None, expires: int = 900) -> str:
+def presign_put(object_key: str, content_type: Optional[str] = None, expires: int = 900) -> str:
     s3 = _client()
     params = {"Bucket": settings.s3_bucket, "Key": object_key}
     if content_type:
@@ -44,7 +56,7 @@ def download_bytes(object_key: str) -> bytes:
     return obj["Body"].read()
 
 
-def upload_bytes(object_key: str, data: bytes, content_type: str | None = None) -> None:
+def upload_bytes(object_key: str, data: bytes, content_type: Optional[str] = None) -> None:
     s3 = _client()
     params = {"Bucket": settings.s3_bucket, "Key": object_key, "Body": data}
     if content_type:
@@ -80,5 +92,48 @@ def _rewrite_public(url: str) -> str:
         return urlunparse(replaced)
     except Exception:
         return url
+
+
+def delete_prefix(prefix: str) -> int:
+    """Delete all objects under the given prefix. Returns number of deleted objects.
+
+    This uses ListObjectsV2 and batched DeleteObjects calls. Safe for MinIO/S3.
+    """
+    s3 = _client()
+    deleted_total = 0
+    continuation_token = None
+    while True:
+        kwargs = {"Bucket": settings.s3_bucket, "Prefix": prefix}
+        if continuation_token:
+            kwargs["ContinuationToken"] = continuation_token
+        resp = s3.list_objects_v2(**kwargs)
+        contents = resp.get("Contents", [])
+        if not contents:
+            break
+        # Batch delete up to 1000
+        objects = [{"Key": c["Key"]} for c in contents]
+        for i in range(0, len(objects), 1000):
+            chunk = objects[i : i + 1000]
+            del_resp = s3.delete_objects(Bucket=settings.s3_bucket, Delete={"Objects": chunk, "Quiet": True})
+            deleted_total += len(del_resp.get("Deleted", chunk))
+        if not resp.get("IsTruncated"):
+            break
+        continuation_token = resp.get("NextContinuationToken")
+    return deleted_total
+
+
+def s3_ready() -> bool:
+    """Lightweight readiness check for S3/MinIO connectivity and bucket existence."""
+    try:
+        s3 = _client()
+        # Head bucket if possible; fall back to list_buckets
+        try:
+            s3.head_bucket(Bucket=settings.s3_bucket)
+            return True
+        except Exception:
+            buckets = s3.list_buckets().get("Buckets", [])
+            return any(b.get("Name") == settings.s3_bucket for b in buckets)
+    except Exception:
+        return False
 
 

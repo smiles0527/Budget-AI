@@ -53,7 +53,7 @@ class TransactionsViewModel: ObservableObject {
             currentCursor = response.next_cursor
             hasMore = response.next_cursor != nil
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
         }
         
         isLoading = false
@@ -74,7 +74,7 @@ class TransactionsViewModel: ObservableObject {
             currentCursor = response.next_cursor
             hasMore = response.next_cursor != nil
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
         }
         
         isLoadingMore = false
@@ -90,29 +90,82 @@ class TransactionsViewModel: ObservableObject {
             currentCursor = response.next_cursor
             hasMore = response.next_cursor != nil
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
         }
         
         isLoading = false
     }
     
     func formatAmount(cents: Int) -> String {
-        let dollars = Double(cents) / 100.0
-        return String(format: "$%.2f", dollars)
+        return CurrencyFormatter.shared.format(cents: cents)
     }
     
     func formatDate(_ dateString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withFullDate, .withDashSeparatorInDate]
+        return dateString.toDisplayDate()
+    }
+    
+    func updateTransaction(
+        id: String,
+        merchant: String,
+        txnDate: String,
+        totalCents: Int,
+        taxCents: Int? = nil,
+        tipCents: Int? = nil,
+        category: String,
+        subcategory: String? = nil
+    ) async {
+        isLoading = true
+        errorMessage = nil
         
-        if let date = formatter.date(from: dateString) {
-            let displayFormatter = DateFormatter()
-            displayFormatter.dateStyle = .medium
-            displayFormatter.timeStyle = .none
-            return displayFormatter.string(from: date)
+        do {
+            try await apiClient.updateTransaction(
+                id: id,
+                merchant: merchant,
+                txnDate: txnDate,
+                totalCents: totalCents,
+                taxCents: taxCents,
+                tipCents: tipCents,
+                category: category,
+                subcategory: subcategory
+            )
+            // Reload transactions
+            await loadTransactions(refresh: true)
+        } catch {
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
         }
         
-        return dateString
+        isLoading = false
+    }
+    
+    func createManualTransaction(
+        merchant: String,
+        txnDate: String,
+        totalCents: Int,
+        taxCents: Int? = nil,
+        tipCents: Int? = nil,
+        category: String? = nil,
+        subcategory: String? = nil
+    ) async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            _ = try await apiClient.createManualTransaction(
+                merchant: merchant,
+                txnDate: txnDate,
+                totalCents: totalCents,
+                taxCents: taxCents,
+                tipCents: tipCents,
+                category: category,
+                subcategory: subcategory
+            )
+            // Reload transactions
+            await loadTransactions(refresh: true)
+        } catch {
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
+        }
+        
+        isLoading = false
     }
 }
 

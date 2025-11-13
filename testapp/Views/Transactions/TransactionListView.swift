@@ -63,6 +63,9 @@ struct TransactionListView: View {
                         Text("No transactions yet")
                             .font(.headline)
                             .foregroundColor(.secondary)
+                        Text("Upload a receipt to get started")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
                     }
                     Spacer()
                 } else {
@@ -71,6 +74,7 @@ struct TransactionListView: View {
                             NavigationLink(destination: TransactionDetailView(transaction: transaction)) {
                                 TransactionRow(transaction: transaction, viewModel: viewModel)
                             }
+                            .listRowSeparator(.visible)
                         }
                         
                         if viewModel.hasMore {
@@ -86,6 +90,20 @@ struct TransactionListView: View {
                     .listStyle(PlainListStyle())
                     .refreshable {
                         await viewModel.loadTransactions(refresh: true)
+                    }
+                    .overlay {
+                        if let error = viewModel.errorMessage {
+                            VStack {
+                                Spacer()
+                                Text(error)
+                                    .font(.caption)
+                                    .foregroundColor(.red)
+                                    .padding()
+                                    .background(Color.red.opacity(0.1))
+                                    .cornerRadius(8)
+                                    .padding()
+                            }
+                        }
                     }
                 }
             }

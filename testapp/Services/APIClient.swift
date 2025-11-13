@@ -358,6 +358,349 @@ class APIClient {
     func getRecurringTransactions() async throws -> RecurringTransactionsResponse {
         return try await makeRequest(endpoint: "/analytics/recurring")
     }
+    
+    func getCategoryComparison(
+        period1Start: String,
+        period1End: String,
+        period2Start: String,
+        period2End: String
+    ) async throws -> CategoryComparisonResponse {
+        var endpoint = "/analytics/compare"
+        endpoint += "?period1_start=\(period1Start)&period1_end=\(period1End)"
+        endpoint += "&period2_start=\(period2Start)&period2_end=\(period2End)"
+        return try await makeRequest(endpoint: endpoint)
+    }
+    
+    // MARK: - Profile
+    
+    func updateProfile(displayName: String?, currencyCode: String, timezone: String) async throws {
+        struct ProfileUpdateRequest: Codable {
+            let display_name: String?
+            let currency_code: String
+            let timezone: String
+        }
+        
+        struct EmptyResponse: Codable {}
+        let _: EmptyResponse = try await makeRequest(
+            endpoint: "/profile",
+            method: "PATCH",
+            body: ProfileUpdateRequest(
+                display_name: displayName,
+                currency_code: currencyCode,
+                timezone: timezone
+            )
+        )
+    }
+    
+    // MARK: - Transactions Management
+    
+    func createManualTransaction(
+        merchant: String,
+        txnDate: String,
+        totalCents: Int,
+        taxCents: Int? = nil,
+        tipCents: Int? = nil,
+        currencyCode: String = "USD",
+        category: String? = nil,
+        subcategory: String? = nil
+    ) async throws -> ManualTransactionResponse {
+        struct ManualTransactionRequest: Codable {
+            let merchant: String
+            let txn_date: String
+            let total_cents: Int
+            let tax_cents: Int?
+            let tip_cents: Int?
+            let currency_code: String
+            let category: String?
+            let subcategory: String?
+        }
+        
+        return try await makeRequest(
+            endpoint: "/transactions/manual",
+            method: "POST",
+            body: ManualTransactionRequest(
+                merchant: merchant,
+                txn_date: txnDate,
+                total_cents: totalCents,
+                tax_cents: taxCents,
+                tip_cents: tipCents,
+                currency_code: currencyCode,
+                category: category,
+                subcategory: subcategory
+            )
+        )
+    }
+    
+    func updateTransaction(
+        id: String,
+        merchant: String? = nil,
+        txnDate: String? = nil,
+        totalCents: Int? = nil,
+        taxCents: Int? = nil,
+        tipCents: Int? = nil,
+        category: String? = nil,
+        subcategory: String? = nil
+    ) async throws {
+        struct TransactionUpdateRequest: Codable {
+            let merchant: String?
+            let txn_date: String?
+            let total_cents: Int?
+            let tax_cents: Int?
+            let tip_cents: Int?
+            let category: String?
+            let subcategory: String?
+        }
+        
+        struct EmptyResponse: Codable {}
+        let _: EmptyResponse = try await makeRequest(
+            endpoint: "/transactions/\(id)",
+            method: "PATCH",
+            body: TransactionUpdateRequest(
+                merchant: merchant,
+                txn_date: txnDate,
+                total_cents: totalCents,
+                tax_cents: taxCents,
+                tip_cents: tipCents,
+                category: category,
+                subcategory: subcategory
+            )
+        )
+    }
+    
+    func deleteTransaction(id: String) async throws {
+        struct EmptyResponse: Codable {}
+        let _: EmptyResponse = try await makeRequest(
+            endpoint: "/transactions/\(id)",
+            method: "DELETE"
+        )
+    }
+    
+    func getTransactionItems(id: String) async throws -> TransactionItemsResponse {
+        return try await makeRequest(endpoint: "/transactions/\(id)/items")
+    }
+    
+    // MARK: - Savings Goals Management
+    
+    func getSavingsGoal(id: String) async throws -> SavingsGoal {
+        return try await makeRequest(endpoint: "/savings/goals/\(id)")
+    }
+    
+    func updateSavingsGoal(
+        id: String,
+        name: String? = nil,
+        category: String? = nil,
+        targetCents: Int? = nil,
+        targetDate: String? = nil,
+        status: String? = nil
+    ) async throws {
+        struct SavingsGoalUpdateRequest: Codable {
+            let name: String?
+            let category: String?
+            let target_cents: Int?
+            let target_date: String?
+            let status: String?
+        }
+        
+        struct EmptyResponse: Codable {}
+        let _: EmptyResponse = try await makeRequest(
+            endpoint: "/savings/goals/\(id)",
+            method: "PATCH",
+            body: SavingsGoalUpdateRequest(
+                name: name,
+                category: category,
+                target_cents: targetCents,
+                target_date: targetDate,
+                status: status
+            )
+        )
+    }
+    
+    func deleteSavingsGoal(id: String) async throws {
+        struct EmptyResponse: Codable {}
+        let _: EmptyResponse = try await makeRequest(
+            endpoint: "/savings/goals/\(id)",
+            method: "DELETE"
+        )
+    }
+    
+    // MARK: - Export
+    
+    func exportCSV(
+        fromDate: String,
+        toDate: String,
+        wait: Bool = false,
+        timeoutSeconds: Int? = nil
+    ) async throws -> ExportCSVResponse {
+        struct ExportRequest: Codable {
+            let from_date: String
+            let to_date: String
+            let wait: Bool?
+            let timeout_seconds: Int?
+        }
+        
+        return try await makeRequest(
+            endpoint: "/export/csv",
+            method: "POST",
+            body: ExportRequest(
+                from_date: fromDate,
+                to_date: toDate,
+                wait: wait,
+                timeout_seconds: timeoutSeconds
+            )
+        )
+    }
+    
+    func getExportStatus(jobId: String) async throws -> ExportCSVResponse {
+        return try await makeRequest(endpoint: "/export/csv/\(jobId)")
+    }
+    
+    // MARK: - Subscription
+    
+    func getSubscription() async throws -> SubscriptionResponse {
+        return try await makeRequest(endpoint: "/subscription")
+    }
+    
+    func getSubscriptionCheckout() async throws -> SubscriptionCheckoutResponse {
+        struct EmptyBody: Codable {}
+        return try await makeRequest(
+            endpoint: "/subscription/checkout",
+            method: "POST",
+            body: EmptyBody()
+        )
+    }
+    
+    // MARK: - Account
+    
+    func deleteAccount() async throws {
+        struct EmptyResponse: Codable {}
+        let _: EmptyResponse = try await makeRequest(
+            endpoint: "/account",
+            method: "DELETE"
+        )
+    }
+    
+    // MARK: - Tags
+    
+    func createTag(name: String, color: String? = nil) async throws -> TagResponse {
+        struct TagCreateRequest: Codable {
+            let name: String
+            let color: String?
+        }
+        
+        return try await makeRequest(
+            endpoint: "/tags",
+            method: "POST",
+            body: TagCreateRequest(name: name, color: color)
+        )
+    }
+    
+    func getTags() async throws -> TagsResponse {
+        return try await makeRequest(endpoint: "/tags")
+    }
+    
+    func addTagToTransaction(transactionId: String, tagId: String) async throws {
+        struct EmptyResponse: Codable {}
+        let _: EmptyResponse = try await makeRequest(
+            endpoint: "/transactions/\(transactionId)/tags/\(tagId)",
+            method: "POST"
+        )
+    }
+    
+    func removeTagFromTransaction(transactionId: String, tagId: String) async throws {
+        struct EmptyResponse: Codable {}
+        let _: EmptyResponse = try await makeRequest(
+            endpoint: "/transactions/\(transactionId)/tags/\(tagId)",
+            method: "DELETE"
+        )
+    }
+    
+    func deleteTag(tagId: String) async throws {
+        struct EmptyResponse: Codable {}
+        let _: EmptyResponse = try await makeRequest(
+            endpoint: "/tags/\(tagId)",
+            method: "DELETE"
+        )
+    }
+    
+    // MARK: - Linked Accounts
+    
+    func createLinkedAccount(
+        provider: String,
+        providerAccountId: String,
+        institutionName: String,
+        accountMask: String?,
+        accountName: String,
+        accountType: String,
+        accountSubtype: String?
+    ) async throws -> LinkedAccountResponse {
+        struct LinkedAccountCreateRequest: Codable {
+            let provider: String
+            let provider_account_id: String
+            let institution_name: String
+            let account_mask: String?
+            let account_name: String
+            let account_type: String
+            let account_subtype: String?
+        }
+        
+        return try await makeRequest(
+            endpoint: "/linked-accounts",
+            method: "POST",
+            body: LinkedAccountCreateRequest(
+                provider: provider,
+                provider_account_id: providerAccountId,
+                institution_name: institutionName,
+                account_mask: accountMask,
+                account_name: accountName,
+                account_type: accountType,
+                account_subtype: accountSubtype
+            )
+        )
+    }
+    
+    func getLinkedAccounts(status: String? = nil) async throws -> LinkedAccountsResponse {
+        var endpoint = "/linked-accounts"
+        if let status = status {
+            endpoint += "?status=\(status)"
+        }
+        return try await makeRequest(endpoint: endpoint)
+    }
+    
+    func getLinkedAccount(id: String) async throws -> LinkedAccount {
+        return try await makeRequest(endpoint: "/linked-accounts/\(id)")
+    }
+    
+    func updateLinkedAccountBalance(
+        accountId: String,
+        currentCents: Int?,
+        availableCents: Int?,
+        currencyCode: String = "USD"
+    ) async throws {
+        struct BalanceUpdateRequest: Codable {
+            let current_cents: Int?
+            let available_cents: Int?
+            let currency_code: String
+        }
+        
+        struct EmptyResponse: Codable {}
+        let _: EmptyResponse = try await makeRequest(
+            endpoint: "/linked-accounts/\(accountId)/balances",
+            method: "POST",
+            body: BalanceUpdateRequest(
+                current_cents: currentCents,
+                available_cents: availableCents,
+                currency_code: currencyCode
+            )
+        )
+    }
+    
+    func deleteLinkedAccount(id: String) async throws {
+        struct EmptyResponse: Codable {}
+        let _: EmptyResponse = try await makeRequest(
+            endpoint: "/linked-accounts/\(id)",
+            method: "DELETE"
+        )
+    }
 }
 
 // MARK: - Error Types
@@ -612,5 +955,89 @@ struct BudgetAlert: Codable {
     let threshold_cents: Int?
     let current_cents: Int?
     let created_at: String
+}
+
+struct SubscriptionCheckoutResponse: Codable {
+    let checkout_url: String
+}
+
+struct ExportCSVResponse: Codable {
+    let job_id: String?
+    let download_url: String?
+}
+
+struct ManualTransactionResponse: Codable {
+    let id: String
+}
+
+struct TransactionItemsResponse: Codable {
+    let items: [TransactionItem]
+}
+
+struct CategoryComparisonResponse: Codable {
+    let comparison: [CategoryComparisonItem]
+}
+
+struct CategoryComparisonItem: Codable {
+    let category: String
+    let period1_total_cents: Int
+    let period1_txn_count: Int
+    let period2_total_cents: Int
+    let period2_txn_count: Int
+    let change_cents: Int
+    let change_percent: Double?
+}
+
+struct SubscriptionResponse: Codable {
+    let plan: String
+    let status: String
+    let current_period_end: String?
+}
+
+struct TagResponse: Codable {
+    let id: String
+}
+
+struct TagsResponse: Codable {
+    let items: [Tag]
+}
+
+struct Tag: Codable {
+    let id: String
+    let user_id: String
+    let name: String
+    let color: String?
+    let created_at: String
+}
+
+struct LinkedAccountResponse: Codable {
+    let id: String
+}
+
+struct LinkedAccountsResponse: Codable {
+    let items: [LinkedAccount]
+}
+
+struct LinkedAccount: Codable {
+    let id: String
+    let user_id: String
+    let provider: String
+    let provider_account_id: String
+    let institution_name: String
+    let account_mask: String?
+    let account_name: String
+    let account_type: String
+    let account_subtype: String?
+    let status: String
+    let created_at: String
+    let last_synced_at: String?
+    let balance: AccountBalance?
+}
+
+struct AccountBalance: Codable {
+    let current_cents: Int?
+    let available_cents: Int?
+    let currency_code: String
+    let as_of: String
 }
 

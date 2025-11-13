@@ -24,7 +24,7 @@ class SavingsGoalsViewModel: ObservableObject {
             let response = try await apiClient.getSavingsGoals(status: status)
             goals = response.items
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
         }
         
         isLoading = false
@@ -50,7 +50,7 @@ class SavingsGoalsViewModel: ObservableObject {
             )
             await loadGoals()
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
         }
         
         isLoading = false
@@ -68,15 +68,14 @@ class SavingsGoalsViewModel: ObservableObject {
             )
             await loadGoals()
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
         }
         
         isLoading = false
     }
     
     func formatAmount(cents: Int) -> String {
-        let dollars = Double(cents) / 100.0
-        return String(format: "$%.2f", dollars)
+        return CurrencyFormatter.shared.format(cents: cents)
     }
     
     func progressPercentage(goal: SavingsGoal) -> Double {
@@ -84,6 +83,63 @@ class SavingsGoalsViewModel: ObservableObject {
             return 0
         }
         return min(100.0, (Double(contributed) / Double(goal.target_cents)) * 100.0)
+    }
+    
+    func getGoal(id: String) async -> SavingsGoal? {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            let goal = try await apiClient.getSavingsGoal(id: id)
+            isLoading = false
+            return goal
+        } catch {
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
+            isLoading = false
+            return nil
+        }
+    }
+    
+    func updateGoal(
+        id: String,
+        name: String? = nil,
+        category: String? = nil,
+        targetCents: Int? = nil,
+        targetDate: String? = nil,
+        status: String? = nil
+    ) async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            try await apiClient.updateSavingsGoal(
+                id: id,
+                name: name,
+                category: category,
+                targetCents: targetCents,
+                targetDate: targetDate,
+                status: status
+            )
+            await loadGoals()
+        } catch {
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
+        }
+        
+        isLoading = false
+    }
+    
+    func deleteGoal(id: String) async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            try await apiClient.deleteSavingsGoal(id: id)
+            await loadGoals()
+        } catch {
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
+        }
+        
+        isLoading = false
     }
 }
 

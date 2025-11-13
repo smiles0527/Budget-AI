@@ -38,7 +38,7 @@ class DashboardViewModel: ObservableObject {
         do {
             summary = try await apiClient.getDashboardSummary(period: period, anchor: anchor)
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
         }
     }
     
@@ -47,7 +47,7 @@ class DashboardViewModel: ObservableObject {
             let response = try await apiClient.getDashboardCategories(period: period, anchor: anchor)
             categories = response.items
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
         }
     }
     
@@ -55,7 +55,7 @@ class DashboardViewModel: ObservableObject {
         do {
             spendingTrends = try await apiClient.getSpendingTrends(months: months)
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
         }
     }
     
@@ -63,7 +63,7 @@ class DashboardViewModel: ObservableObject {
         do {
             forecast = try await apiClient.getSpendingForecast(monthsAhead: monthsAhead)
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
         }
     }
     
@@ -72,13 +72,12 @@ class DashboardViewModel: ObservableObject {
             let response = try await apiClient.getSpendingInsights()
             insights = response.insights
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = ErrorHandler.userFriendlyMessage(for: error)
         }
     }
     
     func formatAmount(cents: Int) -> String {
-        let dollars = Double(cents) / 100.0
-        return String(format: "$%.2f", dollars)
+        return CurrencyFormatter.shared.format(cents: cents)
     }
     
     func categoryPercentage(cents: Int, total: Int) -> Double {

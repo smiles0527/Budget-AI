@@ -30,6 +30,7 @@ struct AppRootView: View {
 struct MainTabView: View {
     @StateObject private var authManager = AuthManager.shared
     @State private var showingReceiptCapture = false
+    @State private var showingManualTransaction = false
     
     var body: some View {
         TabView {
@@ -45,10 +46,10 @@ struct MainTabView: View {
                     Text("Transactions")
                 }
             
-            Button(action: { showingReceiptCapture = true }) {
-                Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 30))
-            }
+            AddMenuView(
+                showingReceiptCapture: $showingReceiptCapture,
+                showingManualTransaction: $showingManualTransaction
+            )
             .tabItem {
                 Image(systemName: "plus.circle.fill")
                 Text("Add")
@@ -72,6 +73,48 @@ struct MainTabView: View {
                 ReceiptCaptureView()
             }
         }
+        .sheet(isPresented: $showingManualTransaction) {
+            ManualTransactionView()
+        }
+    }
+}
+
+struct AddMenuView: View {
+    @Binding var showingReceiptCapture: Bool
+    @Binding var showingManualTransaction: Bool
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            Button(action: { showingReceiptCapture = true }) {
+                VStack(spacing: 12) {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 50))
+                    Text("Scan Receipt")
+                        .font(.headline)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(12)
+            }
+            .buttonStyle(.plain)
+            
+            Button(action: { showingManualTransaction = true }) {
+                VStack(spacing: 12) {
+                    Image(systemName: "pencil.circle.fill")
+                        .font(.system(size: 50))
+                    Text("Add Manual Transaction")
+                        .font(.headline)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.green.opacity(0.1))
+                .cornerRadius(12)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding()
+        .navigationTitle("Add Transaction")
     }
 }
 
@@ -133,13 +176,29 @@ struct ProfileView: View {
                             SettingsRow(icon: "chart.pie.fill", title: "Budgets", color: .blue)
                         }
                         
+                        NavigationLink(destination: BudgetAlertsView()) {
+                            SettingsRow(icon: "bell.fill", title: "Alerts", color: .orange)
+                        }
+                        
                         NavigationLink(destination: UsageView()) {
                             SettingsRow(icon: "chart.bar.fill", title: "Usage", color: .green)
                         }
                         
-                        SettingsRow(icon: "bell.fill", title: "Notifications", color: .orange)
+                        NavigationLink(destination: TagsView()) {
+                            SettingsRow(icon: "tag.fill", title: "Tags", color: .purple)
+                        }
                         
-                        SettingsRow(icon: "gear", title: "Settings", color: .gray)
+                        NavigationLink(destination: LinkedAccountsView()) {
+                            SettingsRow(icon: "creditcard.fill", title: "Linked Accounts", color: .blue)
+                        }
+                        
+                        NavigationLink(destination: CategoryComparisonView()) {
+                            SettingsRow(icon: "chart.bar.xaxis", title: "Category Comparison", color: .orange)
+                        }
+                        
+                        NavigationLink(destination: SettingsView()) {
+                            SettingsRow(icon: "gear", title: "Settings", color: .gray)
+                        }
                         
                         Button(action: { showingLogoutAlert = true }) {
                             SettingsRow(icon: "arrow.right.square", title: "Logout", color: .red)
@@ -219,24 +278,45 @@ struct SettingsRow: View {
 struct BudgetsView: View {
     @StateObject private var viewModel = BudgetsViewModel()
     @State private var showingCreateBudget = false
+    @State private var editingBudget: BudgetWithSpending?
     
     var body: some View {
         List {
-            ForEach(viewModel.budgets, id: \.id) { budget in
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text(budget.category.capitalized)
-                            .font(.headline)
-                        Spacer()
-                        Text(viewModel.formatAmount(cents: budget.limit_cents))
-                            .font(.headline)
-                    }
-                    
-                    Text("\(budget.period_start) to \(budget.period_end)")
-                        .font(.caption)
+            if viewModel.isLoading && viewModel.budgets.isEmpty {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+            } else if viewModel.budgets.isEmpty {
+                VStack(spacing: 16) {
+                    Image(systemName: "chart.bar.doc.horizontal")
+                        .font(.system(size: 50))
+                        .foregroundColor(.secondary)
+                    Text("No budgets yet")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    Text("Create a budget to track your spending")
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
-                .padding(.vertical, 4)
+                .frame(maxWidth: .infinity)
+                .padding()
+            } else {
+                ForEach(viewModel.budgets) { budgetWithSpending in
+                    BudgetRow(
+                        budget: budgetWithSpending,
+                        viewModel: viewModel,
+                        onEdit: {
+                            editingBudget = budgetWithSpending
+                        }
+                    )
+                }
+            }
+            
+            if let error = viewModel.errorMessage {
+                Section {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .font(.caption)
+                }
             }
         }
         .navigationTitle("Budgets")
@@ -248,7 +328,16 @@ struct BudgetsView: View {
             }
         }
         .sheet(isPresented: $showingCreateBudget) {
-            CreateBudgetView(viewModel: viewModel)
+            CreateBudgetFormView(viewModel: viewModel)
+        }
+        .sheet(item: $editingBudget) { budget in
+            EditBudgetFormView(
+                viewModel: viewModel,
+                budget: budget.budget
+            )
+        }
+        .refreshable {
+            await viewModel.loadBudgets()
         }
         .task {
             await viewModel.loadBudgets()
@@ -256,60 +345,79 @@ struct BudgetsView: View {
     }
 }
 
-struct CreateBudgetView: View {
-    @Environment(\.dismiss) var dismiss
+struct BudgetRow: View {
+    let budget: BudgetWithSpending
     @ObservedObject var viewModel: BudgetsViewModel
-    @State private var category = "groceries"
-    @State private var limitDollars = ""
-    @State private var periodStart = ""
-    @State private var periodEnd = ""
+    let onEdit: () -> Void
     
-    let categories = ["groceries", "dining", "transport", "shopping", "entertainment", "subscriptions", "utilities", "health", "education", "travel", "other"]
+    var progress: Double {
+        viewModel.getProgressPercentage(budget: budget)
+    }
     
-    var body: some View {
-        NavigationView {
-            Form {
-                Picker("Category", selection: $category) {
-                    ForEach(categories, id: \.self) { cat in
-                        Text(cat.capitalized).tag(cat)
-                    }
-                }
-                
-                TextField("Limit ($)", text: $limitDollars)
-                    .keyboardType(.decimalPad)
-                
-                TextField("Start Date (YYYY-MM-DD)", text: $periodStart)
-                
-                TextField("End Date (YYYY-MM-DD)", text: $periodEnd)
-            }
-            .navigationTitle("New Budget")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        if let limit = Double(limitDollars) {
-                            Task {
-                                await viewModel.createBudget(
-                                    periodStart: periodStart,
-                                    periodEnd: periodEnd,
-                                    category: category,
-                                    limitCents: Int(limit * 100)
-                                )
-                                dismiss()
-                            }
-                        }
-                    }
-                }
-            }
+    var progressColor: Color {
+        if progress >= 1.0 {
+            return .red
+        } else if progress >= 0.9 {
+            return .orange
+        } else {
+            return .blue
         }
     }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(budget.budget.category.capitalized)
+                    .font(.headline)
+                Spacer()
+                Button(action: onEdit) {
+                    Image(systemName: "pencil")
+                        .foregroundColor(.blue)
+                        .font(.caption)
+                }
+            }
+            
+            // Progress bar
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.2))
+                        .frame(height: 8)
+                        .cornerRadius(4)
+                    
+                    Rectangle()
+                        .fill(progressColor)
+                        .frame(width: geometry.size.width * progress, height: 8)
+                        .cornerRadius(4)
+                }
+            }
+            .frame(height: 8)
+            
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Spent: \(viewModel.formatAmount(cents: budget.spentCents))")
+                        .font(.subheadline)
+                        .foregroundColor(.primary)
+                    Text("Limit: \(viewModel.formatAmount(cents: budget.budget.limit_cents))")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                Text("\(Int(progress * 100))%")
+                    .font(.headline)
+                    .foregroundColor(progressColor)
+            }
+            
+            Text("\(budget.budget.period_start.toDisplayDate()) - \(budget.budget.period_end.toDisplayDate())")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 8)
+    }
 }
+
 
 struct SavingsGoalsView: View {
     @StateObject private var viewModel = SavingsGoalsViewModel()
@@ -380,61 +488,167 @@ struct SavingsGoalDetailView: View {
     let goal: SavingsGoal
     @ObservedObject var viewModel: SavingsGoalsViewModel
     @State private var showingAddContribution = false
-    @State private var contributionAmount = ""
+    @State private var showingEdit = false
+    @State private var showingDeleteAlert = false
+    @State private var goalDetails: SavingsGoal?
+    @State private var contributions: [SavingsContribution] = []
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(goal.name)
-                        .font(.largeTitle)
+        List {
+            Section {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(goalDetails?.name ?? goal.name)
+                        .font(.title2)
                         .fontWeight(.bold)
                     
-                    Text("Target: \(viewModel.formatAmount(cents: goal.target_cents))")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                    
-                    if let contributed = goal.contributed_cents {
-                        Text("Saved: \(viewModel.formatAmount(cents: contributed))")
-                            .font(.title2)
-                            .foregroundColor(.green)
-                    }
-                }
-                .padding()
-                
-                // Progress bar
-                GeometryReader { geometry in
-                    ZStack(alignment: .leading) {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.2))
-                            .frame(height: 20)
-                            .cornerRadius(10)
+                    HStack {
+                        Text("Target: \(viewModel.formatAmount(cents: goalDetails?.target_cents ?? goal.target_cents))")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
                         
-                        Rectangle()
-                            .fill(Color.green)
-                            .frame(
-                                width: geometry.size.width * CGFloat(viewModel.progressPercentage(goal: goal) / 100.0),
-                                height: 20
-                            )
-                            .cornerRadius(10)
+                        Spacer()
+                        
+                        if let contributed = goalDetails?.contributed_cents ?? goal.contributed_cents {
+                            Text("Saved: \(viewModel.formatAmount(cents: contributed))")
+                                .font(.subheadline)
+                                .foregroundColor(.green)
+                                .fontWeight(.medium)
+                        }
+                    }
+                    
+                    // Progress bar
+                    GeometryReader { geometry in
+                        ZStack(alignment: .leading) {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.2))
+                                .frame(height: 12)
+                                .cornerRadius(6)
+                            
+                            Rectangle()
+                                .fill(Color.green)
+                                .frame(
+                                    width: geometry.size.width * CGFloat(progressPercentage / 100.0),
+                                    height: 12
+                                )
+                                .cornerRadius(6)
+                        }
+                    }
+                    .frame(height: 12)
+                    
+                    if let targetDate = goalDetails?.target_date ?? goal.target_date {
+                        Text("Target Date: \(targetDate.toDisplayDate())")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                 }
-                .frame(height: 20)
-                .padding(.horizontal)
-                
-                Button("Add Contribution") {
-                    showingAddContribution = true
+                .padding(.vertical, 8)
+            }
+            
+            Section("Contributions") {
+                if contributions.isEmpty {
+                    Text("No contributions yet")
+                        .foregroundColor(.secondary)
+                        .font(.caption)
+                } else {
+                    ForEach(contributions, id: \.id) { contribution in
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text(viewModel.formatAmount(cents: contribution.amount_cents))
+                                    .font(.headline)
+                                Spacer()
+                                Text(contribution.contributed_at.toDisplayDate())
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            if let note = contribution.note, !note.isEmpty {
+                                Text(note)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
                 }
-                .buttonStyle(.borderedProminent)
-                .padding(.horizontal)
+                
+                Button(action: { showingAddContribution = true }) {
+                    HStack {
+                        Image(systemName: "plus.circle.fill")
+                        Text("Add Contribution")
+                    }
+                    .foregroundColor(.blue)
+                }
+            }
+            
+            Section {
+                Button(action: { showingEdit = true }) {
+                    HStack {
+                        Image(systemName: "pencil")
+                        Text("Edit Goal")
+                    }
+                    .foregroundColor(.blue)
+                }
+                
+                if goalDetails?.status ?? goal.status == "active" {
+                    Button(action: { showingDeleteAlert = true }) {
+                        HStack {
+                            Image(systemName: "trash")
+                            Text("Delete Goal")
+                        }
+                        .foregroundColor(.red)
+                    }
+                }
             }
         }
-        .navigationTitle("Goal")
+        .navigationTitle("Goal Details")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingAddContribution) {
             AddContributionView(goalId: goal.id, viewModel: viewModel)
         }
+        .sheet(isPresented: $showingEdit) {
+            EditSavingsGoalView(goal: goalDetails ?? goal, viewModel: viewModel)
+        }
+        .alert("Delete Goal", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                Task {
+                    await viewModel.deleteGoal(id: goal.id)
+                    dismiss()
+                }
+            }
+        } message: {
+            Text("Are you sure you want to delete this goal? This action cannot be undone.")
+        }
+        .task {
+            await loadGoalDetails()
+        }
     }
+    
+    private var progressPercentage: Double {
+        guard let contributed = goalDetails?.contributed_cents ?? goal.contributed_cents,
+              let target = goalDetails?.target_cents ?? goal.target_cents,
+              target > 0 else {
+            return 0
+        }
+        return min(100.0, (Double(contributed) / Double(target)) * 100.0)
+    }
+    
+    private func loadGoalDetails() async {
+        if let details = await viewModel.getGoal(id: goal.id) {
+            goalDetails = details
+            // Load contributions from goal details if available
+            // Note: Backend returns contributions in the goal details response
+        }
+    }
+}
+
+struct SavingsContribution: Codable {
+    let id: String
+    let goal_id: String
+    let amount_cents: Int
+    let note: String?
+    let contributed_at: String
 }
 
 struct CreateSavingsGoalView: View {
@@ -442,17 +656,47 @@ struct CreateSavingsGoalView: View {
     @ObservedObject var viewModel: SavingsGoalsViewModel
     @State private var name = ""
     @State private var targetDollars = ""
-    @State private var targetDate = ""
+    @State private var targetDate: Date?
+    @State private var showingDatePicker = false
+    @State private var errorMessage: String?
     
     var body: some View {
         NavigationView {
             Form {
-                TextField("Goal Name", text: $name)
+                Section("Goal Details") {
+                    TextField("Goal Name", text: $name)
+                    
+                    TextField("Target Amount ($)", text: $targetDollars)
+                        .keyboardType(.decimalPad)
+                }
                 
-                TextField("Target Amount ($)", text: $targetDollars)
-                    .keyboardType(.decimalPad)
+                Section("Target Date (Optional)") {
+                    if let date = targetDate {
+                        HStack {
+                            Text("Target Date")
+                            Spacer()
+                            Text(date.toDisplayString())
+                                .foregroundColor(.secondary)
+                            Button("Clear") {
+                                targetDate = nil
+                            }
+                            .font(.caption)
+                            .foregroundColor(.red)
+                        }
+                    } else {
+                        Button("Set Target Date") {
+                            showingDatePicker = true
+                        }
+                    }
+                }
                 
-                TextField("Target Date (YYYY-MM-DD)", text: $targetDate)
+                if let error = errorMessage {
+                    Section {
+                        Text(error)
+                            .foregroundColor(.red)
+                            .font(.caption)
+                    }
+                }
             }
             .navigationTitle("New Goal")
             .navigationBarTitleDisplayMode(.inline)
@@ -465,21 +709,177 @@ struct CreateSavingsGoalView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
-                        if let target = Double(targetDollars) {
-                            Task {
-                                await viewModel.createGoal(
-                                    name: name,
-                                    category: nil,
-                                    targetCents: Int(target * 100),
-                                    startDate: nil,
-                                    targetDate: targetDate.isEmpty ? nil : targetDate
-                                )
-                                dismiss()
-                            }
-                        }
+                        saveGoal()
+                    }
+                    .disabled(name.isEmpty || targetDollars.isEmpty || !isValid)
+                }
+            }
+            .sheet(isPresented: $showingDatePicker) {
+                DatePickerSheet(selectedDate: $targetDate)
+            }
+        }
+    }
+    
+    private var isValid: Bool {
+        guard let target = Double(targetDollars), target > 0 else { return false }
+        return true
+    }
+    
+    private func saveGoal() {
+        guard let target = Double(targetDollars), target > 0 else {
+            errorMessage = "Please enter a valid amount"
+            return
+        }
+        
+        errorMessage = nil
+        
+        Task {
+            await viewModel.createGoal(
+                name: name,
+                category: nil,
+                targetCents: Int(target * 100),
+                startDate: nil,
+                targetDate: targetDate?.toInputString()
+            )
+            dismiss()
+        }
+    }
+}
+
+struct DatePickerSheet: View {
+    @Environment(\.dismiss) var dismiss
+    @Binding var selectedDate: Date?
+    @State private var tempDate = Date()
+    
+    var body: some View {
+        NavigationView {
+            VStack {
+                DatePicker("Select Date", selection: $tempDate, displayedComponents: .date)
+                    .datePickerStyle(.graphical)
+                    .padding()
+                
+                Spacer()
+            }
+            .navigationTitle("Target Date")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        selectedDate = tempDate
+                        dismiss()
                     }
                 }
             }
+        }
+    }
+}
+
+struct EditSavingsGoalView: View {
+    @Environment(\.dismiss) var dismiss
+    let goal: SavingsGoal
+    @ObservedObject var viewModel: SavingsGoalsViewModel
+    
+    @State private var name: String
+    @State private var targetDollars: String
+    @State private var targetDate: Date?
+    @State private var showingDatePicker = false
+    @State private var errorMessage: String?
+    
+    init(goal: SavingsGoal, viewModel: SavingsGoalsViewModel) {
+        self.goal = goal
+        self.viewModel = viewModel
+        _name = State(initialValue: goal.name)
+        _targetDollars = State(initialValue: String(format: "%.2f", Double(goal.target_cents) / 100.0))
+        _targetDate = State(initialValue: goal.target_date?.toDate())
+    }
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section("Goal Details") {
+                    TextField("Goal Name", text: $name)
+                    
+                    TextField("Target Amount ($)", text: $targetDollars)
+                        .keyboardType(.decimalPad)
+                }
+                
+                Section("Target Date (Optional)") {
+                    if let date = targetDate {
+                        HStack {
+                            Text("Target Date")
+                            Spacer()
+                            Text(date.toDisplayString())
+                                .foregroundColor(.secondary)
+                            Button("Clear") {
+                                targetDate = nil
+                            }
+                            .font(.caption)
+                            .foregroundColor(.red)
+                        }
+                    } else {
+                        Button("Set Target Date") {
+                            showingDatePicker = true
+                        }
+                    }
+                }
+                
+                if let error = errorMessage {
+                    Section {
+                        Text(error)
+                            .foregroundColor(.red)
+                            .font(.caption)
+                    }
+                }
+            }
+            .navigationTitle("Edit Goal")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        saveGoal()
+                    }
+                    .disabled(name.isEmpty || targetDollars.isEmpty || !isValid)
+                }
+            }
+            .sheet(isPresented: $showingDatePicker) {
+                DatePickerSheet(selectedDate: $targetDate)
+            }
+        }
+    }
+    
+    private var isValid: Bool {
+        guard let target = Double(targetDollars), target > 0 else { return false }
+        return true
+    }
+    
+    private func saveGoal() {
+        guard let target = Double(targetDollars), target > 0 else {
+            errorMessage = "Please enter a valid amount"
+            return
+        }
+        
+        errorMessage = nil
+        
+        Task {
+            await viewModel.updateGoal(
+                id: goal.id,
+                name: name,
+                targetCents: Int(target * 100),
+                targetDate: targetDate?.toInputString()
+            )
+            dismiss()
         }
     }
 }
@@ -490,14 +890,25 @@ struct AddContributionView: View {
     @ObservedObject var viewModel: SavingsGoalsViewModel
     @State private var amountDollars = ""
     @State private var note = ""
+    @State private var errorMessage: String?
     
     var body: some View {
         NavigationView {
             Form {
-                TextField("Amount ($)", text: $amountDollars)
-                    .keyboardType(.decimalPad)
+                Section("Contribution") {
+                    TextField("Amount ($)", text: $amountDollars)
+                        .keyboardType(.decimalPad)
+                    
+                    TextField("Note (optional)", text: $note)
+                }
                 
-                TextField("Note (optional)", text: $note)
+                if let error = errorMessage {
+                    Section {
+                        Text(error)
+                            .foregroundColor(.red)
+                            .font(.caption)
+                    }
+                }
             }
             .navigationTitle("Add Contribution")
             .navigationBarTitleDisplayMode(.inline)
@@ -510,19 +921,34 @@ struct AddContributionView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
-                        if let amount = Double(amountDollars) {
-                            Task {
-                                await viewModel.addContribution(
-                                    goalId: goalId,
-                                    amountCents: Int(amount * 100),
-                                    note: note.isEmpty ? nil : note
-                                )
-                                dismiss()
-                            }
-                        }
+                        saveContribution()
                     }
+                    .disabled(amountDollars.isEmpty || !isValid)
                 }
             }
+        }
+    }
+    
+    private var isValid: Bool {
+        guard let amount = Double(amountDollars), amount > 0 else { return false }
+        return true
+    }
+    
+    private func saveContribution() {
+        guard let amount = Double(amountDollars), amount > 0 else {
+            errorMessage = "Please enter a valid amount"
+            return
+        }
+        
+        errorMessage = nil
+        
+        Task {
+            await viewModel.addContribution(
+                goalId: goalId,
+                amountCents: Int(amount * 100),
+                note: note.isEmpty ? nil : note
+            )
+            dismiss()
         }
     }
 }

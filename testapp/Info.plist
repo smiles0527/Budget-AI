@@ -2,9 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to capture receipt photos for expense tracking.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to select receipt images for expense tracking.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need access to save receipt images to your photo library.</string>
 </dict>
 </plist>

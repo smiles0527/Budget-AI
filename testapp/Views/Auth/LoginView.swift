@@ -41,9 +41,11 @@ struct LoginView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                     
                     if let error = errorMessage {
-                        Text(error)
+                        Text(ErrorHandler.userFriendlyMessage(for: NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: error])))
                             .font(.caption)
                             .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
                     }
                     
                     Button(action: handleLogin) {
@@ -125,9 +127,11 @@ struct SignupView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                     
                     if let error = errorMessage {
-                        Text(error)
+                        Text(ErrorHandler.userFriendlyMessage(for: NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: error])))
                             .font(.caption)
                             .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
                     }
                     
                     Button(action: handleSignup) {

@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import PhotosUI
 
 class ReceiptUploader {
     static let shared = ReceiptUploader()

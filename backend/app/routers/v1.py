@@ -4,6 +4,7 @@ from pydantic import BaseModel, EmailStr
 from sqlalchemy import text
 import stripe
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import date
 
 from ..db import get_db
 from ..config import settings
@@ -14,6 +15,7 @@ from ..utils.auth import get_current_user
 from ..errors import AppError
 from ..utils.oauth import verify_google, verify_apple
 from ..utils.categorize import determine_category
+from ..utils.badges import check_and_award_badges
 
 
 router = APIRouter(prefix="/v1")
@@ -286,7 +288,55 @@ async def me(user=Depends(get_current_user), db: AsyncSession = Depends(get_db))
         {"uid": user["id"]},
     )
     s = sub.mappings().first()
-    return {"user": user, "subscription": dict(s) if s else None}
+    
+    # Get profile
+    profile_res = await db.execute(
+        text("SELECT * FROM profiles WHERE user_id = :uid"),
+        {"uid": user["id"]},
+    )
+    profile = profile_res.mappings().first()
+    
+    return {
+        "user": user,
+        "subscription": dict(s) if s else None,
+        "profile": dict(profile) if profile else None,
+    }
+
+
+class ProfileUpdate(BaseModel):
+    display_name: Optional[str] = None
+    currency_code: Optional[str] = None
+    timezone: Optional[str] = None
+    marketing_opt_in: Optional[bool] = None
+
+
+@router.patch("/profile")
+async def profile_update(body: ProfileUpdate, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    updates = []
+    params = {"uid": user["id"]}
+    
+    if body.display_name is not None:
+        updates.append("display_name = :display_name")
+        params["display_name"] = body.display_name
+    if body.currency_code is not None:
+        updates.append("currency_code = :currency_code")
+        params["currency_code"] = body.currency_code
+    if body.timezone is not None:
+        updates.append("timezone = :timezone")
+        params["timezone"] = body.timezone
+    if body.marketing_opt_in is not None:
+        updates.append("marketing_opt_in = :marketing_opt_in")
+        params["marketing_opt_in"] = body.marketing_opt_in
+    
+    if not updates:
+        return {"updated": False}
+    
+    await db.execute(
+        text(f"UPDATE profiles SET {', '.join(updates)} WHERE user_id = :uid"),
+        params,
+    )
+    await db.commit()
+    return {"updated": True}
 
 
 class ReceiptCreate(BaseModel):
@@ -348,6 +398,10 @@ async def receipts_confirm(body: ReceiptConfirm, user=Depends(get_current_user),
         {"rid": body.receipt_id},
     )
     await db.commit()
+    
+    # Check for badge awards (will be re-checked after OCR completes, but check here too)
+    await check_and_award_badges(db, user["id"], "receipt_uploaded")
+    
     return {"ok": True}
 
 
@@ -438,7 +492,33 @@ async def transactions_get(txn_id: str, user=Depends(get_current_user), db: Asyn
     row = res.mappings().first()
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
-    return dict(row)
+    txn = dict(row)
+    
+    # Include transaction items
+    items_res = await db.execute(
+        text("SELECT * FROM transaction_items WHERE transaction_id = :txn_id ORDER BY line_index"),
+        {"txn_id": txn_id},
+    )
+    txn["items"] = [dict(r) for r in items_res.mappings().all()]
+    
+    return txn
+
+
+@router.get("/transactions/{txn_id}/items")
+async def transactions_items_get(txn_id: str, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    # Verify transaction ownership
+    txn_res = await db.execute(
+        text("SELECT id FROM transactions WHERE id = :id AND user_id = :uid"),
+        {"id": txn_id, "uid": user["id"]},
+    )
+    if not txn_res.first():
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    res = await db.execute(
+        text("SELECT * FROM transaction_items WHERE transaction_id = :txn_id ORDER BY line_index"),
+        {"txn_id": txn_id},
+    )
+    return {"items": [dict(r) for r in res.mappings().all()]}
 
 
 class TransactionManual(BaseModel):
@@ -871,5 +951,411 @@ async def account_delete(user=Depends(get_current_user), db: AsyncSession = Depe
     await db.execute(text("INSERT INTO deletion_jobs(user_id) VALUES (:uid)"), {"uid": user["id"]})
     await db.commit()
     return {"scheduled": True}
+
+
+# ===================
+# Savings Goals API
+# ===================
+
+class SavingsGoalCreate(BaseModel):
+    name: str
+    category: Optional[str] = None
+    target_cents: int
+    start_date: Optional[str] = None  # YYYY-MM-DD, defaults to today
+    target_date: Optional[str] = None  # YYYY-MM-DD
+
+
+@router.post("/savings/goals")
+async def savings_goals_create(body: SavingsGoalCreate, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    start = body.start_date or date.today().isoformat()
+    res = await db.execute(
+        text(
+            """
+            INSERT INTO savings_goals(user_id, name, category, target_cents, start_date, target_date, status)
+            VALUES (:uid, :name, :cat, :target, :start, :target_date, 'active')
+            RETURNING id
+            """
+        ),
+        {
+            "uid": user["id"],
+            "name": body.name,
+            "cat": body.category,
+            "target": body.target_cents,
+            "start": start,
+            "target_date": body.target_date,
+        },
+    )
+    goal_id = res.scalar_one()
+    await db.commit()
+    return {"id": str(goal_id)}
+
+
+@router.get("/savings/goals")
+async def savings_goals_list(user=Depends(get_current_user), db: AsyncSession = Depends(get_db), status: Optional[str] = None):
+    if status:
+        res = await db.execute(
+            text("SELECT * FROM savings_goals WHERE user_id = :uid AND status = :status ORDER BY created_at DESC"),
+            {"uid": user["id"], "status": status},
+        )
+    else:
+        res = await db.execute(
+            text("SELECT * FROM savings_goals WHERE user_id = :uid ORDER BY created_at DESC"),
+            {"uid": user["id"]},
+        )
+    goals = []
+    for row in res.mappings().all():
+        goal = dict(row)
+        # Calculate progress
+        contrib_res = await db.execute(
+            text("SELECT COALESCE(SUM(amount_cents), 0) as total FROM savings_contributions WHERE goal_id = :gid"),
+            {"gid": goal["id"]},
+        )
+        contributed = contrib_res.scalar_one() or 0
+        goal["contributed_cents"] = contributed
+        goal["progress_percent"] = min(100, int((contributed / goal["target_cents"]) * 100)) if goal["target_cents"] > 0 else 0
+        goals.append(goal)
+    return {"items": goals}
+
+
+@router.get("/savings/goals/{goal_id}")
+async def savings_goals_get(goal_id: str, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    res = await db.execute(
+        text("SELECT * FROM savings_goals WHERE id = :gid AND user_id = :uid"),
+        {"gid": goal_id, "uid": user["id"]},
+    )
+    goal = res.mappings().first()
+    if not goal:
+        raise HTTPException(status_code=404, detail="Not found")
+    goal_dict = dict(goal)
+    
+    # Get contributions
+    contrib_res = await db.execute(
+        text("SELECT * FROM savings_contributions WHERE goal_id = :gid ORDER BY contributed_at DESC"),
+        {"gid": goal_id},
+    )
+    contributions = [dict(r) for r in contrib_res.mappings().all()]
+    contributed_total = sum(c["amount_cents"] for c in contributions)
+    
+    goal_dict["contributions"] = contributions
+    goal_dict["contributed_cents"] = contributed_total
+    goal_dict["progress_percent"] = min(100, int((contributed_total / goal_dict["target_cents"]) * 100)) if goal_dict["target_cents"] > 0 else 0
+    return goal_dict
+
+
+class SavingsContributionCreate(BaseModel):
+    amount_cents: int
+    note: Optional[str] = None
+
+
+@router.post("/savings/goals/{goal_id}/contributions")
+async def savings_contributions_create(goal_id: str, body: SavingsContributionCreate, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    # Verify goal ownership
+    goal_res = await db.execute(
+        text("SELECT id, target_cents, status FROM savings_goals WHERE id = :gid AND user_id = :uid"),
+        {"gid": goal_id, "uid": user["id"]},
+    )
+    goal = goal_res.mappings().first()
+    if not goal:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    if goal["status"] != "active":
+        raise HTTPException(status_code=400, detail="Goal is not active")
+    
+    # Create contribution
+    contrib_res = await db.execute(
+        text(
+            """
+            INSERT INTO savings_contributions(goal_id, amount_cents, note)
+            VALUES (:gid, :amount, :note)
+            RETURNING id
+            """
+        ),
+        {"gid": goal_id, "amount": body.amount_cents, "note": body.note},
+    )
+    contrib_id = contrib_res.scalar_one()
+    
+    # Check if goal is achieved
+    total_res = await db.execute(
+        text("SELECT COALESCE(SUM(amount_cents), 0) as total FROM savings_contributions WHERE goal_id = :gid"),
+        {"gid": goal_id},
+    )
+    total_contributed = total_res.scalar_one() or 0
+    
+    if total_contributed >= goal["target_cents"]:
+        await db.execute(
+            text("UPDATE savings_goals SET status = 'achieved' WHERE id = :gid"),
+            {"gid": goal_id},
+        )
+        # Award badge
+        await check_and_award_badges(db, user["id"], "savings_goal_achieved", amount_cents=total_contributed)
+    
+    await db.commit()
+    return {"id": str(contrib_id)}
+
+
+@router.patch("/savings/goals/{goal_id}")
+async def savings_goals_update(goal_id: str, body: dict, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    # Verify ownership
+    goal_res = await db.execute(
+        text("SELECT id FROM savings_goals WHERE id = :gid AND user_id = :uid"),
+        {"gid": goal_id, "uid": user["id"]},
+    )
+    if not goal_res.first():
+        raise HTTPException(status_code=404, detail="Goal not found")
+    
+    allowed_fields = ["name", "target_cents", "target_date", "status"]
+    updates = []
+    params = {"gid": goal_id}
+    
+    for field in allowed_fields:
+        if field in body:
+            updates.append(f"{field} = :{field}")
+            params[field] = body[field]
+    
+    if not updates:
+        return {"id": goal_id, "updated": False}
+    
+    await db.execute(
+        text(f"UPDATE savings_goals SET {', '.join(updates)} WHERE id = :gid"),
+        params,
+    )
+    await db.commit()
+    return {"id": goal_id, "updated": True}
+
+
+@router.delete("/savings/goals/{goal_id}")
+async def savings_goals_delete(goal_id: str, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    # Cancel goal (soft delete by setting status)
+    await db.execute(
+        text("UPDATE savings_goals SET status = 'cancelled' WHERE id = :gid AND user_id = :uid"),
+        {"gid": goal_id, "uid": user["id"]},
+    )
+    await db.commit()
+    return {"id": goal_id, "deleted": True}
+
+
+# ===================
+# Linked Accounts API
+# ===================
+
+class LinkedAccountCreate(BaseModel):
+    provider: str  # 'plaid', 'truelayer', etc.
+    provider_account_id: str
+    institution_name: Optional[str] = None
+    account_mask: Optional[str] = None
+    account_name: Optional[str] = None
+    account_type: Optional[str] = None
+    account_subtype: Optional[str] = None
+
+
+@router.post("/linked-accounts")
+async def linked_accounts_create(body: LinkedAccountCreate, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    res = await db.execute(
+        text(
+            """
+            INSERT INTO linked_accounts(user_id, provider, provider_account_id, institution_name, account_mask, account_name, account_type, account_subtype, status)
+            VALUES (:uid, :provider, :provider_account_id, :institution_name, :account_mask, :account_name, :account_type, :account_subtype, 'active')
+            ON CONFLICT (provider, provider_account_id) DO UPDATE
+            SET user_id = EXCLUDED.user_id,
+                institution_name = EXCLUDED.institution_name,
+                account_mask = EXCLUDED.account_mask,
+                account_name = EXCLUDED.account_name,
+                account_type = EXCLUDED.account_type,
+                account_subtype = EXCLUDED.account_subtype,
+                status = 'active',
+                last_synced_at = now()
+            RETURNING id
+            """
+        ),
+        {
+            "uid": user["id"],
+            "provider": body.provider,
+            "provider_account_id": body.provider_account_id,
+            "institution_name": body.institution_name,
+            "account_mask": body.account_mask,
+            "account_name": body.account_name,
+            "account_type": body.account_type,
+            "account_subtype": body.account_subtype,
+        },
+    )
+    account_id = res.scalar_one()
+    await db.commit()
+    return {"id": str(account_id)}
+
+
+@router.get("/linked-accounts")
+async def linked_accounts_list(user=Depends(get_current_user), db: AsyncSession = Depends(get_db), status: Optional[str] = None):
+    if status:
+        res = await db.execute(
+            text("SELECT * FROM linked_accounts WHERE user_id = :uid AND status = :status ORDER BY created_at DESC"),
+            {"uid": user["id"], "status": status},
+        )
+    else:
+        res = await db.execute(
+            text("SELECT * FROM linked_accounts WHERE user_id = :uid ORDER BY created_at DESC"),
+            {"uid": user["id"]},
+        )
+    accounts = []
+    for row in res.mappings().all():
+        account = dict(row)
+        # Get latest balance
+        balance_res = await db.execute(
+            text(
+                """
+                SELECT current_cents, available_cents, currency_code, as_of
+                FROM account_balances
+                WHERE linked_account_id = :aid
+                ORDER BY as_of DESC
+                LIMIT 1
+                """
+            ),
+            {"aid": account["id"]},
+        )
+        balance = balance_res.mappings().first()
+        if balance:
+            account["balance"] = dict(balance)
+        accounts.append(account)
+    return {"items": accounts}
+
+
+@router.get("/linked-accounts/{account_id}")
+async def linked_accounts_get(account_id: str, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    res = await db.execute(
+        text("SELECT * FROM linked_accounts WHERE id = :aid AND user_id = :uid"),
+        {"aid": account_id, "uid": user["id"]},
+    )
+    account = res.mappings().first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Not found")
+    account_dict = dict(account)
+    
+    # Get balance history
+    balance_res = await db.execute(
+        text(
+            """
+            SELECT current_cents, available_cents, currency_code, as_of
+            FROM account_balances
+            WHERE linked_account_id = :aid
+            ORDER BY as_of DESC
+            LIMIT 30
+            """
+        ),
+        {"aid": account_id},
+    )
+    balances = [dict(r) for r in balance_res.mappings().all()]
+    account_dict["balances"] = balances
+    
+    # Get import runs
+    import_res = await db.execute(
+        text(
+            """
+            SELECT * FROM bank_import_runs
+            WHERE linked_account_id = :aid
+            ORDER BY created_at DESC
+            LIMIT 10
+            """
+        ),
+        {"aid": account_id},
+    )
+    imports = [dict(r) for r in import_res.mappings().all()]
+    account_dict["import_runs"] = imports
+    
+    return account_dict
+
+
+class AccountBalanceCreate(BaseModel):
+    current_cents: Optional[int] = None
+    available_cents: Optional[int] = None
+    currency_code: str = "USD"
+
+
+@router.post("/linked-accounts/{account_id}/balances")
+async def linked_accounts_balance_create(account_id: str, body: AccountBalanceCreate, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    # Verify ownership
+    account_res = await db.execute(
+        text("SELECT id FROM linked_accounts WHERE id = :aid AND user_id = :uid"),
+        {"aid": account_id, "uid": user["id"]},
+    )
+    if not account_res.first():
+        raise HTTPException(status_code=404, detail="Account not found")
+    
+    await db.execute(
+        text(
+            """
+            INSERT INTO account_balances(linked_account_id, current_cents, available_cents, currency_code)
+            VALUES (:aid, :current, :available, :currency)
+            """
+        ),
+        {
+            "aid": account_id,
+            "current": body.current_cents,
+            "available": body.available_cents,
+            "currency": body.currency_code,
+        },
+    )
+    await db.commit()
+    return {"ok": True}
+
+
+@router.delete("/linked-accounts/{account_id}")
+async def linked_accounts_delete(account_id: str, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    # Revoke account (soft delete)
+    await db.execute(
+        text("UPDATE linked_accounts SET status = 'revoked' WHERE id = :aid AND user_id = :uid"),
+        {"aid": account_id, "uid": user["id"]},
+    )
+    await db.commit()
+    return {"id": account_id, "deleted": True}
+
+
+# ===================
+# Push Notifications API
+# ===================
+
+class PushDeviceRegister(BaseModel):
+    platform: str  # 'apns' or 'fcm'
+    token: str
+
+
+@router.post("/push/devices")
+async def push_devices_register(body: PushDeviceRegister, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    if body.platform not in ("apns", "fcm"):
+        raise HTTPException(status_code=400, detail="Platform must be 'apns' or 'fcm'")
+    
+    await db.execute(
+        text(
+            """
+            INSERT INTO push_devices(user_id, platform, token, is_active, last_seen_at)
+            VALUES (:uid, :platform, :token, true, now())
+            ON CONFLICT (user_id, platform, token) DO UPDATE
+            SET is_active = true, last_seen_at = now()
+            """
+        ),
+        {
+            "uid": user["id"],
+            "platform": body.platform,
+            "token": body.token,
+        },
+    )
+    await db.commit()
+    return {"ok": True}
+
+
+@router.get("/push/devices")
+async def push_devices_list(user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    res = await db.execute(
+        text("SELECT id, platform, token, is_active, created_at, last_seen_at FROM push_devices WHERE user_id = :uid ORDER BY created_at DESC"),
+        {"uid": user["id"]},
+    )
+    return {"items": [dict(r) for r in res.mappings().all()]}
+
+
+@router.delete("/push/devices/{device_id}")
+async def push_devices_delete(device_id: str, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    await db.execute(
+        text("UPDATE push_devices SET is_active = false WHERE id = :did AND user_id = :uid"),
+        {"did": device_id, "uid": user["id"]},
+    )
+    await db.commit()
+    return {"id": device_id, "deleted": True}
 
 

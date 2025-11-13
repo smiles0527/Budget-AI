@@ -15,6 +15,12 @@ struct DashboardView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 24) {
+                    // Usage Limit (for free users)
+                    UsageLimitView()
+                    
+                    // Streak View
+                    StreakView()
+                    
                     // Summary card
                     if let summary = viewModel.summary {
                         SummaryCard(summary: summary, viewModel: viewModel)

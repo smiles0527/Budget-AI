@@ -228,10 +228,16 @@ struct ReceiptCaptureView: View {
                     _ = try await uploader.pollReceiptStatus(receiptId: receipt.id, maxAttempts: 30)
                     uploadProgress = "Complete!"
                     showingSuccess = true
+                    
+                    // Check for new badges after receipt is processed
+                    await BadgeCelebrationManager.shared.checkForNewBadges()
                 } catch {
                     // Even if polling times out, receipt is uploaded and will process
                     uploadProgress = "Uploaded! Processing in background..."
                     showingSuccess = true
+                    
+                    // Still check for badges (might have earned FIRST_SCAN)
+                    await BadgeCelebrationManager.shared.checkForNewBadges()
                 }
             } catch {
                 errorMessage = ErrorHandler.userFriendlyMessage(for: error)

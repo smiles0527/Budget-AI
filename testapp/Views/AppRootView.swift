@@ -9,11 +9,20 @@ import SwiftUI
 
 struct AppRootView: View {
     @StateObject private var authManager = AuthManager.shared
+    @StateObject private var badgeCelebrationManager = BadgeCelebrationManager.shared
     
     var body: some View {
         Group {
             if authManager.isAuthenticated {
                 MainTabView()
+                    .sheet(isPresented: $badgeCelebrationManager.showCelebration) {
+                        if let badge = badgeCelebrationManager.newBadge {
+                            BadgeCelebrationView(
+                                badge: badge,
+                                isPresented: $badgeCelebrationManager.showCelebration
+                            )
+                        }
+                    }
             } else {
                 LoginView()
             }
@@ -22,6 +31,8 @@ struct AppRootView: View {
             // Check if we have a stored token
             if authManager.isAuthenticated {
                 await authManager.refreshUser()
+                // Initialize badge celebration manager
+                await badgeCelebrationManager.initialize()
             }
         }
     }
@@ -153,15 +164,30 @@ struct ProfileView: View {
                     .padding(.top)
                     
                     // Badges
-                    if !badgesViewModel.userBadges.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
                             Text("Badges")
                                 .font(.headline)
-                                .padding(.horizontal)
                             
+                            Spacer()
+                            
+                            NavigationLink(destination: BadgeCollectionView()) {
+                                Text("View All")
+                                    .font(.subheadline)
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                        .padding(.horizontal)
+                        
+                        if badgesViewModel.userBadges.isEmpty {
+                            Text("No badges earned yet. Start tracking to earn your first badge!")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal)
+                        } else {
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 12) {
-                                    ForEach(badgesViewModel.userBadges, id: \.code) { badge in
+                                    ForEach(badgesViewModel.userBadges.prefix(5), id: \.code) { badge in
                                         BadgeCard(badge: badge)
                                     }
                                 }

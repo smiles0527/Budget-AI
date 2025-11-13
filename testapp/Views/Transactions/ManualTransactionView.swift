@@ -133,6 +133,8 @@ struct ManualTransactionView: View {
             )
             
             if viewModel.errorMessage == nil {
+                // Check for new badges after creating transaction
+                await BadgeCelebrationManager.shared.checkForNewBadges()
                 dismiss()
             } else {
                 errorMessage = viewModel.errorMessage

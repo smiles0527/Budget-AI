@@ -237,6 +237,17 @@ struct ExportDataView: View {
         jobId = nil
         
         Task {
+            // Check premium status
+            let authManager = AuthManager.shared
+            let isPremium = authManager.subscription?.plan == "premium" && 
+                           authManager.subscription?.status == "active"
+            
+            guard isPremium else {
+                exportMessage = "CSV export is a Premium feature. Please upgrade to export your data."
+                isExporting = false
+                return
+            }
+            
             do {
                 let apiClient = APIClient.shared
                 let calendar = Calendar.current

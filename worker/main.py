@@ -2,7 +2,7 @@ import asyncio
 import io
 import os
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 
 import pytesseract
 from PIL import Image
@@ -13,16 +13,13 @@ from prometheus_client import Counter, Histogram, start_http_server
 from app.config import settings
 from app.utils.storage import download_bytes, upload_bytes, delete_prefix
 from app.utils.categorize import determine_category
+from app.utils.receipt_parser import parse_receipt
+from app.utils.badges import check_and_award_badges
 
 
 engine = create_async_engine(settings.database_url, echo=False, pool_pre_ping=True)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
-
-TOTAL_REGEXES = [
-    re.compile(r"total\s*[:\-]?\s*\$?\s*([0-9]+[\.,][0-9]{2})", re.I),
-    re.compile(r"amount due\s*[:\-]?\s*\$?\s*([0-9]+[\.,][0-9]{2})", re.I),
-]
 
 JOBS_PROCESSED = Counter("worker_jobs_total", "Total jobs processed", ["kind", "status"]) 
 JOB_LATENCY = Histogram("worker_job_latency_seconds", "Job processing latency", ["kind"]) 
@@ -76,16 +73,6 @@ async def fetch_pending_job(db: AsyncSession):
     return dict(row) if row else None
 
 
-def parse_total_cents(text_blob: str) -> int | None:
-    for rx in TOTAL_REGEXES:
-        m = rx.search(text_blob)
-        if m:
-            amt = m.group(1).replace(",", "")
-            try:
-                return int(round(float(amt) * 100))
-            except Exception:
-                continue
-    return None
 
 
 async def process_receipt_job(db: AsyncSession, job: dict):
@@ -97,25 +84,78 @@ async def process_receipt_job(db: AsyncSession, job: dict):
         data = download_bytes(job["storage_uri"])  # object_key
         img = Image.open(io.BytesIO(data))
         text_blob = pytesseract.image_to_string(img)
-        total_cents = parse_total_cents(text_blob) or 0
-
+        
+        # Parse receipt using enhanced parser
+        parsed = parse_receipt(text_blob)
+        
+        # Use parsed data or fallbacks
+        merchant = parsed.get("merchant")
+        txn_date = parsed.get("txn_date")
+        total_cents = parsed.get("total_cents") or 0
+        tax_cents = parsed.get("tax_cents") or 0
+        tip_cents = parsed.get("tip_cents") or 0
+        line_items = parsed.get("line_items", [])
+        
+        # Default to today if no date found
+        if not txn_date:
+            txn_date = date.today()
+        
         await db.execute(
             text("UPDATE receipts SET ocr_status='done', processed_at=now() WHERE id=:rid"),
             {"rid": job["receipt_id"]},
         )
 
         if total_cents > 0:
-            # Try to categorize using rules; we only have OCR text at this stage
-            category = await determine_category(db, merchant=None, raw_text=text_blob)
-            await db.execute(
+            # Determine category using merchant and OCR text
+            category = await determine_category(db, merchant=merchant, raw_text=text_blob)
+            
+            # Insert transaction
+            txn_result = await db.execute(
                 text(
                     """
-                    INSERT INTO transactions(user_id, receipt_id, merchant, txn_date, total_cents, currency_code, category, source, raw_text)
-                    VALUES (:uid, :rid, NULL, CURRENT_DATE, :total, 'USD', 'other', 'receipt', :raw)
+                    INSERT INTO transactions(user_id, receipt_id, merchant, txn_date, total_cents, tax_cents, tip_cents, currency_code, category, source, raw_text)
+                    VALUES (:uid, :rid, :merchant, :txn_date, :total, :tax, :tip, 'USD', :category, 'receipt', :raw)
+                    RETURNING id
                     """
                 ),
-                {"uid": job["user_id"], "rid": job["receipt_id"], "total": total_cents, "raw": {"ocr": text_blob}},
+                {
+                    "uid": job["user_id"],
+                    "rid": job["receipt_id"],
+                    "merchant": merchant,
+                    "txn_date": txn_date,
+                    "total": total_cents,
+                    "tax": tax_cents,
+                    "tip": tip_cents,
+                    "category": category,
+                    "raw": {"ocr": text_blob, "parsed": parsed},
+                },
             )
+            txn_id = txn_result.scalar_one()
+            
+            # Insert line items if any
+            if line_items:
+                for idx, item in enumerate(line_items):
+                    await db.execute(
+                        text(
+                            """
+                            INSERT INTO transaction_items(transaction_id, line_index, description, quantity, unit_price_cents, total_cents, category)
+                            VALUES (:txn_id, :idx, :desc, :qty, :unit_price, :total, :cat)
+                            """
+                        ),
+                        {
+                            "txn_id": txn_id,
+                            "idx": idx,
+                            "desc": item.get("description"),
+                            "qty": item.get("quantity"),
+                            "unit_price": item.get("unit_price_cents"),
+                            "total": item.get("total_cents"),
+                            "cat": category,  # Use transaction category for items
+                        },
+                    )
+            
+            # Award badges after successful transaction creation
+            await check_and_award_badges(db, job["user_id"], "transaction_created")
+            await check_and_award_badges(db, job["user_id"], "receipt_uploaded")
 
         await db.execute(
             text("UPDATE receipt_processing_jobs SET status='done', completed_at=now() WHERE id=:id"),

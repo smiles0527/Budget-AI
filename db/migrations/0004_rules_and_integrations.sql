@@ -1,4 +1,4 @@
-yes-- Rules, webhooks, and job tracking tables
+-- Rules, webhooks, and job tracking tables
 
 -- Enums
 CREATE TYPE rule_scope AS ENUM ('merchant', 'line_item', 'both');

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct SettingsView: View {
     @StateObject private var authManager = AuthManager.shared

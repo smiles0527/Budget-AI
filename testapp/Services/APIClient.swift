@@ -15,6 +15,8 @@ class APIClient {
     
     private init() {
         // TODO: Move to config/environment variable
+        // For simulator: use localhost
+        // For real device: use your Mac's IP address (e.g., "http://192.168.1.100:8000/v1")
         self.baseURL = "http://localhost:8000/v1"
     }
     
@@ -357,7 +359,7 @@ class APIClient {
     
     func getRecurringTransactions() async throws -> RecurringTransactionsResponse {
         return try await makeRequest(endpoint: "/analytics/recurring")
-    }
+    } 
     
     func getCategoryComparison(
         period1Start: String,

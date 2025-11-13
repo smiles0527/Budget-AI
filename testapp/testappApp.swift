@@ -12,6 +12,7 @@ struct testappApp: App {
     var body: some Scene {
         WindowGroup {
             AppRootView()
+                .environmentObject(AuthManager.shared)
         }
     }
 }

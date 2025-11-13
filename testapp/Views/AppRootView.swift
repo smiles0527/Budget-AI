@@ -2,24 +2,62 @@
 //  AppRootView.swift
 //  testapp
 //
-//  Created by Curtis Wei on 2025-08-24.
+//  Main app root view with authentication check
 //
 
 import SwiftUI
 
 struct AppRootView: View {
+    @StateObject private var authManager = AuthManager.shared
+    
+    var body: some View {
+        Group {
+            if authManager.isAuthenticated {
+                MainTabView()
+            } else {
+                LoginView()
+            }
+        }
+        .task {
+            // Check if we have a stored token
+            if authManager.isAuthenticated {
+                await authManager.refreshUser()
+            }
+        }
+    }
+}
+
+struct MainTabView: View {
+    @StateObject private var authManager = AuthManager.shared
+    @State private var showingReceiptCapture = false
+    
     var body: some View {
         TabView {
-            HomeView()
+            DashboardView()
                 .tabItem {
                     Image(systemName: "house.fill")
                     Text("Home")
                 }
             
-            ExploreView()
+            TransactionListView()
                 .tabItem {
-                    Image(systemName: "magnifyingglass")
-                    Text("Explore")
+                    Image(systemName: "list.bullet")
+                    Text("Transactions")
+                }
+            
+            Button(action: { showingReceiptCapture = true }) {
+                Image(systemName: "plus.circle.fill")
+                    .font(.system(size: 30))
+            }
+            .tabItem {
+                Image(systemName: "plus.circle.fill")
+                Text("Add")
+            }
+            
+            SavingsGoalsView()
+                .tabItem {
+                    Image(systemName: "target")
+                    Text("Goals")
                 }
             
             ProfileView()
@@ -29,192 +67,123 @@ struct AppRootView: View {
                 }
         }
         .accentColor(.blue)
-    }
-}
-
-struct HomeView: View {
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                // Header
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Welcome")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    Text("Your dashboard")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
-                
-                // Content Cards
-                ScrollView {
-                    VStack(spacing: 16) {
-                        ContentCard(
-                            title: "Quick Actions",
-                            subtitle: "Get started with common tasks",
-                            icon: "bolt.fill",
-                            color: .blue
-                        )
-                        
-                        ContentCard(
-                            title: "Recent Activity",
-                            subtitle: "See what's been happening",
-                            icon: "clock.fill",
-                            color: .green
-                        )
-                        
-                        ContentCard(
-                            title: "Statistics",
-                            subtitle: "View your progress",
-                            icon: "chart.bar.fill",
-                            color: .orange
-                        )
-                    }
-                    .padding(.horizontal)
-                }
+        .sheet(isPresented: $showingReceiptCapture) {
+            NavigationView {
+                ReceiptCaptureView()
             }
-            .navigationBarBackButtonHidden(true)
-        }
-    }
-}
-
-struct ExploreView: View {
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                // Search Bar
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-                    Text("Search...")
-                        .foregroundColor(.secondary)
-                    Spacer()
-                }
-                .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(10)
-                .padding(.horizontal)
-                
-                // Categories
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
-                    CategoryCard(title: "Featured", icon: "star.fill", color: .yellow)
-                    CategoryCard(title: "Popular", icon: "flame.fill", color: .red)
-                    CategoryCard(title: "New", icon: "sparkles", color: .purple)
-                    CategoryCard(title: "Trending", icon: "chart.line.uptrend.xyaxis", color: .blue)
-                }
-                .padding(.horizontal)
-                
-                Spacer()
-            }
-            .navigationTitle("Explore")
         }
     }
 }
 
 struct ProfileView: View {
+    @StateObject private var authManager = AuthManager.shared
+    @StateObject private var badgesViewModel = BadgesViewModel()
+    @State private var showingLogoutAlert = false
+    
     var body: some View {
         NavigationView {
-            VStack(spacing: 24) {
-                // Profile Header
-                VStack(spacing: 16) {
-                    Circle()
-                        .fill(Color.blue)
-                        .frame(width: 80, height: 80)
-                        .overlay(
-                            Image(systemName: "person.fill")
-                                .foregroundColor(.white)
-                                .font(.system(size: 40))
-                        )
-                    
-                    VStack(spacing: 4) {
-                        Text("User Name")
-                            .font(.title2)
-                            .fontWeight(.semibold)
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Profile Header
+                    VStack(spacing: 16) {
+                        Circle()
+                            .fill(Color.blue)
+                            .frame(width: 80, height: 80)
+                            .overlay(
+                                Image(systemName: "person.fill")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 40))
+                            )
                         
-                        Text("user@example.com")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                        VStack(spacing: 4) {
+                            Text(authManager.currentUser?.email ?? "User")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                            
+                            if let subscription = authManager.subscription {
+                                Text(subscription.plan.capitalized)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
                     }
+                    .padding(.top)
+                    
+                    // Badges
+                    if !badgesViewModel.userBadges.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Badges")
+                                .font(.headline)
+                                .padding(.horizontal)
+                            
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 12) {
+                                    ForEach(badgesViewModel.userBadges, id: \.code) { badge in
+                                        BadgeCard(badge: badge)
+                                    }
+                                }
+                                .padding(.horizontal)
+                            }
+                        }
+                    }
+                    
+                    // Settings List
+                    VStack(spacing: 0) {
+                        NavigationLink(destination: BudgetsView()) {
+                            SettingsRow(icon: "chart.pie.fill", title: "Budgets", color: .blue)
+                        }
+                        
+                        NavigationLink(destination: UsageView()) {
+                            SettingsRow(icon: "chart.bar.fill", title: "Usage", color: .green)
+                        }
+                        
+                        SettingsRow(icon: "bell.fill", title: "Notifications", color: .orange)
+                        
+                        SettingsRow(icon: "gear", title: "Settings", color: .gray)
+                        
+                        Button(action: { showingLogoutAlert = true }) {
+                            SettingsRow(icon: "arrow.right.square", title: "Logout", color: .red)
+                        }
+                    }
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
                 }
-                .padding(.top)
-                
-                // Settings List
-                VStack(spacing: 0) {
-                    SettingsRow(icon: "person.circle", title: "Edit Profile", color: .blue)
-                    SettingsRow(icon: "bell", title: "Notifications", color: .orange)
-                    SettingsRow(icon: "gear", title: "Settings", color: .gray)
-                    SettingsRow(icon: "questionmark.circle", title: "Help & Support", color: .green)
-                }
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(12)
-                .padding(.horizontal)
-                
-                Spacer()
             }
             .navigationTitle("Profile")
-        }
-    }
-}
-
-// MARK: - Supporting Views
-
-struct ContentCard: View {
-    let title: String
-    let subtitle: String
-    let icon: String
-    let color: Color
-    
-    var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(color)
-                .frame(width: 40, height: 40)
-                .background(color.opacity(0.1))
-                .clipShape(Circle())
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                
-                Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+            .task {
+                await badgesViewModel.loadUserBadges()
             }
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .foregroundColor(.secondary)
+            .alert("Logout", isPresented: $showingLogoutAlert) {
+                Button("Cancel", role: .cancel) {}
+                Button("Logout", role: .destructive) {
+                    Task {
+                        try? await authManager.logout()
+                    }
+                }
+            } message: {
+                Text("Are you sure you want to logout?")
+            }
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
 }
 
-struct CategoryCard: View {
-    let title: String
-    let icon: String
-    let color: Color
+struct BadgeCard: View {
+    let badge: UserBadge
     
     var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: icon)
+        VStack(spacing: 8) {
+            Image(systemName: "star.fill")
                 .font(.title)
-                .foregroundColor(color)
+                .foregroundColor(.yellow)
             
-            Text(title)
-                .font(.headline)
+            Text(badge.name)
+                .font(.caption)
                 .fontWeight(.medium)
+                .multilineTextAlignment(.center)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 24)
+        .frame(width: 80, height: 100)
+        .padding()
         .background(Color.white)
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
@@ -244,6 +213,353 @@ struct SettingsRow: View {
         }
         .padding()
         .background(Color.white)
+    }
+}
+
+struct BudgetsView: View {
+    @StateObject private var viewModel = BudgetsViewModel()
+    @State private var showingCreateBudget = false
+    
+    var body: some View {
+        List {
+            ForEach(viewModel.budgets, id: \.id) { budget in
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text(budget.category.capitalized)
+                            .font(.headline)
+                        Spacer()
+                        Text(viewModel.formatAmount(cents: budget.limit_cents))
+                            .font(.headline)
+                    }
+                    
+                    Text("\(budget.period_start) to \(budget.period_end)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.vertical, 4)
+            }
+        }
+        .navigationTitle("Budgets")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Add") {
+                    showingCreateBudget = true
+                }
+            }
+        }
+        .sheet(isPresented: $showingCreateBudget) {
+            CreateBudgetView(viewModel: viewModel)
+        }
+        .task {
+            await viewModel.loadBudgets()
+        }
+    }
+}
+
+struct CreateBudgetView: View {
+    @Environment(\.dismiss) var dismiss
+    @ObservedObject var viewModel: BudgetsViewModel
+    @State private var category = "groceries"
+    @State private var limitDollars = ""
+    @State private var periodStart = ""
+    @State private var periodEnd = ""
+    
+    let categories = ["groceries", "dining", "transport", "shopping", "entertainment", "subscriptions", "utilities", "health", "education", "travel", "other"]
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Picker("Category", selection: $category) {
+                    ForEach(categories, id: \.self) { cat in
+                        Text(cat.capitalized).tag(cat)
+                    }
+                }
+                
+                TextField("Limit ($)", text: $limitDollars)
+                    .keyboardType(.decimalPad)
+                
+                TextField("Start Date (YYYY-MM-DD)", text: $periodStart)
+                
+                TextField("End Date (YYYY-MM-DD)", text: $periodEnd)
+            }
+            .navigationTitle("New Budget")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        if let limit = Double(limitDollars) {
+                            Task {
+                                await viewModel.createBudget(
+                                    periodStart: periodStart,
+                                    periodEnd: periodEnd,
+                                    category: category,
+                                    limitCents: Int(limit * 100)
+                                )
+                                dismiss()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct SavingsGoalsView: View {
+    @StateObject private var viewModel = SavingsGoalsViewModel()
+    @State private var showingCreateGoal = false
+    
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(viewModel.goals, id: \.id) { goal in
+                    NavigationLink(destination: SavingsGoalDetailView(goal: goal, viewModel: viewModel)) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(goal.name)
+                                .font(.headline)
+                            
+                            HStack {
+                                Text("\(viewModel.formatAmount(cents: goal.contributed_cents ?? 0)) / \(viewModel.formatAmount(cents: goal.target_cents))")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                
+                                Spacer()
+                                
+                                Text("\(Int(viewModel.progressPercentage(goal: goal)))%")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                            }
+                            
+                            GeometryReader { geometry in
+                                ZStack(alignment: .leading) {
+                                    Rectangle()
+                                        .fill(Color.gray.opacity(0.2))
+                                        .frame(height: 8)
+                                        .cornerRadius(4)
+                                    
+                                    Rectangle()
+                                        .fill(Color.green)
+                                        .frame(
+                                            width: geometry.size.width * CGFloat(viewModel.progressPercentage(goal: goal) / 100.0),
+                                            height: 8
+                                        )
+                                        .cornerRadius(4)
+                                }
+                            }
+                            .frame(height: 8)
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+            }
+            .navigationTitle("Savings Goals")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Add") {
+                        showingCreateGoal = true
+                    }
+                }
+            }
+            .sheet(isPresented: $showingCreateGoal) {
+                CreateSavingsGoalView(viewModel: viewModel)
+            }
+            .task {
+                await viewModel.loadGoals()
+            }
+        }
+    }
+}
+
+struct SavingsGoalDetailView: View {
+    let goal: SavingsGoal
+    @ObservedObject var viewModel: SavingsGoalsViewModel
+    @State private var showingAddContribution = false
+    @State private var contributionAmount = ""
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(goal.name)
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                    
+                    Text("Target: \(viewModel.formatAmount(cents: goal.target_cents))")
+                        .font(.title3)
+                        .foregroundColor(.secondary)
+                    
+                    if let contributed = goal.contributed_cents {
+                        Text("Saved: \(viewModel.formatAmount(cents: contributed))")
+                            .font(.title2)
+                            .foregroundColor(.green)
+                    }
+                }
+                .padding()
+                
+                // Progress bar
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.2))
+                            .frame(height: 20)
+                            .cornerRadius(10)
+                        
+                        Rectangle()
+                            .fill(Color.green)
+                            .frame(
+                                width: geometry.size.width * CGFloat(viewModel.progressPercentage(goal: goal) / 100.0),
+                                height: 20
+                            )
+                            .cornerRadius(10)
+                    }
+                }
+                .frame(height: 20)
+                .padding(.horizontal)
+                
+                Button("Add Contribution") {
+                    showingAddContribution = true
+                }
+                .buttonStyle(.borderedProminent)
+                .padding(.horizontal)
+            }
+        }
+        .navigationTitle("Goal")
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showingAddContribution) {
+            AddContributionView(goalId: goal.id, viewModel: viewModel)
+        }
+    }
+}
+
+struct CreateSavingsGoalView: View {
+    @Environment(\.dismiss) var dismiss
+    @ObservedObject var viewModel: SavingsGoalsViewModel
+    @State private var name = ""
+    @State private var targetDollars = ""
+    @State private var targetDate = ""
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                TextField("Goal Name", text: $name)
+                
+                TextField("Target Amount ($)", text: $targetDollars)
+                    .keyboardType(.decimalPad)
+                
+                TextField("Target Date (YYYY-MM-DD)", text: $targetDate)
+            }
+            .navigationTitle("New Goal")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        if let target = Double(targetDollars) {
+                            Task {
+                                await viewModel.createGoal(
+                                    name: name,
+                                    category: nil,
+                                    targetCents: Int(target * 100),
+                                    startDate: nil,
+                                    targetDate: targetDate.isEmpty ? nil : targetDate
+                                )
+                                dismiss()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct AddContributionView: View {
+    @Environment(\.dismiss) var dismiss
+    let goalId: String
+    @ObservedObject var viewModel: SavingsGoalsViewModel
+    @State private var amountDollars = ""
+    @State private var note = ""
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                TextField("Amount ($)", text: $amountDollars)
+                    .keyboardType(.decimalPad)
+                
+                TextField("Note (optional)", text: $note)
+            }
+            .navigationTitle("Add Contribution")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        if let amount = Double(amountDollars) {
+                            Task {
+                                await viewModel.addContribution(
+                                    goalId: goalId,
+                                    amountCents: Int(amount * 100),
+                                    note: note.isEmpty ? nil : note
+                                )
+                                dismiss()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct UsageView: View {
+    @StateObject private var usageViewModel = UsageViewModel()
+    
+    var body: some View {
+        List {
+            Section("Current Month") {
+                HStack {
+                    Text("Month")
+                    Spacer()
+                    Text(usageViewModel.usage?.month_key ?? "-")
+                }
+                
+                HStack {
+                    Text("Scans Used")
+                    Spacer()
+                    Text("\(usageViewModel.usage?.scans_used ?? 0)")
+                }
+                
+                HStack {
+                    Text("Scans Remaining")
+                    Spacer()
+                    if let remaining = usageViewModel.usage?.scans_remaining {
+                        Text(remaining == -1 ? "Unlimited" : "\(remaining)")
+                    } else {
+                        Text("-")
+                    }
+                }
+            }
+        }
+        .navigationTitle("Usage")
+        .task {
+            await usageViewModel.loadUsage()
+        }
     }
 }
 

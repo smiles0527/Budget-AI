@@ -21,6 +21,7 @@
   - [Installation](#installation)
   - [Usage](#usage)
   - [Testing](#testing)
+- [Documentation](#documentation)
 - [Project Roadmap](#project-roadmap)
 - [Contributing](#contributing)
 - [License](#license)
@@ -101,7 +102,8 @@ Budget-AI/
 │   └── Dockerfile             # Worker container definition
 │
 ├── docker-compose.yml         # Development environment setup
-└── SETUP_GUIDE.md            # Detailed setup instructions
+├── docs/                      # Additional documentation
+└── planning.md               # Business plan and project planning
 ```
 
 ### Project Index
@@ -241,6 +243,19 @@ Budget AI includes comprehensive testing capabilities:
 4. **Create Budget**: Set spending limit for a category
 5. **Track Progress**: View badges, streaks, and savings goals
 6. **Export Data**: Premium users can export CSV (requires subscription)
+
+---
+
+## Documentation
+
+Additional documentation is available in the `docs/` directory:
+
+- **[Setup Guide](docs/SETUP.md)** - Detailed setup instructions for development environment
+- **[Backend API](docs/BACKEND.md)** - Complete backend API documentation and features
+- **[Mobile App](docs/MOBILE.md)** - iOS app integration status and API reference
+- **[Figma Integration](docs/FIGMA.md)** - Design system setup and sync instructions
+- **[Roadmap](docs/ROADMAP.md)** - Planned features and development roadmap
+- **[iOS Setup](docs/IOS_SETUP.md)** - iOS-specific setup and troubleshooting
 
 ---
 

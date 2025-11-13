@@ -4,7 +4,7 @@ from pydantic import BaseModel, EmailStr
 from sqlalchemy import text
 import stripe
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import date
+from datetime import date, timedelta
 
 from ..db import get_db
 from ..config import settings
@@ -16,6 +16,14 @@ from ..errors import AppError
 from ..utils.oauth import verify_google, verify_apple
 from ..utils.categorize import determine_category
 from ..utils.badges import check_and_award_badges
+from ..utils.analytics import (
+    get_spending_trends,
+    detect_recurring_transactions,
+    get_spending_forecast,
+    get_spending_insights,
+    get_category_comparison,
+)
+from ..utils.budget_alerts import check_and_create_budget_alerts
 
 
 router = APIRouter(prefix="/v1")
@@ -570,6 +578,10 @@ async def transactions_manual(body: TransactionManual, user=Depends(get_current_
     )
     tid = res.scalar_one()
     await db.commit()
+    
+    # Check budgets and create alerts
+    await check_and_create_budget_alerts(db, user["id"])
+    
     return {"id": str(tid)}
 
 
@@ -704,6 +716,11 @@ async def budgets_put(body: BudgetUpsert, user=Depends(get_current_user), db: As
         {"uid": user["id"], "ps": body.period_start, "pe": body.period_end, "cat": body.category, "lim": body.limit_cents},
     )
     await db.commit()
+    
+    # Check for alerts and badges after budget update
+    await check_and_create_budget_alerts(db, user["id"])
+    await check_and_award_badges(db, user["id"], "budget_checked")
+    
     return {"ok": True}
 
 
@@ -1357,5 +1374,264 @@ async def push_devices_delete(device_id: str, user=Depends(get_current_user), db
     )
     await db.commit()
     return {"id": device_id, "deleted": True}
+
+
+# ===================
+# Advanced Analytics & Insights
+# ===================
+
+@router.get("/analytics/trends")
+async def analytics_trends(user=Depends(get_current_user), db: AsyncSession = Depends(get_db), months: int = 6):
+    """Get month-over-month spending trends."""
+    if months < 1 or months > 24:
+        raise HTTPException(status_code=400, detail="Months must be between 1 and 24")
+    return await get_spending_trends(db, user["id"], months)
+
+
+@router.get("/analytics/forecast")
+async def analytics_forecast(user=Depends(get_current_user), db: AsyncSession = Depends(get_db), months_ahead: int = 1):
+    """Forecast spending for next N months."""
+    if months_ahead < 1 or months_ahead > 12:
+        raise HTTPException(status_code=400, detail="Months ahead must be between 1 and 12")
+    return await get_spending_forecast(db, user["id"], months_ahead)
+
+
+@router.get("/analytics/insights")
+async def analytics_insights(user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    """Get actionable spending insights and recommendations."""
+    return await get_spending_insights(db, user["id"])
+
+
+@router.get("/analytics/recurring")
+async def analytics_recurring(user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    """Detect recurring transactions."""
+    return {"recurring": await detect_recurring_transactions(db, user["id"])}
+
+
+@router.get("/analytics/compare")
+async def analytics_compare(
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    period1_start: Optional[str] = None,
+    period1_end: Optional[str] = None,
+    period2_start: Optional[str] = None,
+    period2_end: Optional[str] = None,
+):
+    """Compare spending between two periods."""
+    if not all([period1_start, period1_end, period2_start, period2_end]):
+        # Default: compare last month vs this month
+        today = date.today()
+        this_month_start = today.replace(day=1)
+        last_month_end = this_month_start - timedelta(days=1)
+        last_month_start = last_month_end.replace(day=1)
+        
+        p1_start = last_month_start
+        p1_end = last_month_end
+        p2_start = this_month_start
+        p2_end = today
+    else:
+        p1_start = date.fromisoformat(period1_start or "")
+        p1_end = date.fromisoformat(period1_end or "")
+        p2_start = date.fromisoformat(period2_start or "")
+        p2_end = date.fromisoformat(period2_end or "")
+    
+    return await get_category_comparison(db, user["id"], p1_start, p1_end, p2_start, p2_end)
+
+
+# ===================
+# Search
+# ===================
+
+@router.get("/transactions/search")
+async def transactions_search(
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    q: Optional[str] = None,
+    limit: int = 50,
+    cursor: Optional[str] = None,
+):
+    """Full-text search transactions by merchant, category, or subcategory."""
+    if not q or len(q.strip()) < 2:
+        raise HTTPException(status_code=400, detail="Query must be at least 2 characters")
+    
+    limit = max(1, min(limit, 200))
+    cur = decode_cursor(cursor)
+    
+    if cur:
+        sql = """
+            SELECT * FROM transactions
+            WHERE user_id = :uid
+              AND to_tsvector('english', COALESCE(merchant, '') || ' ' || COALESCE(subcategory, '') || ' ' || COALESCE(category::text, '')) @@ plainto_tsquery('english', :query)
+              AND (txn_date, created_at, id) < (:cd, :cc, :cid)
+            ORDER BY txn_date DESC, created_at DESC, id DESC
+            LIMIT :lim
+        """
+        params = {
+            "uid": user["id"],
+            "query": q,
+            "cd": cur.get("txn_date"),
+            "cc": cur.get("created_at"),
+            "cid": cur.get("id"),
+            "lim": limit + 1,
+        }
+    else:
+        sql = """
+            SELECT * FROM transactions
+            WHERE user_id = :uid
+              AND to_tsvector('english', COALESCE(merchant, '') || ' ' || COALESCE(subcategory, '') || ' ' || COALESCE(category::text, '')) @@ plainto_tsquery('english', :query)
+            ORDER BY txn_date DESC, created_at DESC, id DESC
+            LIMIT :lim
+        """
+        params = {"uid": user["id"], "query": q, "lim": limit + 1}
+    
+    res = await db.execute(text(sql), params)
+    rows = [dict(r) for r in res.mappings().all()]
+    
+    next_cursor = None
+    if len(rows) > limit:
+        last = rows[limit - 1]
+        next_cursor = encode_cursor(
+            {"txn_date": last["txn_date"], "created_at": last["created_at"], "id": last["id"]}
+        )
+        rows = rows[:limit]
+    
+    return {"items": rows, "next_cursor": next_cursor, "query": q}
+
+
+# ===================
+# Transaction Tags
+# ===================
+
+class TagCreate(BaseModel):
+    name: str
+    color: Optional[str] = None
+
+
+@router.post("/tags")
+async def tags_create(body: TagCreate, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    res = await db.execute(
+        text(
+            """
+            INSERT INTO transaction_tags(user_id, name, color)
+            VALUES (:uid, :name, :color)
+            ON CONFLICT (user_id, name) DO UPDATE SET color = EXCLUDED.color
+            RETURNING id
+            """
+        ),
+        {"uid": user["id"], "name": body.name, "color": body.color},
+    )
+    tag_id = res.scalar_one()
+    await db.commit()
+    return {"id": str(tag_id)}
+
+
+@router.get("/tags")
+async def tags_list(user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    res = await db.execute(
+        text("SELECT * FROM transaction_tags WHERE user_id = :uid ORDER BY name"),
+        {"uid": user["id"]},
+    )
+    return {"items": [dict(r) for r in res.mappings().all()]}
+
+
+@router.post("/transactions/{txn_id}/tags/{tag_id}")
+async def transactions_tag_add(txn_id: str, tag_id: str, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    # Verify ownership
+    txn_res = await db.execute(
+        text("SELECT id FROM transactions WHERE id = :id AND user_id = :uid"),
+        {"id": txn_id, "uid": user["id"]},
+    )
+    if not txn_res.first():
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    tag_res = await db.execute(
+        text("SELECT id FROM transaction_tags WHERE id = :tid AND user_id = :uid"),
+        {"tid": tag_id, "uid": user["id"]},
+    )
+    if not tag_res.first():
+        raise HTTPException(status_code=404, detail="Tag not found")
+    
+    await db.execute(
+        text(
+            """
+            INSERT INTO transaction_tag_assignments(transaction_id, tag_id)
+            VALUES (:txn_id, :tag_id)
+            ON CONFLICT DO NOTHING
+            """
+        ),
+        {"txn_id": txn_id, "tag_id": tag_id},
+    )
+    await db.commit()
+    return {"ok": True}
+
+
+@router.delete("/transactions/{txn_id}/tags/{tag_id}")
+async def transactions_tag_remove(txn_id: str, tag_id: str, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    await db.execute(
+        text(
+            """
+            DELETE FROM transaction_tag_assignments
+            WHERE transaction_id = :txn_id AND tag_id = :tag_id
+              AND EXISTS (SELECT 1 FROM transactions WHERE id = :txn_id AND user_id = :uid)
+            """
+        ),
+        {"txn_id": txn_id, "tag_id": tag_id, "uid": user["id"]},
+    )
+    await db.commit()
+    return {"ok": True}
+
+
+@router.delete("/tags/{tag_id}")
+async def tags_delete(tag_id: str, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    await db.execute(
+        text("DELETE FROM transaction_tags WHERE id = :tid AND user_id = :uid"),
+        {"tid": tag_id, "uid": user["id"]},
+    )
+    await db.commit()
+    return {"id": tag_id, "deleted": True}
+
+
+# ===================
+# Budget Alerts
+# ===================
+
+@router.get("/alerts")
+async def alerts_list(user=Depends(get_current_user), db: AsyncSession = Depends(get_db), status: Optional[str] = None):
+    if status:
+        res = await db.execute(
+            text("SELECT * FROM budget_alerts WHERE user_id = :uid AND status = :status ORDER BY created_at DESC"),
+            {"uid": user["id"], "status": status},
+        )
+    else:
+        res = await db.execute(
+            text("SELECT * FROM budget_alerts WHERE user_id = :uid ORDER BY created_at DESC LIMIT 50"),
+            {"uid": user["id"]},
+        )
+    return {"items": [dict(r) for r in res.mappings().all()]}
+
+
+@router.patch("/alerts/{alert_id}")
+async def alerts_update(alert_id: str, body: dict, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    allowed_fields = ["status"]
+    updates = []
+    params = {"aid": alert_id, "uid": user["id"]}
+    
+    if "status" in body:
+        updates.append("status = :status")
+        params["status"] = body["status"]
+        if body["status"] == "dismissed":
+            updates.append("dismissed_at = now()")
+        elif body["status"] == "resolved":
+            updates.append("resolved_at = now()")
+    
+    if not updates:
+        return {"id": alert_id, "updated": False}
+    
+    await db.execute(
+        text(f"UPDATE budget_alerts SET {', '.join(updates)} WHERE id = :aid AND user_id = :uid"),
+        params,
+    )
+    await db.commit()
+    return {"id": alert_id, "updated": True}
 
 

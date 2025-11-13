@@ -13,16 +13,20 @@ async def check_and_award_badges(db: AsyncSession, user_id: str, event_type: str
     Args:
         db: Database session
         user_id: User UUID
-        event_type: Type of event ('receipt_uploaded', 'transaction_created', 'savings_goal_achieved', etc.)
+        event_type: Type of event ('receipt_uploaded', 'transaction_created', 'savings_goal_achieved', 'budget_checked', etc.)
         **kwargs: Additional context (e.g., receipt_id, transaction_id, amount_cents)
     """
     if event_type == "receipt_uploaded":
         await _check_first_scan(db, user_id)
         await _check_streak_badges(db, user_id)
+        await check_spending_milestone_badges(db, user_id)
     elif event_type == "savings_goal_achieved":
         await _check_savings_badges(db, user_id, kwargs.get("amount_cents", 0))
     elif event_type == "transaction_created":
         await _check_streak_badges(db, user_id)
+        await check_spending_milestone_badges(db, user_id)
+    elif event_type == "budget_checked":
+        await check_budget_badges(db, user_id)
 
 
 async def _award_badge(db: AsyncSession, user_id: str, badge_code: str):
@@ -114,4 +118,66 @@ async def _check_savings_badges(db: AsyncSession, user_id: str, amount_cents: in
         await _award_badge(db, user_id, "SAVINGS_GOAL_500")
     if amount_cents >= 100000:  # $1000
         await _award_badge(db, user_id, "SAVINGS_GOAL_1000")
+
+
+async def check_budget_badges(db: AsyncSession, user_id: str):
+    """Check for budget-related badges."""
+    # Check if user has stayed within all budgets for a month
+    res = await db.execute(
+        text(
+            """
+            SELECT COUNT(*) as budget_count
+            FROM budgets b
+            WHERE b.user_id = :uid
+              AND b.period_start <= CURRENT_DATE
+              AND b.period_end >= CURRENT_DATE
+            """
+        ),
+        {"uid": user_id},
+    )
+    budget_count = res.scalar_one() or 0
+    
+    if budget_count > 0:
+        # Check if all budgets are within limits
+        res = await db.execute(
+            text(
+                """
+                SELECT 
+                    b.category,
+                    b.limit_cents,
+                    COALESCE(SUM(t.total_cents), 0) as spent_cents
+                FROM budgets b
+                LEFT JOIN transactions t ON t.user_id = b.user_id 
+                  AND t.category = b.category
+                  AND t.txn_date BETWEEN b.period_start AND b.period_end
+                WHERE b.user_id = :uid
+                  AND b.period_start <= CURRENT_DATE
+                  AND b.period_end >= CURRENT_DATE
+                GROUP BY b.category, b.limit_cents
+                HAVING COALESCE(SUM(t.total_cents), 0) <= b.limit_cents
+                """
+            ),
+            {"uid": user_id},
+        )
+        within_budget_count = len(res.fetchall())
+        
+        if within_budget_count == budget_count and budget_count > 0:
+            await _award_badge(db, user_id, "BUDGET_MASTER")
+
+
+async def check_spending_milestone_badges(db: AsyncSession, user_id: str):
+    """Check for spending milestone badges."""
+    # Total transactions milestone
+    res = await db.execute(
+        text("SELECT COUNT(*) as count FROM transactions WHERE user_id = :uid"),
+        {"uid": user_id},
+    )
+    txn_count = res.scalar_one() or 0
+    
+    if txn_count >= 100:
+        await _award_badge(db, user_id, "TRACKING_100")
+    if txn_count >= 500:
+        await _award_badge(db, user_id, "TRACKING_500")
+    if txn_count >= 1000:
+        await _award_badge(db, user_id, "TRACKING_1000")
 

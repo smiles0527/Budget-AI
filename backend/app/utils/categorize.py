@@ -66,22 +66,84 @@ async def _match_keyword_category(db: AsyncSession, text_blob: Optional[str], sc
     return best
 
 
+# ML fallback: keyword-based category mapping
+ML_CATEGORY_KEYWORDS = {
+    "groceries": ["grocery", "supermarket", "walmart", "target", "kroger", "safeway", "whole foods", "trader joe", "food", "produce", "meat", "dairy"],
+    "dining": ["restaurant", "cafe", "coffee", "starbucks", "mcdonald", "burger", "pizza", "dining", "food", "eat", "meal", "lunch", "dinner", "breakfast", "bar", "grill"],
+    "transport": ["gas", "fuel", "uber", "lyft", "taxi", "metro", "subway", "bus", "train", "airline", "airport", "parking", "toll", "car", "vehicle"],
+    "shopping": ["store", "shop", "retail", "amazon", "mall", "clothing", "apparel", "shoes", "electronics", "home", "furniture"],
+    "entertainment": ["movie", "cinema", "theater", "netflix", "spotify", "music", "concert", "game", "sports", "ticket", "entertainment"],
+    "subscriptions": ["subscription", "monthly", "annual", "premium", "membership", "recurring"],
+    "utilities": ["electric", "water", "gas", "utility", "power", "internet", "phone", "cable", "internet service"],
+    "health": ["pharmacy", "drug", "medical", "doctor", "hospital", "clinic", "health", "dental", "vision", "insurance"],
+    "education": ["school", "university", "college", "tuition", "book", "course", "education", "learning"],
+    "travel": ["hotel", "airbnb", "travel", "vacation", "trip", "booking", "resort"],
+}
+
+
+def _ml_categorize_fallback(merchant: Optional[str], raw_text: Optional[str]) -> Optional[str]:
+    """Simple ML fallback using keyword matching when rules don't match."""
+    search_text = ""
+    if merchant:
+        search_text += merchant.lower() + " "
+    if raw_text:
+        search_text += raw_text.lower()
+    
+    if not search_text:
+        return None
+    
+    # Score categories based on keyword matches
+    scores = {}
+    for category, keywords in ML_CATEGORY_KEYWORDS.items():
+        score = 0
+        for keyword in keywords:
+            if keyword in search_text:
+                score += 1
+        if score > 0:
+            scores[category] = score
+    
+    if scores:
+        # Return category with highest score
+        return max(scores.items(), key=lambda x: x[1])[0]
+    
+    return None
+
+
 async def determine_category(
     db: AsyncSession,
     merchant: Optional[str] = None,
     raw_text: Optional[str] = None,
 ) -> str:
-    """Return category using rules; default to 'other'."""
+    """
+    Return category using rules first, then ML fallback, default to 'other'.
+    
+    Priority:
+    1. Merchant rules (confidence >= 0.8)
+    2. Keyword rules (confidence >= 0.8)
+    3. ML keyword matching fallback
+    4. 'other'
+    """
     best_cat: Optional[str] = None
     best_conf: float = -1.0
 
+    # Try merchant rules
     m = await _match_merchant_category(db, merchant)
     if m and m[1] > best_conf:
         best_cat, best_conf = m
 
+    # Try keyword rules
     k = await _match_keyword_category(db, raw_text, scope="both")
     if k and k[1] > best_conf:
         best_cat, best_conf = k
+
+    # If we have a high-confidence rule match, use it
+    if best_conf >= 0.8:
+        return best_cat or "other"
+    
+    # Otherwise, try ML fallback
+    ml_cat = _ml_categorize_fallback(merchant, raw_text)
+    if ml_cat:
+        return ml_cat
 
     return best_cat or "other"
 

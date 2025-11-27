@@ -375,11 +375,23 @@ class APIClient {
     
     // MARK: - Profile
     
-    func updateProfile(displayName: String?, currencyCode: String, timezone: String) async throws {
+    func updateProfile(
+        displayName: String? = nil,
+        currencyCode: String? = nil,
+        timezone: String? = nil,
+        notificationBudgetAlerts: Bool? = nil,
+        notificationGoalAchieved: Bool? = nil,
+        notificationStreakReminders: Bool? = nil,
+        notificationWeeklySummary: Bool? = nil
+    ) async throws {
         struct ProfileUpdateRequest: Codable {
             let display_name: String?
-            let currency_code: String
-            let timezone: String
+            let currency_code: String?
+            let timezone: String?
+            let notification_budget_alerts: Bool?
+            let notification_goal_achieved: Bool?
+            let notification_streak_reminders: Bool?
+            let notification_weekly_summary: Bool?
         }
         
         struct EmptyResponse: Codable {}
@@ -389,7 +401,11 @@ class APIClient {
             body: ProfileUpdateRequest(
                 display_name: displayName,
                 currency_code: currencyCode,
-                timezone: timezone
+                timezone: timezone,
+                notification_budget_alerts: notificationBudgetAlerts,
+                notification_goal_achieved: notificationGoalAchieved,
+                notification_streak_reminders: notificationStreakReminders,
+                notification_weekly_summary: notificationWeeklySummary
             )
         )
     }
@@ -568,6 +584,34 @@ class APIClient {
             endpoint: "/subscription/checkout",
             method: "POST",
             body: EmptyBody()
+        )
+    }
+    
+    // MARK: - Push Notifications
+    
+    func registerPushDevice(platform: String, token: String) async throws {
+        struct PushDeviceRegisterRequest: Codable {
+            let platform: String
+            let token: String
+        }
+        
+        struct EmptyResponse: Codable {}
+        let _: EmptyResponse = try await makeRequest(
+            endpoint: "/push/devices",
+            method: "POST",
+            body: PushDeviceRegisterRequest(platform: platform, token: token)
+        )
+    }
+    
+    func getPushDevices() async throws -> PushDevicesResponse {
+        return try await makeRequest(endpoint: "/push/devices")
+    }
+    
+    func deletePushDevice(deviceId: String) async throws {
+        struct EmptyResponse: Codable {}
+        let _: EmptyResponse = try await makeRequest(
+            endpoint: "/push/devices/\(deviceId)",
+            method: "DELETE"
         )
     }
     
@@ -759,6 +803,10 @@ struct Profile: Codable {
     let currency_code: String
     let timezone: String
     let marketing_opt_in: Bool
+    let notification_budget_alerts: Bool?
+    let notification_goal_achieved: Bool?
+    let notification_streak_reminders: Bool?
+    let notification_weekly_summary: Bool?
 }
 
 struct ReceiptUploadResponse: Codable {
@@ -774,6 +822,7 @@ struct Receipt: Codable {
     let ocr_status: String
     let uploaded_at: String?
     let processed_at: String?
+    let image_url: String? // Presigned URL for viewing the receipt image
 }
 
 struct TransactionsResponse: Codable {
@@ -994,6 +1043,7 @@ struct SubscriptionResponse: Codable {
     let plan: String
     let status: String
     let current_period_end: String?
+    let cancel_at_period_end: Bool?
 }
 
 struct TagResponse: Codable {
@@ -1041,5 +1091,18 @@ struct AccountBalance: Codable {
     let available_cents: Int?
     let currency_code: String
     let as_of: String
+}
+
+struct PushDevicesResponse: Codable {
+    let items: [PushDevice]
+}
+
+struct PushDevice: Codable {
+    let id: String
+    let platform: String
+    let token: String
+    let is_active: Bool
+    let created_at: String
+    let last_seen_at: String?
 }
 

@@ -9,6 +9,8 @@ import SwiftUI
 
 struct StreakView: View {
     @StateObject private var viewModel = StreakViewModel()
+    @State private var showingShareSheet = false
+    @State private var shareItems: [Any] = []
     
     var body: some View {
         HStack(spacing: 16) {
@@ -81,9 +83,27 @@ struct StreakView: View {
             )
         )
         .cornerRadius(12)
+        .contextMenu {
+            if viewModel.currentStreak > 0 {
+                Button(action: {
+                    shareStreak()
+                }) {
+                    Label("Share Streak", systemImage: "square.and.arrow.up")
+                }
+            }
+        }
+        .sheet(isPresented: $showingShareSheet) {
+            ShareSheet(items: shareItems)
+        }
         .task {
             await viewModel.loadStreak()
         }
+    }
+    
+    private func shareStreak() {
+        let text = "🔥 \(viewModel.currentStreak) day streak on SnapBudget! Keep tracking your spending! #SnapBudget"
+        shareItems = [text]
+        showingShareSheet = true
     }
 }
 

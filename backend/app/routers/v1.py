@@ -316,6 +316,10 @@ class ProfileUpdate(BaseModel):
     currency_code: Optional[str] = None
     timezone: Optional[str] = None
     marketing_opt_in: Optional[bool] = None
+    notification_budget_alerts: Optional[bool] = None
+    notification_goal_achieved: Optional[bool] = None
+    notification_streak_reminders: Optional[bool] = None
+    notification_weekly_summary: Optional[bool] = None
 
 
 @router.patch("/profile")
@@ -335,6 +339,18 @@ async def profile_update(body: ProfileUpdate, user=Depends(get_current_user), db
     if body.marketing_opt_in is not None:
         updates.append("marketing_opt_in = :marketing_opt_in")
         params["marketing_opt_in"] = body.marketing_opt_in
+    if body.notification_budget_alerts is not None:
+        updates.append("notification_budget_alerts = :notification_budget_alerts")
+        params["notification_budget_alerts"] = body.notification_budget_alerts
+    if body.notification_goal_achieved is not None:
+        updates.append("notification_goal_achieved = :notification_goal_achieved")
+        params["notification_goal_achieved"] = body.notification_goal_achieved
+    if body.notification_streak_reminders is not None:
+        updates.append("notification_streak_reminders = :notification_streak_reminders")
+        params["notification_streak_reminders"] = body.notification_streak_reminders
+    if body.notification_weekly_summary is not None:
+        updates.append("notification_weekly_summary = :notification_weekly_summary")
+        params["notification_weekly_summary"] = body.notification_weekly_summary
     
     if not updates:
         return {"updated": False}
@@ -422,7 +438,12 @@ async def receipts_get(receipt_id: str, user=Depends(get_current_user), db: Asyn
     rec = row.mappings().first()
     if not rec:
         raise HTTPException(status_code=404, detail="Not found")
-    return dict(rec)
+    data = dict(rec)
+    # Add presigned URL for viewing the receipt image if storage_uri exists and is not 'pending'
+    if data.get("storage_uri") and data.get("storage_uri") != "pending":
+        from ..utils.storage import presign_get
+        data["image_url"] = presign_get(data["storage_uri"])
+    return data
 
 
 @router.get("/transactions")

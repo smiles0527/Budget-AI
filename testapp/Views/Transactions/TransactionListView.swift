@@ -19,7 +19,11 @@ struct TransactionListView: View {
                 HStack {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.secondary)
+                        .accessibilityHidden(true)
+                    
                     TextField("Search transactions...", text: $searchText)
+                        .textFieldStyle(.plain)
+                        .accessibilityLabel("Search transactions")
                         .onSubmit {
                             if !searchText.isEmpty {
                                 Task {
@@ -42,32 +46,28 @@ struct TransactionListView: View {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundColor(.secondary)
                         }
+                        .accessibilityLabel("Clear search")
                     }
                 }
                 .padding()
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(10)
                 .padding(.horizontal)
+                .accessibilityElement(children: .combine)
                 
                 // Transaction list
                 if viewModel.isLoading && viewModel.transactions.isEmpty {
-                    Spacer()
-                    ProgressView()
-                    Spacer()
-                } else if viewModel.transactions.isEmpty {
-                    Spacer()
-                    VStack(spacing: 16) {
-                        Image(systemName: "list.bullet")
-                            .font(.system(size: 50))
-                            .foregroundColor(.secondary)
-                        Text("No transactions yet")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                        Text("Upload a receipt to get started")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                    List {
+                        ForEach(0..<5, id: \.self) { _ in
+                            TransactionRowSkeleton()
+                        }
                     }
-                    Spacer()
+                    .listStyle(PlainListStyle())
+                } else if viewModel.transactions.isEmpty {
+                    EmptyStateView.noTransactions {
+                        // Navigate to add transaction
+                        // This would typically trigger a sheet or navigation
+                    }
                 } else {
                     List {
                         ForEach(viewModel.transactions, id: \.id) { transaction in
@@ -91,18 +91,20 @@ struct TransactionListView: View {
                     .refreshable {
                         await viewModel.loadTransactions(refresh: true)
                     }
-                    .overlay {
+                    .overlay(alignment: .top) {
                         if let error = viewModel.errorMessage {
-                            VStack {
-                                Spacer()
-                                Text(error)
-                                    .font(.caption)
-                                    .foregroundColor(.red)
-                                    .padding()
-                                    .background(Color.red.opacity(0.1))
-                                    .cornerRadius(8)
-                                    .padding()
-                            }
+                            ErrorBanner(
+                                message: error,
+                                retryAction: {
+                                    Task {
+                                        await viewModel.loadTransactions(refresh: true)
+                                    }
+                                },
+                                dismissAction: {
+                                    viewModel.errorMessage = nil
+                                }
+                            )
+                            .padding()
                         }
                     }
                 }
@@ -116,12 +118,58 @@ struct TransactionListView: View {
                 }
             }
             .sheet(isPresented: $showingFilters) {
-                FilterView(viewModel: viewModel)
+                TransactionFiltersView(
+                    selectedCategory: $selectedCategory,
+                    startDate: $startDate,
+                    endDate: $endDate,
+                    minAmount: $minAmount,
+                    maxAmount: $maxAmount
+                )
+            }
+            .onChange(of: selectedCategory) { _ in
+                Task {
+                    await applyFilters()
+                }
+            }
+            .onChange(of: startDate) { _ in
+                Task {
+                    await applyFilters()
+                }
+            }
+            .onChange(of: endDate) { _ in
+                Task {
+                    await applyFilters()
+                }
+            }
+            .onChange(of: minAmount) { _ in
+                Task {
+                    await applyFilters()
+                }
+            }
+            .onChange(of: maxAmount) { _ in
+                Task {
+                    await applyFilters()
+                }
             }
             .task {
                 await viewModel.loadTransactions(refresh: true)
             }
         }
+    }
+    
+    private func applyFilters() async {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        
+        await viewModel.loadTransactions(
+            fromDate: startDate != nil ? formatter.string(from: startDate!) : nil,
+            toDate: endDate != nil ? formatter.string(from: endDate!) : nil,
+            category: selectedCategory,
+            refresh: true
+        )
+        
+        // Note: Amount filtering would need to be done client-side or added to backend
+        // For now, we filter by category and date only
     }
 }
 
@@ -140,11 +188,13 @@ struct TransactionRow: View {
                         .font(.headline)
                         .foregroundColor(.white)
                 )
+                .accessibilityLabel("Category: \(transaction.category)")
             
             // Transaction info
             VStack(alignment: .leading, spacing: 4) {
                 Text(transaction.merchant ?? "Unknown Merchant")
                     .font(.headline)
+                    .accessibilityLabel("Merchant: \(transaction.merchant ?? "Unknown Merchant")")
                 
                 Text(transaction.category.capitalized)
                     .font(.caption)
@@ -161,8 +211,11 @@ struct TransactionRow: View {
             Text(viewModel.formatAmount(cents: transaction.total_cents))
                 .font(.headline)
                 .foregroundColor(.primary)
+                .accessibilityLabel("Amount: \(viewModel.formatAmount(cents: transaction.total_cents))")
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(transaction.merchant ?? "Unknown Merchant"), \(transaction.category), \(viewModel.formatAmount(cents: transaction.total_cents))")
     }
     
     private func colorForCategory(_ category: String) -> Color {
@@ -246,87 +299,6 @@ struct FilterView: View {
     }
 }
 
-struct TransactionDetailView: View {
-    let transaction: Transaction
-    @StateObject private var viewModel = TransactionsViewModel()
-    
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Header
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(transaction.merchant ?? "Unknown Merchant")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    Text(viewModel.formatAmount(cents: transaction.total_cents))
-                        .font(.title2)
-                        .foregroundColor(.blue)
-                }
-                .padding()
-                
-                // Details
-                VStack(alignment: .leading, spacing: 12) {
-                    DetailRow(label: "Date", value: viewModel.formatDate(transaction.txn_date))
-                    DetailRow(label: "Category", value: transaction.category.capitalized)
-                    if let subcategory = transaction.subcategory {
-                        DetailRow(label: "Subcategory", value: subcategory)
-                    }
-                    DetailRow(label: "Total", value: viewModel.formatAmount(cents: transaction.total_cents))
-                    if let tax = transaction.tax_cents, tax > 0 {
-                        DetailRow(label: "Tax", value: viewModel.formatAmount(cents: tax))
-                    }
-                    if let tip = transaction.tip_cents, tip > 0 {
-                        DetailRow(label: "Tip", value: viewModel.formatAmount(cents: tip))
-                    }
-                    DetailRow(label: "Source", value: transaction.source.capitalized)
-                }
-                .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(12)
-                .padding(.horizontal)
-                
-                // Line items
-                if let items = transaction.items, !items.isEmpty {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Line Items")
-                            .font(.headline)
-                            .padding(.horizontal)
-                        
-                        ForEach(items, id: \.id) { item in
-                            HStack {
-                                Text(item.description ?? "Item")
-                                Spacer()
-                                if let total = item.total_cents {
-                                    Text(viewModel.formatAmount(cents: total))
-                                }
-                            }
-                            .padding(.horizontal)
-                        }
-                    }
-                    .padding(.vertical)
-                }
-            }
-        }
-        .navigationTitle("Transaction")
-        .navigationBarTitleDisplayMode(.inline)
-    }
-}
-
-struct DetailRow: View {
-    let label: String
-    let value: String
-    
-    var body: some View {
-        HStack {
-            Text(label)
-                .foregroundColor(.secondary)
-            Spacer()
-            Text(value)
-                .fontWeight(.medium)
-        }
-    }
-}
 
 #Preview {
     TransactionListView()

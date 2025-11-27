@@ -12,36 +12,40 @@ struct LinkedAccountsView: View {
     @State private var showingAddAccount = false
     
     var body: some View {
-        List {
+        Group {
             if viewModel.isLoading && viewModel.accounts.isEmpty {
                 ProgressView()
-            } else if viewModel.accounts.isEmpty {
-                VStack(spacing: 16) {
-                    Image(systemName: "creditcard")
-                        .font(.system(size: 50))
-                        .foregroundColor(.secondary)
-                    Text("No linked accounts")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-                    Text("Link your bank accounts to track balances")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding()
-            } else {
-                ForEach(viewModel.accounts, id: \.id) { account in
-                    NavigationLink(destination: LinkedAccountDetailView(account: account, viewModel: viewModel)) {
-                        LinkedAccountRow(account: account)
+            } else if let error = viewModel.errorMessage, viewModel.accounts.isEmpty {
+                ErrorView(message: error) {
+                    Task {
+                        await viewModel.loadAccounts()
                     }
                 }
-            }
-            
-            if let error = viewModel.errorMessage {
-                Section {
-                    Text(error)
-                        .foregroundColor(.red)
-                        .font(.caption)
+            } else if viewModel.accounts.isEmpty {
+                EmptyStateView.noLinkedAccounts()
+            } else {
+                List {
+                    ForEach(viewModel.accounts, id: \.id) { account in
+                        NavigationLink(destination: LinkedAccountDetailView(account: account, viewModel: viewModel)) {
+                            LinkedAccountRow(account: account)
+                        }
+                    }
+                    
+                    if let error = viewModel.errorMessage {
+                        Section {
+                            ErrorBanner(
+                                message: error,
+                                retryAction: {
+                                    Task {
+                                        await viewModel.loadAccounts()
+                                    }
+                                },
+                                dismissAction: {
+                                    viewModel.errorMessage = nil
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }

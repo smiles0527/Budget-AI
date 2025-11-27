@@ -14,6 +14,7 @@ struct TransactionDetailView: View {
     @State private var showingEdit = false
     @State private var showingDeleteAlert = false
     @State private var showingTagPicker = false
+    @State private var showingReceiptImage = false
     @State private var transactionTags: [Tag] = []
     @Environment(\.dismiss) var dismiss
     
@@ -126,6 +127,23 @@ struct TransactionDetailView: View {
                 }
             }
             
+            // Receipt Image Section
+            if let receiptId = transaction.receipt_id, viewModel.receiptImageURL != nil {
+                Section("Receipt") {
+                    Button(action: { showingReceiptImage = true }) {
+                        HStack {
+                            Image(systemName: "doc.text.image")
+                            Text("View Receipt Image")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .foregroundColor(.blue)
+                    }
+                }
+            }
+            
             Section("Tags") {
                 if transactionTags.isEmpty {
                     Text("No tags")
@@ -173,6 +191,14 @@ struct TransactionDetailView: View {
                     .foregroundColor(.blue)
                 }
                 
+                NavigationLink(destination: CategoryOverrideView(transaction: transaction)) {
+                    HStack {
+                        Image(systemName: "tag")
+                        Text("Fix Category")
+                    }
+                    .foregroundColor(.orange)
+                }
+                
                 Button(action: { showingDeleteAlert = true }) {
                     HStack {
                         Image(systemName: "trash")
@@ -209,8 +235,16 @@ struct TransactionDetailView: View {
                 }
             )
         }
+        .sheet(isPresented: $showingReceiptImage) {
+            if let imageURL = viewModel.receiptImageURL {
+                ReceiptImageView(imageURL: imageURL)
+            }
+        }
         .task {
             await viewModel.loadItems(transactionId: transaction.id)
+            if let receiptId = transaction.receipt_id {
+                await viewModel.loadReceipt(receiptId: receiptId)
+            }
             await loadTags()
         }
     }
@@ -227,6 +261,7 @@ struct TransactionDetailView: View {
 @MainActor
 class TransactionDetailViewModel: ObservableObject {
     @Published var items: [TransactionItem]?
+    @Published var receiptImageURL: String?
     @Published var isLoading = false
     @Published var errorMessage: String?
     
@@ -272,6 +307,16 @@ class TransactionDetailViewModel: ObservableObject {
             try await apiClient.removeTagFromTransaction(transactionId: transactionId, tagId: tagId)
         } catch {
             errorMessage = ErrorHandler.userFriendlyMessage(for: error)
+        }
+    }
+    
+    func loadReceipt(receiptId: String) async {
+        do {
+            let receipt = try await apiClient.getReceipt(id: receiptId)
+            receiptImageURL = receipt.image_url
+        } catch {
+            // Silently fail - receipt might not have an image yet
+            receiptImageURL = nil
         }
     }
 }

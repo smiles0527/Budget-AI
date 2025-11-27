@@ -10,17 +10,25 @@ import SwiftUI
 struct AppRootView: View {
     @StateObject private var authManager = AuthManager.shared
     @StateObject private var badgeCelebrationManager = BadgeCelebrationManager.shared
+    @StateObject private var pushService = PushNotificationService.shared
+    @State private var selectedTab = 0
     
     var body: some View {
         Group {
             if authManager.isAuthenticated {
-                MainTabView()
+                MainTabView(selection: $selectedTab)
                     .sheet(isPresented: $badgeCelebrationManager.showCelebration) {
                         if let badge = badgeCelebrationManager.newBadge {
                             BadgeCelebrationView(
                                 badge: badge,
                                 isPresented: $badgeCelebrationManager.showCelebration
                             )
+                        }
+                    }
+                    .onChange(of: pushService.pendingNavigation) { destination in
+                        if let destination = destination {
+                            handleNavigation(destination)
+                            pushService.pendingNavigation = nil
                         }
                     }
             } else {
@@ -36,26 +44,42 @@ struct AppRootView: View {
             }
         }
     }
+    
+    private func handleNavigation(_ destination: PushNotificationService.NavigationDestination) {
+        switch destination {
+        case .budgetAlert:
+            selectedTab = 0 // Home
+        case .goalDetails:
+            selectedTab = 3 // Goals
+        case .streak:
+            selectedTab = 0 // Home
+        case .receipt:
+            selectedTab = 1 // Transactions
+        }
+    }
 }
 
 struct MainTabView: View {
+    @Binding var selection: Int
     @StateObject private var authManager = AuthManager.shared
     @State private var showingReceiptCapture = false
     @State private var showingManualTransaction = false
     
     var body: some View {
-        TabView {
+        TabView(selection: $selection) {
             DashboardView()
                 .tabItem {
                     Image(systemName: "house.fill")
                     Text("Home")
                 }
+                .tag(0)
             
             TransactionListView()
                 .tabItem {
                     Image(systemName: "list.bullet")
                     Text("Transactions")
                 }
+                .tag(1)
             
             AddMenuView(
                 showingReceiptCapture: $showingReceiptCapture,
@@ -65,18 +89,21 @@ struct MainTabView: View {
                 Image(systemName: "plus.circle.fill")
                 Text("Add")
             }
+            .tag(2)
             
             SavingsGoalsView()
                 .tabItem {
                     Image(systemName: "target")
                     Text("Goals")
                 }
+                .tag(3)
             
             ProfileView()
                 .tabItem {
                     Image(systemName: "person.fill")
                     Text("Profile")
                 }
+                .tag(4)
         }
         .accentColor(.blue)
         .sheet(isPresented: $showingReceiptCapture) {
@@ -222,6 +249,10 @@ struct ProfileView: View {
                             SettingsRow(icon: "chart.bar.xaxis", title: "Category Comparison", color: .orange)
                         }
                         
+                        NavigationLink(destination: ReceiptGalleryView()) {
+                            SettingsRow(icon: "doc.text.image.fill", title: "Receipt Gallery", color: .blue)
+                        }
+                        
                         NavigationLink(destination: SettingsView()) {
                             SettingsRow(icon: "gear", title: "Settings", color: .gray)
                         }
@@ -307,41 +338,46 @@ struct BudgetsView: View {
     @State private var editingBudget: BudgetWithSpending?
     
     var body: some View {
-        List {
+        Group {
             if viewModel.isLoading && viewModel.budgets.isEmpty {
                 ProgressView()
-                    .frame(maxWidth: .infinity)
+            } else if let error = viewModel.errorMessage, viewModel.budgets.isEmpty {
+                ErrorView(message: error) {
+                    Task {
+                        await viewModel.loadBudgets()
+                    }
+                }
             } else if viewModel.budgets.isEmpty {
-                VStack(spacing: 16) {
-                    Image(systemName: "chart.bar.doc.horizontal")
-                        .font(.system(size: 50))
-                        .foregroundColor(.secondary)
-                    Text("No budgets yet")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-                    Text("Create a budget to track your spending")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                EmptyStateView.noBudgets {
+                    showingCreateBudget = true
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
             } else {
-                ForEach(viewModel.budgets) { budgetWithSpending in
-                    BudgetRow(
-                        budget: budgetWithSpending,
-                        viewModel: viewModel,
-                        onEdit: {
-                            editingBudget = budgetWithSpending
+                List {
+                    ForEach(viewModel.budgets) { budgetWithSpending in
+                        BudgetRow(
+                            budget: budgetWithSpending,
+                            viewModel: viewModel,
+                            onEdit: {
+                                editingBudget = budgetWithSpending
+                            }
+                        )
+                    }
+                    
+                    if let error = viewModel.errorMessage {
+                        Section {
+                            ErrorBanner(
+                                message: error,
+                                retryAction: {
+                                    Task {
+                                        await viewModel.loadBudgets()
+                                    }
+                                },
+                                dismissAction: {
+                                    viewModel.errorMessage = nil
+                                }
+                            )
                         }
-                    )
-                }
-            }
-            
-            if let error = viewModel.errorMessage {
-                Section {
-                    Text(error)
-                        .foregroundColor(.red)
-                        .font(.caption)
+                    }
                 }
             }
         }
@@ -451,8 +487,15 @@ struct SavingsGoalsView: View {
     
     var body: some View {
         NavigationView {
-            List {
-                ForEach(viewModel.goals, id: \.id) { goal in
+            if viewModel.isLoading && viewModel.goals.isEmpty {
+                ProgressView()
+            } else if viewModel.goals.isEmpty {
+                EmptyStateView.noSavingsGoals {
+                    showingCreateGoal = true
+                }
+            } else {
+                List {
+                    ForEach(viewModel.goals, id: \.id) { goal in
                     NavigationLink(destination: SavingsGoalDetailView(goal: goal, viewModel: viewModel)) {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(goal.name)
@@ -491,7 +534,7 @@ struct SavingsGoalsView: View {
                         .padding(.vertical, 4)
                     }
                 }
-            }
+                }
             .navigationTitle("Savings Goals")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -516,6 +559,8 @@ struct SavingsGoalDetailView: View {
     @State private var showingAddContribution = false
     @State private var showingEdit = false
     @State private var showingDeleteAlert = false
+    @State private var showingShareSheet = false
+    @State private var shareItems: [Any] = []
     @State private var goalDetails: SavingsGoal?
     @State private var contributions: [SavingsContribution] = []
     @Environment(\.dismiss) var dismiss
@@ -629,6 +674,18 @@ struct SavingsGoalDetailView: View {
         }
         .navigationTitle("Goal Details")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    shareGoal()
+                }) {
+                    Image(systemName: "square.and.arrow.up")
+                }
+            }
+        }
+        .sheet(isPresented: $showingShareSheet) {
+            ShareSheet(items: shareItems)
+        }
         .sheet(isPresented: $showingAddContribution) {
             AddContributionView(goalId: goal.id, viewModel: viewModel)
         }
@@ -658,6 +715,17 @@ struct SavingsGoalDetailView: View {
             return 0
         }
         return min(100.0, (Double(contributed) / Double(target)) * 100.0)
+    }
+    
+    private func shareGoal() {
+        let goalName = goalDetails?.name ?? goal.name
+        let contributed = goalDetails?.contributed_cents ?? goal.contributed_cents ?? 0
+        let target = goalDetails?.target_cents ?? goal.target_cents
+        let progress = Int(progressPercentage)
+        
+        let text = "💰 I'm saving for \(goalName)! Progress: \(viewModel.formatAmount(cents: contributed)) / \(viewModel.formatAmount(cents: target)) (\(progress)%) #SnapBudget"
+        shareItems = [text]
+        showingShareSheet = true
     }
     
     private func loadGoalDetails() async {

@@ -269,24 +269,27 @@ Additional documentation is available in the `docs/` directory:
 - [x] Budget tracking with alerts
 - [x] Savings goals with contributions
 - [x] Dashboard with analytics
-- [x] Badge system and gamification
+- [x] Badge system and gamification (collection view, celebrations, streaks)
 - [x] Tag management
 - [x] Linked accounts integration
 - [x] CSV export (premium)
 - [x] Figma design system integration
+- [x] Premium feature gating and usage limits
+- [x] Auto badge detection and celebrations
 
-### In Progress
+### In Progress / High Priority
 
+- [ ] Receipt image viewing and gallery
+- [ ] Charts and visualizations (trends, category breakdowns)
 - [ ] Push notifications (APNs/FCM)
-- [ ] Advanced charts and visualizations
-- [ ] Receipt image viewing
-- [ ] Social sharing features
+- [ ] Subscription management UI (cancel, change plan)
 
 ### Planned Features
 
+- [ ] Social sharing features
 - [ ] Bank account sync (Plaid integration)
 - [ ] Recurring transaction detection UI
-- [ ] Spending insights recommendations
+- [ ] Spending insights recommendations UI
 - [ ] Apple Watch app
 - [ ] Widget support
 - [ ] Voice commands

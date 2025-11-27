@@ -119,6 +119,8 @@ struct BadgeDetailView: View {
     let badge: Badge
     let isEarned: Bool
     @Environment(\.dismiss) var dismiss
+    @State private var showingShareSheet = false
+    @State private var shareItems: [Any] = []
     
     var body: some View {
         NavigationView {
@@ -220,6 +222,12 @@ struct BadgeDetailView: View {
         case "TRACKING_100", "TRACKING_500", "TRACKING_1000": return "list.number"
         default: return "star.fill"
         }
+    }
+    
+    private func shareBadge() {
+        let text = "🎉 I just earned the \(badge.name) badge in SnapBudget! \(badge.description)"
+        shareItems = [text]
+        showingShareSheet = true
     }
     
     private func howToEarn(for code: String) -> String {

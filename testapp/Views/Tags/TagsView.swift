@@ -12,23 +12,38 @@ struct TagsView: View {
     @State private var showingCreateTag = false
     
     var body: some View {
-        List {
+        Group {
             if viewModel.isLoading && viewModel.tags.isEmpty {
                 ProgressView()
-            } else if viewModel.tags.isEmpty {
-                Text("No tags yet")
-                    .foregroundColor(.secondary)
-            } else {
-                ForEach(viewModel.tags, id: \.id) { tag in
-                    TagRow(tag: tag, viewModel: viewModel)
+            } else if let error = viewModel.errorMessage, viewModel.tags.isEmpty {
+                ErrorView(message: error) {
+                    Task {
+                        await viewModel.loadTags()
+                    }
                 }
-            }
-            
-            if let error = viewModel.errorMessage {
-                Section {
-                    Text(error)
-                        .foregroundColor(.red)
-                        .font(.caption)
+            } else if viewModel.tags.isEmpty {
+                EmptyStateView.noTags()
+            } else {
+                List {
+                    ForEach(viewModel.tags, id: \.id) { tag in
+                        TagRow(tag: tag, viewModel: viewModel)
+                    }
+                    
+                    if let error = viewModel.errorMessage {
+                        Section {
+                            ErrorBanner(
+                                message: error,
+                                retryAction: {
+                                    Task {
+                                        await viewModel.loadTags()
+                                    }
+                                },
+                                dismissAction: {
+                                    viewModel.errorMessage = nil
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }

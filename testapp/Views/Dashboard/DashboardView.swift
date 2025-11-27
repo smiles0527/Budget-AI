@@ -22,11 +22,23 @@ struct DashboardView: View {
                     StreakView()
                     
                     // Summary card
-                    if let summary = viewModel.summary {
+                    if viewModel.isLoading && viewModel.summary == nil {
+                        CardSkeleton()
+                    } else if let summary = viewModel.summary {
                         SummaryCard(summary: summary, viewModel: viewModel)
                     }
                     
-                    // Category breakdown
+                    // Spending Trends Chart
+                    if let trends = viewModel.spendingTrends {
+                        SpendingTrendsChart(trends: trends, viewModel: viewModel)
+                    }
+                    
+                    // Category breakdown chart
+                    if !viewModel.categories.isEmpty {
+                        CategoryBreakdownChart(categories: viewModel.categories, viewModel: viewModel)
+                    }
+                    
+                    // Category breakdown list (alternative view)
                     if !viewModel.categories.isEmpty {
                         CategoryBreakdownView(categories: viewModel.categories, viewModel: viewModel)
                     }
@@ -56,6 +68,7 @@ struct DashboardView: View {
             }
             .task {
                 await viewModel.loadDashboard(period: selectedPeriod)
+                await viewModel.loadTrends(months: 6)
                 await viewModel.loadInsights()
                 await viewModel.loadForecast()
             }
@@ -76,21 +89,25 @@ struct SummaryCard: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Spending Summary")
                 .font(.headline)
+                .accessibilityAddTraits(.isHeader)
             
             VStack(alignment: .leading, spacing: 8) {
                 Text(viewModel.formatAmount(cents: summary.total_spend_cents))
                     .font(.system(size: 36, weight: .bold))
+                    .accessibilityLabel("Total spending: \(viewModel.formatAmount(cents: summary.total_spend_cents))")
                 
                 HStack {
                     Text("\(summary.txn_count) transactions")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .accessibilityLabel("\(summary.txn_count) transactions")
                     
                     Spacer()
                     
                     Text("Avg: \(viewModel.formatAmount(cents: Int(summary.avg_txn_cents)))")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .accessibilityLabel("Average transaction: \(viewModel.formatAmount(cents: Int(summary.avg_txn_cents)))")
                 }
             }
         }
@@ -98,6 +115,7 @@ struct SummaryCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.blue.opacity(0.1))
         .cornerRadius(12)
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -109,6 +127,7 @@ struct CategoryBreakdownView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Category Breakdown")
                 .font(.headline)
+                .accessibilityAddTraits(.isHeader)
             
             let total = categories.reduce(0) { $0 + $1.total_spend_cents }
             
@@ -117,10 +136,12 @@ struct CategoryBreakdownView: View {
                     HStack {
                         Text(category.category.capitalized)
                             .font(.subheadline)
+                            .accessibilityLabel("Category: \(category.category)")
                         Spacer()
                         Text(viewModel.formatAmount(cents: category.total_spend_cents))
                             .font(.subheadline)
                             .fontWeight(.medium)
+                            .accessibilityLabel("Amount: \(viewModel.formatAmount(cents: category.total_spend_cents))")
                     }
                     
                     GeometryReader { geometry in
@@ -143,6 +164,7 @@ struct CategoryBreakdownView: View {
                         }
                     }
                     .frame(height: 8)
+                    .accessibilityValue("\(Int(viewModel.categoryPercentage(cents: category.total_spend_cents, total: total)))%")
                 }
             }
         }

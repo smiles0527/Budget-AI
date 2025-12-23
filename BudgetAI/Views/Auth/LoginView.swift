@@ -1,8 +1,8 @@
 //
 //  LoginView.swift
-//  testapp
+//  BudgetAI
 //
-//  Login screen
+//  Gamified Login & Signup Screen
 //
 
 import SwiftUI
@@ -14,70 +14,170 @@ struct LoginView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var showingSignup = false
+    @Environment(\.dismiss) var dismiss
+    
+    // Custom TextField Style
+    struct GamifiedFieldStyle: TextFieldStyle {
+        func _body(configuration: TextField<Self._Label>) -> some View {
+            configuration
+                .padding()
+                .background(Color.black.opacity(0.3))
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                )
+                .foregroundColor(.white)
+                .font(AppTypography.body)
+        }
+    }
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 24) {
-                // Header
-                VStack(spacing: 8) {
-                    Text("SnapBudget")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    Text("Track your spending effortlessly")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.top, 60)
+            ZStack {
+                // Background
+                AppColors.backgroundDark
+                    .ignoresSafeArea()
                 
-                // Form
-                VStack(spacing: 16) {
-                    TextField("Email", text: $email)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .autocapitalization(.none)
-                        .keyboardType(.emailAddress)
-                    
-                    SecureField("Password", text: $password)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
-                    if let error = errorMessage {
-                        Text(ErrorHandler.userFriendlyMessage(for: NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: error])))
-                            .font(.caption)
-                            .foregroundColor(.red)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                    }
-                    
-                    Button(action: handleLogin) {
-                        if isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                        } else {
-                            Text("Sign In")
+                // Grid Pattern (Simulated)
+                Image(systemName: "grid") // Placeholder for pattern
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 800, height: 800)
+                    .foregroundColor(AppColors.primary.opacity(0.03))
+                    .rotationEffect(.degrees(45))
+                    .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 30) {
+                        
+                        // Header
+                        VStack(spacing: 8) {
+                            Text("Enter Realm")
+                                .font(AppTypography.h1)
+                                .foregroundColor(.white)
+                                .shadow(color: AppColors.primary.opacity(0.5), radius: 10)
+                            
+                            Text("Resume your financial journey")
+                                .font(AppTypography.body)
+                                .foregroundColor(.white.opacity(0.6))
+                        }
+                        .padding(.top, 40)
+                        
+                        // Main Card
+                        VStack(spacing: 24) {
+                            
+                            // Avatar Placeholder
+                            Circle()
+                                .fill(LinearGradient(colors: [AppColors.primaryDark, AppColors.backgroundDark], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                .frame(width: 80, height: 80)
+                                .overlay(
+                                    Image(systemName: "person.fill")
+                                        .font(.system(size: 32))
+                                        .foregroundColor(AppColors.primary)
+                                )
+                                .overlay(
+                                    Circle()
+                                        .stroke(AppColors.primary.opacity(0.5), lineWidth: 2)
+                                )
+                                .shadow(color: AppColors.primary.opacity(0.3), radius: 10)
+                            
+                            // Inputs
+                            VStack(spacing: 16) {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("SCROLL ID (EMAIL)")
+                                        .font(AppTypography.small)
+                                        .foregroundColor(AppColors.primary)
+                                        .tracking(1)
+                                    
+                                    TextField("wizard@example.com", text: $email)
+                                        .textFieldStyle(GamifiedFieldStyle())
+                                        .autocapitalization(.none)
+                                        .keyboardType(.emailAddress)
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("SECRET RUNE (PASSWORD)")
+                                        .font(AppTypography.small)
+                                        .foregroundColor(AppColors.primary)
+                                        .tracking(1)
+                                    
+                                    SecureField("••••••••", text: $password)
+                                        .textFieldStyle(GamifiedFieldStyle())
+                                }
+                            }
+                            
+                            if let error = errorMessage {
+                                HStack {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .foregroundColor(AppColors.error)
+                                    Text(error)
+                                        .font(AppTypography.caption)
+                                        .foregroundColor(AppColors.error)
+                                }
+                                .padding()
+                                .background(AppColors.error.opacity(0.1))
+                                .cornerRadius(8)
+                            }
+                            
+                            // Action Button
+                            Button(action: handleLogin) {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(AppColors.primaryGradient)
+                                    
+                                    if isLoading {
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    } else {
+                                        HStack {
+                                            Text("Unlock Dashboard")
+                                                .font(AppTypography.h4)
+                                                .foregroundColor(.white)
+                                            
+                                            Image(systemName: "lock.open.fill")
+                                                .foregroundColor(.white)
+                                        }
+                                    }
+                                }
+                                .frame(height: 56)
+                                .shadow(color: AppColors.primary.opacity(0.4), radius: 8, y: 4)
+                            }
+                            .disabled(isLoading || email.isEmpty || password.isEmpty)
+                            .opacity((isLoading || email.isEmpty || password.isEmpty) ? 0.6 : 1)
+                        }
+                        .padding(30)
+                        .background(
+                            RoundedRectangle(cornerRadius: 24)
+                                .fill(Color.white.opacity(0.05))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        )
+                        .padding(.horizontal, 20)
+                        
+                        // Footer
+                        HStack {
+                            Text("New to the guild?")
+                                .font(AppTypography.body)
+                                .foregroundColor(.white.opacity(0.6))
+                            
+                            Button("Forge Account") {
+                                showingSignup = true
+                            }
+                            .font(AppTypography.bodyBold)
+                            .foregroundColor(AppColors.accent)
                         }
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .disabled(isLoading || email.isEmpty || password.isEmpty)
-                    
-                    Button("Don't have an account? Sign up") {
-                        showingSignup = true
-                    }
-                    .font(.subheadline)
-                    .foregroundColor(.blue)
                 }
-                .padding(.horizontal, 32)
-                
-                Spacer()
             }
             .navigationBarHidden(true)
             .sheet(isPresented: $showingSignup) {
                 SignupView()
             }
         }
+        .preferredColorScheme(.dark)
     }
     
     private func handleLogin() {
@@ -95,6 +195,7 @@ struct LoginView: View {
     }
 }
 
+// Reuse similar style for Signup
 struct SignupView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var authManager = AuthManager.shared
@@ -104,70 +205,141 @@ struct SignupView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     
+    struct GamifiedFieldStyle: TextFieldStyle {
+        func _body(configuration: TextField<Self._Label>) -> some View {
+            configuration
+                .padding()
+                .background(Color.black.opacity(0.3))
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                )
+                .foregroundColor(.white)
+                .font(AppTypography.body)
+        }
+    }
+    
     var body: some View {
         NavigationView {
-            VStack(spacing: 24) {
-                VStack(spacing: 8) {
-                    Text("Create Account")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                }
-                .padding(.top, 40)
+            ZStack {
+                AppColors.backgroundDark.ignoresSafeArea()
                 
-                VStack(spacing: 16) {
-                    TextField("Email", text: $email)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .autocapitalization(.none)
-                        .keyboardType(.emailAddress)
-                    
-                    SecureField("Password", text: $password)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
-                    SecureField("Confirm Password", text: $confirmPassword)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
-                    if let error = errorMessage {
-                        Text(ErrorHandler.userFriendlyMessage(for: NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: error])))
-                            .font(.caption)
-                            .foregroundColor(.red)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                    }
-                    
-                    Button(action: handleSignup) {
-                        if isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                        } else {
-                            Text("Sign Up")
+                ScrollView {
+                    VStack(spacing: 30) {
+                        VStack(spacing: 8) {
+                            Text("Forge Account")
+                                .font(AppTypography.h1)
+                                .foregroundColor(.white)
+                                .shadow(color: AppColors.secondary.opacity(0.5), radius: 10)
+                            
+                            Text("Begin your quest today")
+                                .font(AppTypography.body)
+                                .foregroundColor(.white.opacity(0.6))
                         }
+                        .padding(.top, 40)
+                        
+                        VStack(spacing: 24) {
+                            VStack(spacing: 16) {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("SCROLL ID (EMAIL)")
+                                        .font(AppTypography.small)
+                                        .foregroundColor(AppColors.secondary)
+                                        .tracking(1)
+                                    TextField("wizard@example.com", text: $email)
+                                        .textFieldStyle(GamifiedFieldStyle())
+                                        .autocapitalization(.none)
+                                        .keyboardType(.emailAddress)
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("SECRET RUNE (PASSWORD)")
+                                        .font(AppTypography.small)
+                                        .foregroundColor(AppColors.secondary)
+                                        .tracking(1)
+                                    SecureField("••••••••", text: $password)
+                                        .textFieldStyle(GamifiedFieldStyle())
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("VERIFY RUNE")
+                                        .font(AppTypography.small)
+                                        .foregroundColor(AppColors.secondary)
+                                        .tracking(1)
+                                    SecureField("••••••••", text: $confirmPassword)
+                                        .textFieldStyle(GamifiedFieldStyle())
+                                }
+                            }
+                            
+                            if let error = errorMessage {
+                                HStack {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .foregroundColor(AppColors.error)
+                                    Text(error)
+                                        .font(AppTypography.caption)
+                                        .foregroundColor(AppColors.error)
+                                }
+                                .padding()
+                                .background(AppColors.error.opacity(0.1))
+                                .cornerRadius(8)
+                            }
+                            
+                            Button(action: handleSignup) {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(LinearGradient(colors: [AppColors.secondary, AppColors.epic], startPoint: .leading, endPoint: .trailing))
+                                    
+                                    if isLoading {
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    } else {
+                                        HStack {
+                                            Text("Create Character")
+                                                .font(AppTypography.h4)
+                                                .foregroundColor(.white)
+                                            Image(systemName: "person.badge.plus")
+                                                .foregroundColor(.white)
+                                        }
+                                    }
+                                }
+                                .frame(height: 56)
+                                .shadow(color: AppColors.secondary.opacity(0.4), radius: 8, y: 4)
+                            }
+                            .disabled(isLoading || email.isEmpty || password.isEmpty || password != confirmPassword)
+                            .opacity((isLoading || email.isEmpty || password.isEmpty || password != confirmPassword) ? 0.6 : 1)
+                        }
+                        .padding(30)
+                        .background(
+                            RoundedRectangle(cornerRadius: 24)
+                                .fill(Color.white.opacity(0.05))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        )
+                        .padding(.horizontal, 20)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .disabled(isLoading || email.isEmpty || password.isEmpty || password != confirmPassword)
                 }
-                .padding(.horizontal, 32)
-                
-                Spacer()
             }
-            .navigationTitle("Sign Up")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark")
+                            .foregroundColor(.white)
+                            .padding(8)
+                            .background(Color.white.opacity(0.1))
+                            .clipShape(Circle())
                     }
                 }
             }
         }
+        .preferredColorScheme(.dark)
     }
     
     private func handleSignup() {
         guard password == confirmPassword else {
-            errorMessage = "Passwords do not match"
+            errorMessage = "Runes do not match (Passwords must match)"
             return
         }
         

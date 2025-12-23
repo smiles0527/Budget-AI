@@ -11,35 +11,41 @@ import SwiftUI
 // MARK: - Colors
 struct AppColors {
     // Primary Colors
-    static let primary = Color(hex: "#007AFF") ?? .blue
-    static let primaryDark = Color(hex: "#0051D5") ?? .blue
-    static let primaryLight = Color(hex: "#5AC8FA") ?? .blue
+    static let primary = Color(hex: "#13ec6a") ?? .green // Neon Green
+    static let primaryDark = Color(hex: "#0ea84c") ?? .green
+    static let primaryLight = Color(hex: "#5cf498") ?? .green
     
     // Secondary Colors
-    static let secondary = Color(hex: "#5856D6") ?? .purple
-    static let accent = Color(hex: "#FF9500") ?? .orange
+    static let secondary = Color(hex: "#8b5cf6") ?? .purple // Quest Purple
+    static let accent = Color(hex: "#fbbf24") ?? .yellow // Gold
     
     // Semantic Colors
-    static let success = Color(hex: "#34C759") ?? .green
-    static let warning = Color(hex: "#FF9500") ?? .orange
-    static let error = Color(hex: "#FF3B30") ?? .red
-    static let info = Color(hex: "#007AFF") ?? .blue
+    static let success = Color(hex: "#13ec6a") ?? .green
+    static let warning = Color(hex: "#fbbf24") ?? .yellow
+    static let error = Color(hex: "#ef4444") ?? .red
+    static let info = Color(hex: "#3b82f6") ?? .blue
     
     // Neutral Colors
-    static let background = Color(hex: "#F2F2F7") ?? Color(.systemGray6)
+    static let background = Color(hex: "#f0f2f5") ?? Color(.systemGray6)
+    static let backgroundDark = Color(hex: "#0b1215") ?? .black // Dark Stone
+    
     static let surface = Color.white
+    static let surfaceDark = Color(hex: "#1c1917") ?? .gray
+    
     static let textPrimary = Color(hex: "#000000") ?? .primary
-    static let textSecondary = Color(hex: "#8E8E93") ?? .secondary
+    static let textPrimaryDark = Color.white
     
-    // Badge Colors
-    static let badgeGold = Color(hex: "#FFD700") ?? .yellow
-    static let badgeSilver = Color(hex: "#C0C0C0") ?? .gray
-    static let badgeBronze = Color(hex: "#CD7F32") ?? .orange
+    static let textSecondary = Color(hex: "#6b7280") ?? .secondary
+    static let textSecondaryDark = Color(hex: "#9ca3af") ?? .gray
     
-    // Premium Colors
-    static let premiumGold = Color(hex: "#FFD700") ?? .yellow
-    static let premiumGradient = LinearGradient(
-        colors: [Color(hex: "#FFD700") ?? .yellow, Color(hex: "#FFA500") ?? .orange],
+    // Rarity Colors
+    static let rare = Color(hex: "#3b82f6") ?? .blue
+    static let epic = Color(hex: "#a855f7") ?? .purple
+    static let legendary = Color(hex: "#fbbf24") ?? .yellow
+    
+    // Gradients
+    static let primaryGradient = LinearGradient(
+        colors: [primary, primaryDark],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
@@ -47,23 +53,22 @@ struct AppColors {
 
 // MARK: - Typography
 struct AppTypography {
-    // Headings
-    static let h1 = Font.system(size: 32, weight: .bold, design: .default)
-    static let h2 = Font.system(size: 28, weight: .bold, design: .default)
-    static let h3 = Font.system(size: 24, weight: .semibold, design: .default)
-    static let h4 = Font.system(size: 20, weight: .semibold, design: .default)
+    // Headings (Spline Sans proxy)
+    static let h1 = Font.system(size: 32, weight: .black, design: .rounded)
+    static let h2 = Font.system(size: 28, weight: .bold, design: .rounded)
+    static let h3 = Font.system(size: 24, weight: .bold, design: .rounded)
+    static let h4 = Font.system(size: 20, weight: .semibold, design: .rounded)
     
-    // Body
-    static let body = Font.system(size: 17, weight: .regular, design: .default)
-    static let bodyBold = Font.system(size: 17, weight: .semibold, design: .default)
+    // Body (Oxanium proxy)
+    static let body = Font.system(size: 17, weight: .regular, design: .monospaced)
+    static let bodyBold = Font.system(size: 17, weight: .bold, design: .monospaced)
     
     // Caption
-    static let caption = Font.system(size: 15, weight: .regular, design: .default)
-    static let captionBold = Font.system(size: 15, weight: .semibold, design: .default)
+    static let caption = Font.system(size: 14, weight: .medium, design: .rounded)
+    static let captionBold = Font.system(size: 14, weight: .bold, design: .rounded)
     
     // Small
-    static let small = Font.system(size: 13, weight: .regular, design: .default)
-    static let smallBold = Font.system(size: 13, weight: .semibold, design: .default)
+    static let small = Font.system(size: 12, weight: .medium, design: .monospaced)
 }
 
 // MARK: - Spacing
@@ -82,6 +87,7 @@ struct AppCornerRadius {
     static let medium: CGFloat = 12
     static let large: CGFloat = 16
     static let xlarge: CGFloat = 24
+    static let xxl: CGFloat = 32
 }
 
 // MARK: - Shadows

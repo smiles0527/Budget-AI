@@ -77,7 +77,7 @@ curl http://localhost:8000/healthz
 
 ```bash
 # Open the Xcode project
-open testapp.xcodeproj
+open BudgetAI.xcodeproj
 ```
 
 **In Xcode:**

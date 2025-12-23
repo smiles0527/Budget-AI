@@ -17,7 +17,7 @@
 
 2. **Open the project:**
    ```bash
-   open testapp.xcodeproj
+   open BudgetAI.xcodeproj
    ```
 
 3. **Select a simulator** (e.g., iPhone 15 Pro)
@@ -38,7 +38,7 @@
    ```
 
 2. **Update the API URL:**
-   - Open `testapp/Services/AppConfig.swift`
+   - Open `BudgetAI/Services/AppConfig.swift`
    - Change the development baseURL to use your Mac's IP:
    ```swift
    case .development:

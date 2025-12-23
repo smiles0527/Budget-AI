@@ -27,7 +27,7 @@ The app uses a design system that can be synced from Figma. This allows:
 
 ### 3. Configure the App
 
-Edit `testapp/Services/FigmaService.swift`:
+Edit `BudgetAI/Services/FigmaService.swift`:
 
 ```swift
 struct FigmaConfig {

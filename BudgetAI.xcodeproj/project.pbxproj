@@ -12,50 +12,50 @@
 			containerPortal = E9DD6BB92E5BEFCB00602528 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = E9DD6BC02E5BEFCB00602528;
-			remoteInfo = testapp;
+			remoteInfo = BudgetAI;
 		};
 		E9DD6BDD2E5BEFCD00602528 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = E9DD6BB92E5BEFCB00602528 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = E9DD6BC02E5BEFCB00602528;
-			remoteInfo = testapp;
+			remoteInfo = BudgetAI;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		E9DD6BC12E5BEFCB00602528 /* testapp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testapp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		E9DD6BD22E5BEFCD00602528 /* testappTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = testappTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		E9DD6BDC2E5BEFCD00602528 /* testappUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = testappUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E9DD6BC12E5BEFCB00602528 /* BudgetAI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BudgetAI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E9DD6BD22E5BEFCD00602528 /* BudgetAITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BudgetAITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E9DD6BDC2E5BEFCD00602528 /* BudgetAIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BudgetAIUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E9DD6BE42E5BEFCD00602528 /* Exceptions for "testapp" folder in "testapp" target */ = {
+		E9DD6BE42E5BEFCD00602528 /* Exceptions for "BudgetAI" folder in "BudgetAI" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = E9DD6BC02E5BEFCB00602528 /* testapp */;
+			target = E9DD6BC02E5BEFCB00602528 /* BudgetAI */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		E9DD6BC32E5BEFCB00602528 /* testapp */ = {
+		E9DD6BC32E5BEFCB00602528 /* BudgetAI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				E9DD6BE42E5BEFCD00602528 /* Exceptions for "testapp" folder in "testapp" target */,
+				E9DD6BE42E5BEFCD00602528 /* Exceptions for "BudgetAI" folder in "BudgetAI" target */,
 			);
-			path = testapp;
+			path = BudgetAI;
 			sourceTree = "<group>";
 		};
-		E9DD6BD52E5BEFCD00602528 /* testappTests */ = {
+		E9DD6BD52E5BEFCD00602528 /* BudgetAITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = testappTests;
+			path = BudgetAITests;
 			sourceTree = "<group>";
 		};
-		E9DD6BDF2E5BEFCD00602528 /* testappUITests */ = {
+		E9DD6BDF2E5BEFCD00602528 /* BudgetAIUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = testappUITests;
+			path = BudgetAIUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -88,9 +88,9 @@
 		E9DD6BB82E5BEFCB00602528 = {
 			isa = PBXGroup;
 			children = (
-				E9DD6BC32E5BEFCB00602528 /* testapp */,
-				E9DD6BD52E5BEFCD00602528 /* testappTests */,
-				E9DD6BDF2E5BEFCD00602528 /* testappUITests */,
+				E9DD6BC32E5BEFCB00602528 /* BudgetAI */,
+				E9DD6BD52E5BEFCD00602528 /* BudgetAITests */,
+				E9DD6BDF2E5BEFCD00602528 /* BudgetAIUITests */,
 				E9DD6BC22E5BEFCB00602528 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -98,9 +98,9 @@
 		E9DD6BC22E5BEFCB00602528 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E9DD6BC12E5BEFCB00602528 /* testapp.app */,
-				E9DD6BD22E5BEFCD00602528 /* testappTests.xctest */,
-				E9DD6BDC2E5BEFCD00602528 /* testappUITests.xctest */,
+				E9DD6BC12E5BEFCB00602528 /* BudgetAI.app */,
+				E9DD6BD22E5BEFCD00602528 /* BudgetAITests.xctest */,
+				E9DD6BDC2E5BEFCD00602528 /* BudgetAIUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -108,9 +108,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		E9DD6BC02E5BEFCB00602528 /* testapp */ = {
+		E9DD6BC02E5BEFCB00602528 /* BudgetAI */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E9DD6BE52E5BEFCD00602528 /* Build configuration list for PBXNativeTarget "testapp" */;
+			buildConfigurationList = E9DD6BE52E5BEFCD00602528 /* Build configuration list for PBXNativeTarget "BudgetAI" */;
 			buildPhases = (
 				E9DD6BBD2E5BEFCB00602528 /* Sources */,
 				E9DD6BBE2E5BEFCB00602528 /* Frameworks */,
@@ -121,18 +121,18 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				E9DD6BC32E5BEFCB00602528 /* testapp */,
+				E9DD6BC32E5BEFCB00602528 /* BudgetAI */,
 			);
-			name = testapp;
+			name = BudgetAI;
 			packageProductDependencies = (
 			);
-			productName = testapp;
-			productReference = E9DD6BC12E5BEFCB00602528 /* testapp.app */;
+			productName = BudgetAI;
+			productReference = E9DD6BC12E5BEFCB00602528 /* BudgetAI.app */;
 			productType = "com.apple.product-type.application";
 		};
-		E9DD6BD12E5BEFCD00602528 /* testappTests */ = {
+		E9DD6BD12E5BEFCD00602528 /* BudgetAITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E9DD6BEA2E5BEFCD00602528 /* Build configuration list for PBXNativeTarget "testappTests" */;
+			buildConfigurationList = E9DD6BEA2E5BEFCD00602528 /* Build configuration list for PBXNativeTarget "BudgetAITests" */;
 			buildPhases = (
 				E9DD6BCE2E5BEFCD00602528 /* Sources */,
 				E9DD6BCF2E5BEFCD00602528 /* Frameworks */,
@@ -144,18 +144,18 @@
 				E9DD6BD42E5BEFCD00602528 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				E9DD6BD52E5BEFCD00602528 /* testappTests */,
+				E9DD6BD52E5BEFCD00602528 /* BudgetAITests */,
 			);
-			name = testappTests;
+			name = BudgetAITests;
 			packageProductDependencies = (
 			);
-			productName = testappTests;
-			productReference = E9DD6BD22E5BEFCD00602528 /* testappTests.xctest */;
+			productName = BudgetAITests;
+			productReference = E9DD6BD22E5BEFCD00602528 /* BudgetAITests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		E9DD6BDB2E5BEFCD00602528 /* testappUITests */ = {
+		E9DD6BDB2E5BEFCD00602528 /* BudgetAIUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E9DD6BED2E5BEFCD00602528 /* Build configuration list for PBXNativeTarget "testappUITests" */;
+			buildConfigurationList = E9DD6BED2E5BEFCD00602528 /* Build configuration list for PBXNativeTarget "BudgetAIUITests" */;
 			buildPhases = (
 				E9DD6BD82E5BEFCD00602528 /* Sources */,
 				E9DD6BD92E5BEFCD00602528 /* Frameworks */,
@@ -167,13 +167,13 @@
 				E9DD6BDE2E5BEFCD00602528 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				E9DD6BDF2E5BEFCD00602528 /* testappUITests */,
+				E9DD6BDF2E5BEFCD00602528 /* BudgetAIUITests */,
 			);
-			name = testappUITests;
+			name = BudgetAIUITests;
 			packageProductDependencies = (
 			);
-			productName = testappUITests;
-			productReference = E9DD6BDC2E5BEFCD00602528 /* testappUITests.xctest */;
+			productName = BudgetAIUITests;
+			productReference = E9DD6BDC2E5BEFCD00602528 /* BudgetAIUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -199,7 +199,7 @@
 					};
 				};
 			};
-			buildConfigurationList = E9DD6BBC2E5BEFCB00602528 /* Build configuration list for PBXProject "testapp" */;
+			buildConfigurationList = E9DD6BBC2E5BEFCB00602528 /* Build configuration list for PBXProject "BudgetAI" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -213,9 +213,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				E9DD6BC02E5BEFCB00602528 /* testapp */,
-				E9DD6BD12E5BEFCD00602528 /* testappTests */,
-				E9DD6BDB2E5BEFCD00602528 /* testappUITests */,
+				E9DD6BC02E5BEFCB00602528 /* BudgetAI */,
+				E9DD6BD12E5BEFCD00602528 /* BudgetAITests */,
+				E9DD6BDB2E5BEFCD00602528 /* BudgetAIUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -271,12 +271,12 @@
 /* Begin PBXTargetDependency section */
 		E9DD6BD42E5BEFCD00602528 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = E9DD6BC02E5BEFCB00602528 /* testapp */;
+			target = E9DD6BC02E5BEFCB00602528 /* BudgetAI */;
 			targetProxy = E9DD6BD32E5BEFCD00602528 /* PBXContainerItemProxy */;
 		};
 		E9DD6BDE2E5BEFCD00602528 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = E9DD6BC02E5BEFCB00602528 /* testapp */;
+			target = E9DD6BC02E5BEFCB00602528 /* BudgetAI */;
 			targetProxy = E9DD6BDD2E5BEFCD00602528 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -287,7 +287,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = testapp/testapp.entitlements;
+				CODE_SIGN_ENTITLEMENTS = BudgetAI/BudgetAI.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
@@ -297,7 +297,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = testapp/Info.plist;
+				INFOPLIST_FILE = BudgetAI/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -330,7 +330,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = testapp/testapp.entitlements;
+				CODE_SIGN_ENTITLEMENTS = BudgetAI/BudgetAI.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
@@ -340,7 +340,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = testapp/Info.plist;
+				INFOPLIST_FILE = BudgetAI/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -507,7 +507,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/testapp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/testapp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BudgetAI.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BudgetAI";
 				XROS_DEPLOYMENT_TARGET = 2.5;
 			};
 			name = Debug;
@@ -531,7 +531,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/testapp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/testapp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BudgetAI.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BudgetAI";
 				XROS_DEPLOYMENT_TARGET = 2.5;
 			};
 			name = Release;
@@ -554,7 +554,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_TARGET_NAME = testapp;
+				TEST_TARGET_NAME = BudgetAI;
 				XROS_DEPLOYMENT_TARGET = 2.5;
 			};
 			name = Debug;
@@ -577,7 +577,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_TARGET_NAME = testapp;
+				TEST_TARGET_NAME = BudgetAI;
 				XROS_DEPLOYMENT_TARGET = 2.5;
 			};
 			name = Release;
@@ -585,7 +585,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		E9DD6BBC2E5BEFCB00602528 /* Build configuration list for PBXProject "testapp" */ = {
+		E9DD6BBC2E5BEFCB00602528 /* Build configuration list for PBXProject "BudgetAI" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E9DD6BE82E5BEFCD00602528 /* Debug */,
@@ -594,7 +594,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E9DD6BE52E5BEFCD00602528 /* Build configuration list for PBXNativeTarget "testapp" */ = {
+		E9DD6BE52E5BEFCD00602528 /* Build configuration list for PBXNativeTarget "BudgetAI" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E9DD6BE62E5BEFCD00602528 /* Debug */,
@@ -603,7 +603,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E9DD6BEA2E5BEFCD00602528 /* Build configuration list for PBXNativeTarget "testappTests" */ = {
+		E9DD6BEA2E5BEFCD00602528 /* Build configuration list for PBXNativeTarget "BudgetAITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E9DD6BEB2E5BEFCD00602528 /* Debug */,
@@ -612,7 +612,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E9DD6BED2E5BEFCD00602528 /* Build configuration list for PBXNativeTarget "testappUITests" */ = {
+		E9DD6BED2E5BEFCD00602528 /* Build configuration list for PBXNativeTarget "BudgetAIUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E9DD6BEE2E5BEFCD00602528 /* Debug */,

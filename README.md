@@ -78,7 +78,7 @@ Budget-AI/
 │   ├── requirements.txt       # Python dependencies
 │   └── tests/                 # Backend test suite
 │
-├── testapp/                   # iOS SwiftUI application
+├── BudgetAI/                   # iOS SwiftUI application
 │   ├── Views/                 # SwiftUI view components
 │   │   ├── Dashboard/         # Dashboard & analytics views
 │   │   ├── Transactions/      # Transaction management views
@@ -92,7 +92,7 @@ Budget-AI/
 │   ├── Utils/                 # Utility extensions
 │   │   ├── DesignSystem.swift # Figma-synced design tokens
 │   │   └── PremiumGate.swift  # Premium feature gating
-│   └── testapp.xcodeproj/     # Xcode project
+│   └── BudgetAI.xcodeproj/     # Xcode project
 │
 ├── db/                        # Database migrations
 │   └── migrations/            # PostgreSQL schema migrations
@@ -161,7 +161,7 @@ Install Budget AI using the following method:
 
 3. **Open iOS project:**
    ```bash
-   open testapp.xcodeproj
+   open BudgetAI.xcodeproj
    ```
 
 ### Usage
@@ -176,7 +176,7 @@ Install Budget AI using the following method:
 # Backend API running at http://localhost:8000
 
 # Run iOS app
-> open testapp.xcodeproj
+> open BudgetAI.xcodeproj
 # Select iPhone 15 Pro simulator
 # Press ⌘R to run
 ```

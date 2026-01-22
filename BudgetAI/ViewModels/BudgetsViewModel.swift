@@ -40,10 +40,10 @@ class BudgetsViewModel: ObservableObject {
     private func getSpendingForBudget(budget: Budget) async -> Int {
         do {
             let response = try await apiClient.getTransactions(
+                limit: 1000,
                 fromDate: budget.period_start,
                 toDate: budget.period_end,
-                category: budget.category,
-                limit: 1000
+                category: budget.category
             )
             return response.items.reduce(0) { $0 + $1.total_cents }
         } catch {
@@ -100,19 +100,8 @@ class BudgetsViewModel: ObservableObject {
 }
 
 struct BudgetWithSpending: Identifiable {
-    let id: String { budget.id }
+    var id: String { budget.id }
     let budget: Budget
     let spentCents: Int
-}
-
-struct BudgetAlert: Codable {
-    let id: String
-    let alert_type: String
-    let category: String?
-    let message: String
-    let status: String
-    let threshold_cents: Int?
-    let current_cents: Int?
-    let created_at: String
 }
 

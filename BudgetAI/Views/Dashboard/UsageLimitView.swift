@@ -140,11 +140,11 @@ struct UpgradeView: View {
                     
                     // Features
                     VStack(alignment: .leading, spacing: 16) {
-                        FeatureRow(icon: "infinity", title: "Unlimited Scans", description: "No monthly limits")
-                        FeatureRow(icon: "chart.bar.fill", title: "Advanced Analytics", description: "Detailed insights and reports")
-                        FeatureRow(icon: "square.and.arrow.down", title: "CSV Export", description: "Export your data anytime")
-                        FeatureRow(icon: "pencil", title: "Manual Transactions", description: "Add transactions manually")
-                        FeatureRow(icon: "bell.badge.fill", title: "Priority Support", description: "Get help faster")
+                        FeatureRow(icon: "infinity", text: "Unlimited Scans")
+                        FeatureRow(icon: "chart.bar.fill", text: "Advanced Analytics")
+                        FeatureRow(icon: "square.and.arrow.down", text: "CSV Export")
+                        FeatureRow(icon: "pencil", text: "Manual Transactions")
+                        FeatureRow(icon: "bell.badge.fill", text: "Priority Support")
                     }
                     .padding()
                     
@@ -218,31 +218,6 @@ struct UpgradeView: View {
             print("Error starting checkout: \(error)")
         }
         isLoading = false
-    }
-}
-
-struct FeatureRow: View {
-    let icon: String
-    let title: String
-    let description: String
-    
-    var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundColor(.blue)
-                .frame(width: 30)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-        }
     }
 }
 

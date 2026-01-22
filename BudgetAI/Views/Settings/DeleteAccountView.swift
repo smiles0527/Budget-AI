@@ -67,7 +67,7 @@ struct DeleteAccountView: View {
         Task {
             do {
                 try await APIClient.shared.deleteAccount()
-                await authManager.logout()
+                try await authManager.logout()
                 // Dismiss will happen automatically after logout
             } catch {
                 errorMessage = ErrorHandler.userFriendlyMessage(for: error)

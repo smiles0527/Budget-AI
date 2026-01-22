@@ -69,11 +69,20 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E9DD6BC02E5BEFCB00602528"
+            BuildableName = "BudgetAI.app"
+            BlueprintName = "BudgetAI"
+            ReferencedContainer = "container:BudgetAI.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "E9DD6BC02E5BEFCB00602528"
             BuildableName = "testapp.app"
             BlueprintName = "testapp"
             ReferencedContainer = "container:testapp.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -91,6 +100,15 @@
             ReferencedContainer = "container:testapp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "E9DD6BC02E5BEFCB00602528"
+            BuildableName = "testapp.app"
+            BlueprintName = "testapp"
+            ReferencedContainer = "container:testapp.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

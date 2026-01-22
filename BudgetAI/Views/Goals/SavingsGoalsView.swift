@@ -276,14 +276,14 @@ struct CreateQuestView: View {
         }
         
         Task {
-            let success = await viewModel.createGoal(
+            await viewModel.createGoal(
                 name: name,
                 category: nil,
                 targetCents: Int(dollars * 100),
                 startDate: nil,
                 targetDate: nil // Simplified for now
             )
-            if success {
+            if viewModel.errorMessage == nil {
                 dismiss()
             } else {
                 errorMessage = viewModel.errorMessage

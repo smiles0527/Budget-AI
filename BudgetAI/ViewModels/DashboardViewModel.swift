@@ -25,11 +25,8 @@ class DashboardViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         
-        async let summaryTask = loadSummary(period: period, anchor: anchor)
-        async let categoriesTask = loadCategories(period: period, anchor: anchor)
-        
-        await summaryTask
-        await categoriesTask
+        await loadSummary(period: period, anchor: anchor)
+        await loadCategories(period: period, anchor: anchor)
         
         isLoading = false
     }

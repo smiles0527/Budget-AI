@@ -6,10 +6,12 @@
 //
 
 import Foundation
+#if canImport(UIKit)
 import UIKit
+#endif
 import PhotosUI
 
-class ReceiptUploader {
+class ReceiptUploader: ObservableObject {
     static let shared = ReceiptUploader()
     private let apiClient = APIClient.shared
     

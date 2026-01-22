@@ -751,12 +751,27 @@ class APIClient {
 
 // MARK: - Error Types
 
-enum APIError: Error {
+enum APIError: LocalizedError {
     case invalidURL
     case invalidResponse
     case httpError(Int)
     case serverError(String)
     case decodingError
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidURL:
+            return "Invalid URL"
+        case .invalidResponse:
+            return "Invalid server response"
+        case .httpError(let code):
+            return "Server error (\(code))"
+        case .serverError(let message):
+            return message
+        case .decodingError:
+            return "Failed to decode response"
+        }
+    }
 }
 
 struct APIErrorResponse: Codable {
@@ -920,7 +935,8 @@ struct BadgesResponse: Codable {
     let items: [Badge]
 }
 
-struct Badge: Codable {
+struct Badge: Codable, Identifiable {
+    var id: String { code }
     let code: String
     let name: String
     let description: String

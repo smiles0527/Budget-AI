@@ -18,7 +18,7 @@ struct BadgeCollectionView: View {
                 GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: 20) {
-                ForEach(viewModel.allBadges, id: \.code) { badgeInfo in
+                ForEach(viewModel.allBadges, id: \.badge.code) { badgeInfo in
                     BadgeGridItem(badgeInfo: badgeInfo)
                         .onTapGesture {
                             selectedBadge = badgeInfo.badge

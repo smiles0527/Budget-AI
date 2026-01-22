@@ -11,6 +11,11 @@ struct TransactionListView: View {
     @StateObject private var viewModel = TransactionsViewModel()
     @State private var searchText = ""
     @State private var showingFilters = false
+    @State private var selectedCategory: String?
+    @State private var startDate: Date?
+    @State private var endDate: Date?
+    @State private var minAmount: Double?
+    @State private var maxAmount: Double?
     
     var body: some View {
         NavigationView {

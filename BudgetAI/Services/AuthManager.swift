@@ -63,7 +63,7 @@ class AuthManager: ObservableObject {
     }
     
     @MainActor
-    private func refreshUser() async {
+    func refreshUser() async {
         do {
             let response = try await apiClient.getCurrentUser()
             currentUser = response.user

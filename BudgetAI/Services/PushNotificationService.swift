@@ -7,7 +7,9 @@
 
 import Foundation
 import UserNotifications
+#if canImport(UIKit)
 import UIKit
+#endif
 
 @MainActor
 class PushNotificationService: NSObject, ObservableObject {
@@ -18,7 +20,7 @@ class PushNotificationService: NSObject, ObservableObject {
     @Published var authorizationStatus: UNAuthorizationStatus = .notDetermined
     @Published var pendingNavigation: NavigationDestination?
 
-    enum NavigationDestination: Identifiable {
+    enum NavigationDestination: Identifiable, Equatable {
         case budgetAlert
         case goalDetails(String)
         case streak
@@ -151,7 +153,7 @@ class PushNotificationService: NSObject, ObservableObject {
 
 extension PushNotificationService: UNUserNotificationCenterDelegate {
     // Handle notification when app is in foreground
-    func userNotificationCenter(
+    nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
@@ -160,16 +162,20 @@ extension PushNotificationService: UNUserNotificationCenterDelegate {
         completionHandler([.banner, .sound, .badge])
         
         // Handle notification data
-        handleNotification(userInfo: notification.request.content.userInfo)
+        Task { @MainActor in
+            handleNotification(userInfo: notification.request.content.userInfo)
+        }
     }
     
     // Handle notification tap
-    func userNotificationCenter(
+    nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
-        handleNotification(userInfo: response.notification.request.content.userInfo)
+        Task { @MainActor in
+            handleNotification(userInfo: response.notification.request.content.userInfo)
+        }
         completionHandler()
     }
 }

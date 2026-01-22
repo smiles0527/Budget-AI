@@ -1,0 +1,20 @@
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --entitlements /Users/curtis/Library/Developer/Xcode/DerivedData/testapp-bbzcfafzxjsffcftyuzvzjsagwqo/Build/Intermediates.noindex/testapp.build/Debug-iphonesimulator/testapp.build/testapp.app.xcent --timestamp\=none --generate-entitlement-der /Users/curtis/Library/Developer/Xcode/DerivedData/testapp-bbzcfafzxjsffcftyuzvzjsagwqo/Build/Products/Debug-iphonesimulator/testapp.app
+
+RegisterExecutionPolicyException /Users/curtis/Library/Developer/Xcode/DerivedData/testapp-bbzcfafzxjsffcftyuzvzjsagwqo/Build/Products/Debug-iphonesimulator/testapp.app (in target 'testapp' from project 'testapp')
+    cd /Users/curtis/Desktop/Budget-AI
+    builtin-RegisterExecutionPolicyException /Users/curtis/Library/Developer/Xcode/DerivedData/testapp-bbzcfafzxjsffcftyuzvzjsagwqo/Build/Products/Debug-iphonesimulator/testapp.app
+
+Validate /Users/curtis/Library/Developer/Xcode/DerivedData/testapp-bbzcfafzxjsffcftyuzvzjsagwqo/Build/Products/Debug-iphonesimulator/testapp.app (in target 'testapp' from project 'testapp')
+    cd /Users/curtis/Desktop/Budget-AI
+    builtin-validationUtility /Users/curtis/Library/Developer/Xcode/DerivedData/testapp-bbzcfafzxjsffcftyuzvzjsagwqo/Build/Products/Debug-iphonesimulator/testapp.app -shallow-bundle -infoplist-subpath Info.plist
+
+Touch /Users/curtis/Library/Developer/Xcode/DerivedData/testapp-bbzcfafzxjsffcftyuzvzjsagwqo/Build/Products/Debug-iphonesimulator/testapp.app (in target 'testapp' from project 'testapp')
+    cd /Users/curtis/Desktop/Budget-AI
+    /usr/bin/touch -c /Users/curtis/Library/Developer/Xcode/DerivedData/testapp-bbzcfafzxjsffcftyuzvzjsagwqo/Build/Products/Debug-iphonesimulator/testapp.app
+
+note: Disabling hardened runtime with ad-hoc codesigning. (in target 'testapp' from project 'testapp')
+** BUILD SUCCEEDED **
+

@@ -6,7 +6,9 @@
 //
 
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#endif
 
 struct SettingsView: View {
     @StateObject private var authManager = AuthManager.shared
@@ -139,7 +141,7 @@ struct EditProfileView: View {
     }
 }
 
-struct ProfileViewModel: ObservableObject {
+class ProfileViewModel: ObservableObject {
     @Published var profile: Profile?
     @Published var isLoading = false
     @Published var errorMessage: String?
@@ -171,27 +173,6 @@ struct ProfileViewModel: ObservableObject {
         }
         
         isLoading = false
-    }
-}
-
-struct NotificationsSettingsView: View {
-    @State private var budgetAlerts = true
-    @State private var goalAchievements = true
-    @State private var weeklySummary = false
-    
-    var body: some View {
-        Form {
-            Section("Alerts") {
-                Toggle("Budget Warnings", isOn: $budgetAlerts)
-                Toggle("Goal Achievements", isOn: $goalAchievements)
-            }
-            
-            Section("Reports") {
-                Toggle("Weekly Summary", isOn: $weeklySummary)
-            }
-        }
-        .navigationTitle("Notifications")
-        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -267,7 +248,7 @@ struct ExportDataView: View {
                 if let downloadURL = response.download_url {
                     exportMessage = "Export ready! Download URL: \(downloadURL)"
                     if let url = URL(string: downloadURL) {
-                        UIApplication.shared.open(url)
+                        await UIApplication.shared.open(url)
                     }
                 } else if let jobId = response.job_id {
                     self.jobId = jobId
@@ -373,13 +354,11 @@ struct SubscriptionView: View {
                         
                         if let subscription = authManager.subscription {
                             VStack(spacing: 8) {
-                                if let periodEnd = subscription.current_period_end {
-                                    Text("Renews: \(periodEnd.toDisplayDate())")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                }
+                                Text("Status: \(subscription.status.capitalized)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
                                 
-                                if subscription.status == "canceled" || subscription.cancel_at_period_end == true {
+                                if subscription.status == "canceled" {
                                     Text("Cancels at period end")
                                         .font(.caption)
                                         .foregroundColor(.orange)
@@ -444,7 +423,7 @@ struct SubscriptionView: View {
                 
                 // Action Buttons
                 if isPremium {
-                    if authManager.subscription?.cancel_at_period_end != true {
+                    if authManager.subscription?.status != "canceled" {
                         Button(action: { showingCancelAlert = true }) {
                             Text("Cancel Subscription")
                                 .foregroundColor(.red)

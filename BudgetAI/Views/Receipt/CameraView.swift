@@ -189,7 +189,7 @@ struct ReceiptCaptureView: View {
             }
             
             if let error = errorMessage {
-                Text(ErrorHandler.userFriendlyMessage(for: error))
+                Text(error)
                     .font(.caption)
                     .foregroundColor(.red)
                     .padding(.horizontal)

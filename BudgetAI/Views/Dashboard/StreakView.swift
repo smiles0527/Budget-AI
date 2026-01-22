@@ -166,9 +166,9 @@ class StreakViewModel: ObservableObject {
         
         do {
             let response = try await apiClient.getTransactions(
+                limit: 1000,
                 fromDate: formatter.string(from: startDate),
-                toDate: formatter.string(from: endDate),
-                limit: 1000
+                toDate: formatter.string(from: endDate)
             )
             
             // Extract unique dates

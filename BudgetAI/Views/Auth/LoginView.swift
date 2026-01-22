@@ -29,6 +29,7 @@ struct LoginView: View {
                 )
                 .foregroundColor(.white)
                 .font(AppTypography.body)
+                .frame(minHeight: 50)
         }
     }
     
@@ -89,11 +90,14 @@ struct LoginView: View {
                                         .font(AppTypography.small)
                                         .foregroundColor(AppColors.primary)
                                         .tracking(1)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
                                     
                                     TextField("wizard@example.com", text: $email)
                                         .textFieldStyle(GamifiedFieldStyle())
                                         .autocapitalization(.none)
                                         .keyboardType(.emailAddress)
+                                        .textContentType(.emailAddress)
                                 }
                                 
                                 VStack(alignment: .leading, spacing: 8) {
@@ -101,6 +105,8 @@ struct LoginView: View {
                                         .font(AppTypography.small)
                                         .foregroundColor(AppColors.primary)
                                         .tracking(1)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
                                     
                                     SecureField("••••••••", text: $password)
                                         .textFieldStyle(GamifiedFieldStyle())
@@ -217,6 +223,7 @@ struct SignupView: View {
                 )
                 .foregroundColor(.white)
                 .font(AppTypography.body)
+                .frame(minHeight: 50)
         }
     }
     
@@ -246,6 +253,8 @@ struct SignupView: View {
                                         .font(AppTypography.small)
                                         .foregroundColor(AppColors.secondary)
                                         .tracking(1)
+                                        .minimumScaleFactor(0.7)
+                                        .lineLimit(1)
                                     TextField("wizard@example.com", text: $email)
                                         .textFieldStyle(GamifiedFieldStyle())
                                         .autocapitalization(.none)
@@ -257,6 +266,8 @@ struct SignupView: View {
                                         .font(AppTypography.small)
                                         .foregroundColor(AppColors.secondary)
                                         .tracking(1)
+                                        .minimumScaleFactor(0.7)
+                                        .lineLimit(1)
                                     SecureField("••••••••", text: $password)
                                         .textFieldStyle(GamifiedFieldStyle())
                                 }
@@ -266,6 +277,8 @@ struct SignupView: View {
                                         .font(AppTypography.small)
                                         .foregroundColor(AppColors.secondary)
                                         .tracking(1)
+                                        .minimumScaleFactor(0.7)
+                                        .lineLimit(1)
                                     SecureField("••••••••", text: $confirmPassword)
                                         .textFieldStyle(GamifiedFieldStyle())
                                 }

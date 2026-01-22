@@ -69,11 +69,8 @@ class BadgesViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         
-        async let badgesTask = loadBadges()
-        async let userBadgesTask = loadUserBadges()
-        
-        await badgesTask
-        await userBadgesTask
+        await loadBadges()
+        await loadUserBadges()
         
         isLoading = false
     }

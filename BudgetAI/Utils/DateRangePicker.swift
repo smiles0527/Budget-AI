@@ -76,22 +76,7 @@ struct DateRangePickerView: View {
             Form {
                 Section("Quick Select") {
                     ForEach(DatePreset.allCases.filter { $0 != .custom }, id: \.self) { preset in
-                        Button(action: {
-                            if let dates = preset.dates() {
-                                tempStartDate = dates.start
-                                tempEndDate = dates.end
-                                selectedPreset = preset
-                            }
-                        }) {
-                            HStack {
-                                Text(preset.rawValue)
-                                Spacer()
-                                if selectedPreset == preset {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(.blue)
-                                }
-                            }
-                        }
+                        datePresetButton(for: preset)
                     }
                 }
                 
@@ -101,13 +86,7 @@ struct DateRangePickerView: View {
                 }
                 
                 Section {
-                    HStack {
-                        Text("Selected Range")
-                        Spacer()
-                        Text("\(tempStartDate.toDisplayDate()) - \(tempEndDate.toDisplayDate())")
-                            .foregroundColor(.secondary)
-                            .font(.caption)
-                    }
+                    DateRangeDisplay(startDate: tempStartDate, endDate: tempEndDate)
                 }
             }
             .navigationTitle("Select Date Range")
@@ -127,6 +106,40 @@ struct DateRangePickerView: View {
                     }
                 }
             }
+        }
+    }
+    
+    private func datePresetButton(for preset: DatePreset) -> some View {
+        Button(action: {
+            if let dates = preset.dates() {
+                tempStartDate = dates.start
+                tempEndDate = dates.end
+                selectedPreset = preset
+            }
+        }) {
+            HStack {
+                Text(preset.rawValue)
+                Spacer()
+                if selectedPreset == preset {
+                    Image(systemName: "checkmark")
+                        .foregroundColor(.blue)
+                }
+            }
+        }
+    }
+}
+
+struct DateRangeDisplay: View {
+    let startDate: Date
+    let endDate: Date
+    
+    var body: some View {
+        HStack {
+            Text("Selected Range")
+            Spacer()
+            Text("\(startDate.toDisplayString()) - \(endDate.toDisplayString())")
+                .foregroundColor(.secondary)
+                .font(.caption)
         }
     }
 }

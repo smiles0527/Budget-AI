@@ -148,7 +148,7 @@ struct ReceiptThumbnail: View {
 }
 
 struct ReceiptWithTransaction: Identifiable {
-    let id: String { receipt.id }
+    var id: String { receipt.id }
     let receipt: Receipt
     let transaction: Transaction
 }

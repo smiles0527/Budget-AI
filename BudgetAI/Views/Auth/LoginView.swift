@@ -28,8 +28,8 @@ struct LoginView: View {
                         .stroke(Color.white.opacity(0.1), lineWidth: 1)
                 )
                 .foregroundColor(.white)
-                .font(AppTypography.body)
-                .frame(minHeight: 50)
+                .font(.system(size: 15))
+                .frame(minHeight: 44)
         }
     }
     
@@ -50,132 +50,114 @@ struct LoginView: View {
                     .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 30) {
+                    VStack(spacing: 20) {
                         
                         // Header
                         VStack(spacing: 8) {
                             Text("Enter Realm")
-                                .font(AppTypography.h1)
+                                .font(.system(size: 24, weight: .black, design: .rounded))
                                 .foregroundColor(.white)
-                                .shadow(color: AppColors.primary.opacity(0.5), radius: 10)
                             
                             Text("Resume your financial journey")
-                                .font(AppTypography.body)
-                                .foregroundColor(.white.opacity(0.6))
+                                .font(.system(size: 14))
+                                .foregroundColor(.white.opacity(0.7))
                         }
-                        .padding(.top, 40)
+                        .padding(.top, 20)
                         
                         // Main Card
-                        VStack(spacing: 24) {
+                        VStack(alignment: .leading, spacing: 16) {
                             
-                            // Avatar Placeholder
+                            // Avatar
                             Circle()
-                                .fill(LinearGradient(colors: [AppColors.primaryDark, AppColors.backgroundDark], startPoint: .topLeading, endPoint: .bottomTrailing))
-                                .frame(width: 80, height: 80)
+                                .fill(AppColors.primary.opacity(0.2))
+                                .frame(width: 60, height: 60)
                                 .overlay(
                                     Image(systemName: "person.fill")
-                                        .font(.system(size: 32))
+                                        .font(.system(size: 24))
                                         .foregroundColor(AppColors.primary)
                                 )
-                                .overlay(
-                                    Circle()
-                                        .stroke(AppColors.primary.opacity(0.5), lineWidth: 2)
-                                )
-                                .shadow(color: AppColors.primary.opacity(0.3), radius: 10)
+                                .frame(maxWidth: .infinity)
                             
                             // Inputs
-                            VStack(spacing: 16) {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("SCROLL ID (EMAIL)")
-                                        .font(AppTypography.small)
+                            VStack(alignment: .leading, spacing: 12) {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("EMAIL")
+                                        .font(.system(size: 11, weight: .semibold))
                                         .foregroundColor(AppColors.primary)
-                                        .tracking(1)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.7)
                                     
                                     TextField("wizard@example.com", text: $email)
                                         .textFieldStyle(GamifiedFieldStyle())
                                         .autocapitalization(.none)
                                         .keyboardType(.emailAddress)
-                                        .textContentType(.emailAddress)
                                 }
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("SECRET RUNE (PASSWORD)")
-                                        .font(AppTypography.small)
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("PASSWORD")
+                                        .font(.system(size: 11, weight: .semibold))
                                         .foregroundColor(AppColors.primary)
-                                        .tracking(1)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.7)
                                     
                                     SecureField("••••••••", text: $password)
                                         .textFieldStyle(GamifiedFieldStyle())
                                 }
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             
                             if let error = errorMessage {
-                                HStack {
+                                HStack(spacing: 8) {
                                     Image(systemName: "exclamationmark.triangle.fill")
                                         .foregroundColor(AppColors.error)
+                                        .font(.system(size: 14))
                                     Text(error)
-                                        .font(AppTypography.caption)
+                                        .font(.system(size: 13))
                                         .foregroundColor(AppColors.error)
                                 }
-                                .padding()
+                                .padding(12)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(AppColors.error.opacity(0.1))
                                 .cornerRadius(8)
                             }
                             
                             // Action Button
                             Button(action: handleLogin) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(AppColors.primaryGradient)
-                                    
+                                HStack {
                                     if isLoading {
                                         ProgressView()
                                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                     } else {
-                                        HStack {
-                                            Text("Unlock Dashboard")
-                                                .font(AppTypography.h4)
-                                                .foregroundColor(.white)
-                                            
-                                            Image(systemName: "lock.open.fill")
-                                                .foregroundColor(.white)
-                                        }
+                                        Text("Unlock Dashboard")
+                                            .font(.system(size: 16, weight: .bold))
+                                        Image(systemName: "lock.open.fill")
                                     }
                                 }
-                                .frame(height: 56)
-                                .shadow(color: AppColors.primary.opacity(0.4), radius: 8, y: 4)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                                .background(AppColors.primaryGradient)
+                                .cornerRadius(12)
                             }
                             .disabled(isLoading || email.isEmpty || password.isEmpty)
                             .opacity((isLoading || email.isEmpty || password.isEmpty) ? 0.6 : 1)
                         }
-                        .padding(30)
-                        .background(
-                            RoundedRectangle(cornerRadius: 24)
-                                .fill(Color.white.opacity(0.05))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 24)
-                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                        )
-                        .padding(.horizontal, 20)
+                        .padding(24)
+                        .background(Color.white.opacity(0.05))
+                        .cornerRadius(20)
+                        .padding(.horizontal, 24)
                         
                         // Footer
                         HStack {
                             Text("New to the guild?")
-                                .font(AppTypography.body)
+                                .font(.system(size: 14))
                                 .foregroundColor(.white.opacity(0.6))
                             
                             Button("Forge Account") {
                                 showingSignup = true
                             }
-                            .font(AppTypography.bodyBold)
+                            .font(.system(size: 14, weight: .bold))
                             .foregroundColor(AppColors.accent)
                         }
                     }
+                    .padding(.horizontal, 16)
                 }
             }
             .navigationBarHidden(true)
@@ -233,103 +215,85 @@ struct SignupView: View {
                 AppColors.backgroundDark.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 30) {
+                    VStack(spacing: 20) {
                         VStack(spacing: 8) {
                             Text("Forge Account")
-                                .font(AppTypography.h1)
+                                .font(.system(size: 24, weight: .black, design: .rounded))
                                 .foregroundColor(.white)
-                                .shadow(color: AppColors.secondary.opacity(0.5), radius: 10)
                             
                             Text("Begin your quest today")
-                                .font(AppTypography.body)
-                                .foregroundColor(.white.opacity(0.6))
+                                .font(.system(size: 14))
+                                .foregroundColor(.white.opacity(0.7))
                         }
-                        .padding(.top, 40)
+                        .padding(.top, 20)
                         
-                        VStack(spacing: 24) {
-                            VStack(spacing: 16) {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("SCROLL ID (EMAIL)")
-                                        .font(AppTypography.small)
+                        VStack(spacing: 16) {
+                            VStack(spacing: 12) {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("EMAIL")
+                                        .font(.system(size: 11, weight: .semibold))
                                         .foregroundColor(AppColors.secondary)
-                                        .tracking(1)
-                                        .minimumScaleFactor(0.7)
-                                        .lineLimit(1)
                                     TextField("wizard@example.com", text: $email)
                                         .textFieldStyle(GamifiedFieldStyle())
                                         .autocapitalization(.none)
                                         .keyboardType(.emailAddress)
                                 }
                                 
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("SECRET RUNE (PASSWORD)")
-                                        .font(AppTypography.small)
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("PASSWORD")
+                                        .font(.system(size: 11, weight: .semibold))
                                         .foregroundColor(AppColors.secondary)
-                                        .tracking(1)
-                                        .minimumScaleFactor(0.7)
-                                        .lineLimit(1)
                                     SecureField("••••••••", text: $password)
                                         .textFieldStyle(GamifiedFieldStyle())
                                 }
                                 
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text("VERIFY RUNE")
-                                        .font(AppTypography.small)
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("CONFIRM PASSWORD")
+                                        .font(.system(size: 11, weight: .semibold))
                                         .foregroundColor(AppColors.secondary)
-                                        .tracking(1)
-                                        .minimumScaleFactor(0.7)
-                                        .lineLimit(1)
                                     SecureField("••••••••", text: $confirmPassword)
                                         .textFieldStyle(GamifiedFieldStyle())
                                 }
                             }
                             
                             if let error = errorMessage {
-                                HStack {
+                                HStack(spacing: 8) {
                                     Image(systemName: "exclamationmark.triangle.fill")
                                         .foregroundColor(AppColors.error)
+                                        .font(.system(size: 14))
                                     Text(error)
-                                        .font(AppTypography.caption)
+                                        .font(.system(size: 13))
                                         .foregroundColor(AppColors.error)
                                 }
-                                .padding()
+                                .padding(12)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(AppColors.error.opacity(0.1))
                                 .cornerRadius(8)
                             }
                             
                             Button(action: handleSignup) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(LinearGradient(colors: [AppColors.secondary, AppColors.epic], startPoint: .leading, endPoint: .trailing))
-                                    
+                                HStack {
                                     if isLoading {
                                         ProgressView()
                                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                     } else {
-                                        HStack {
-                                            Text("Create Character")
-                                                .font(AppTypography.h4)
-                                                .foregroundColor(.white)
-                                            Image(systemName: "person.badge.plus")
-                                                .foregroundColor(.white)
-                                        }
+                                        Text("Create Character")
+                                            .font(.system(size: 16, weight: .bold))
+                                        Image(systemName: "person.badge.plus")
                                     }
                                 }
-                                .frame(height: 56)
-                                .shadow(color: AppColors.secondary.opacity(0.4), radius: 8, y: 4)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                                .background(LinearGradient(colors: [AppColors.secondary, AppColors.epic], startPoint: .leading, endPoint: .trailing))
+                                .cornerRadius(12)
                             }
                             .disabled(isLoading || email.isEmpty || password.isEmpty || password != confirmPassword)
                             .opacity((isLoading || email.isEmpty || password.isEmpty || password != confirmPassword) ? 0.6 : 1)
                         }
-                        .padding(30)
-                        .background(
-                            RoundedRectangle(cornerRadius: 24)
-                                .fill(Color.white.opacity(0.05))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 24)
-                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                        )
+                        .padding(24)
+                        .background(Color.white.opacity(0.05))
+                        .cornerRadius(20)
                         .padding(.horizontal, 20)
                     }
                 }

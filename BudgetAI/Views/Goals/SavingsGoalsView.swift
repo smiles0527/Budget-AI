@@ -297,15 +297,306 @@ struct QuestDetailView: View {
     let goal: SavingsGoal
     @ObservedObject var viewModel: SavingsGoalsViewModel
     @State private var showingContribute = false
+    @State private var contributionAmount = ""
+    @State private var contributionNote = ""
+    @Environment(\.dismiss) private var dismiss
+    
+    var progressPercentage: Double {
+        guard goal.target_cents > 0 else { return 0 }
+        return min(1.0, Double(goal.contributed_cents ?? 0) / Double(goal.target_cents))
+    }
     
     var body: some View {
         ZStack {
             AppColors.backgroundDark.ignoresSafeArea()
-            VStack {
-                 // Simplified Detail View
-                Text(goal.name).font(AppTypography.h3).foregroundColor(.white)
-                // Add more details here as needed
-                Spacer()
+            
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Quest Banner
+                    VStack(spacing: 16) {
+                        // Icon
+                        ZStack {
+                            Circle()
+                                .fill(AppColors.epic.opacity(0.2))
+                                .frame(width: 80, height: 80)
+                            
+                            Image(systemName: "flag.fill")
+                                .font(.system(size: 36))
+                                .foregroundColor(AppColors.epic)
+                        }
+                        
+                        Text(goal.name)
+                            .font(AppTypography.h2)
+                            .foregroundColor(.white)
+                        
+                        if let category = goal.category {
+                            Text(category.capitalized)
+                                .font(AppTypography.caption)
+                                .foregroundColor(.white.opacity(0.6))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 4)
+                                .background(Color.white.opacity(0.1))
+                                .cornerRadius(12)
+                        }
+                    }
+                    .padding(.top, 20)
+                    
+                    // Progress Card
+                    VStack(spacing: 16) {
+                        HStack {
+                            Text("QUEST PROGRESS")
+                                .font(AppTypography.small)
+                                .foregroundColor(AppColors.primary)
+                                .tracking(1)
+                            Spacer()
+                            Text("\(Int(progressPercentage * 100))%")
+                                .font(AppTypography.h4)
+                                .foregroundColor(AppColors.primary)
+                        }
+                        
+                        // Progress Bar
+                        GeometryReader { g in
+                            ZStack(alignment: .leading) {
+                                Rectangle()
+                                    .fill(Color.black.opacity(0.3))
+                                    .cornerRadius(8)
+                                
+                                Rectangle()
+                                    .fill(LinearGradient(
+                                        colors: [AppColors.primary, AppColors.epic],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    ))
+                                    .frame(width: g.size.width * progressPercentage)
+                                    .cornerRadius(8)
+                            }
+                        }
+                        .frame(height: 12)
+                        
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text("Saved")
+                                    .font(AppTypography.small)
+                                    .foregroundColor(.white.opacity(0.6))
+                                Text(viewModel.formatAmount(cents: goal.contributed_cents ?? 0))
+                                    .font(AppTypography.h4)
+                                    .foregroundColor(AppColors.primary)
+                            }
+                            
+                            Spacer()
+                            
+                            VStack(alignment: .trailing) {
+                                Text("Target")
+                                    .font(AppTypography.small)
+                                    .foregroundColor(.white.opacity(0.6))
+                                Text(viewModel.formatAmount(cents: goal.target_cents))
+                                    .font(AppTypography.h4)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                    }
+                    .padding(20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.white.opacity(0.05))
+                    )
+                    .padding(.horizontal)
+                    
+                    // Quest Info
+                    VStack(spacing: 12) {
+                        if let targetDate = goal.target_date {
+                            HStack {
+                                Image(systemName: "calendar")
+                                    .foregroundColor(AppColors.accent)
+                                Text("Target Date")
+                                    .foregroundColor(.white.opacity(0.6))
+                                Spacer()
+                                Text(formatDate(targetDate))
+                                    .foregroundColor(.white)
+                            }
+                            .font(AppTypography.body)
+                        }
+                        
+                        HStack {
+                            Image(systemName: "flag.checkered")
+                                .foregroundColor(AppColors.primary)
+                            Text("Status")
+                                .foregroundColor(.white.opacity(0.6))
+                            Spacer()
+                            Text(goal.status.capitalized)
+                                .foregroundColor(goal.status == "completed" ? AppColors.success : AppColors.primary)
+                        }
+                        .font(AppTypography.body)
+                        
+                        let remaining = goal.target_cents - (goal.contributed_cents ?? 0)
+                        if remaining > 0 {
+                            HStack {
+                                Image(systemName: "dollarsign.circle")
+                                    .foregroundColor(AppColors.accent)
+                                Text("Remaining")
+                                    .foregroundColor(.white.opacity(0.6))
+                                Spacer()
+                                Text(viewModel.formatAmount(cents: remaining))
+                                    .foregroundColor(AppColors.accent)
+                            }
+                            .font(AppTypography.body)
+                        }
+                    }
+                    .padding(20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.white.opacity(0.05))
+                    )
+                    .padding(.horizontal)
+                    
+                    // Add Contribution Button
+                    Button(action: { showingContribute = true }) {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                            Text("Add Loot")
+                        }
+                        .font(AppTypography.bodyBold)
+                        .foregroundColor(AppColors.backgroundDark)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(AppColors.primary)
+                        .cornerRadius(12)
+                    }
+                    .padding(.horizontal)
+                    
+                    Spacer().frame(height: 50)
+                }
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showingContribute) {
+            ContributeSheet(
+                goal: goal,
+                viewModel: viewModel,
+                isPresented: $showingContribute
+            )
+        }
+    }
+    
+    func formatDate(_ dateString: String) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        if let date = formatter.date(from: dateString) {
+            formatter.dateStyle = .medium
+            return formatter.string(from: date)
+        }
+        return dateString
+    }
+}
+
+struct ContributeSheet: View {
+    let goal: SavingsGoal
+    @ObservedObject var viewModel: SavingsGoalsViewModel
+    @Binding var isPresented: Bool
+    @State private var amount = ""
+    @State private var note = ""
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                AppColors.backgroundDark.ignoresSafeArea()
+                
+                VStack(spacing: 24) {
+                    Text("Add to \(goal.name)")
+                        .font(AppTypography.h3)
+                        .foregroundColor(.white)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Amount")
+                            .font(AppTypography.caption)
+                            .foregroundColor(.white.opacity(0.6))
+                        
+                        HStack {
+                            Text("$")
+                                .foregroundColor(AppColors.primary)
+                            TextField("0.00", text: $amount)
+                                .keyboardType(.decimalPad)
+                                .foregroundColor(.white)
+                        }
+                        .padding()
+                        .background(Color.black.opacity(0.3))
+                        .cornerRadius(12)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Note (optional)")
+                            .font(AppTypography.caption)
+                            .foregroundColor(.white.opacity(0.6))
+                        
+                        TextField("e.g., Birthday money", text: $note)
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.black.opacity(0.3))
+                            .cornerRadius(12)
+                    }
+                    
+                    if let error = errorMessage {
+                        Text(error)
+                            .font(AppTypography.small)
+                            .foregroundColor(AppColors.error)
+                    }
+                    
+                    Spacer()
+                    
+                    Button(action: contribute) {
+                        if isLoading {
+                            ProgressView()
+                                .tint(AppColors.backgroundDark)
+                        } else {
+                            Text("Add Loot")
+                                .font(AppTypography.bodyBold)
+                        }
+                    }
+                    .foregroundColor(AppColors.backgroundDark)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(AppColors.primary)
+                    .cornerRadius(12)
+                    .disabled(isLoading || amount.isEmpty)
+                }
+                .padding()
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        isPresented = false
+                    }
+                    .foregroundColor(AppColors.primary)
+                }
+            }
+        }
+    }
+    
+    func contribute() {
+        guard let amountDouble = Double(amount), amountDouble > 0 else {
+            errorMessage = "Please enter a valid amount"
+            return
+        }
+        
+        let cents = Int(amountDouble * 100)
+        isLoading = true
+        errorMessage = nil
+        
+        Task {
+            await viewModel.addContribution(
+                goalId: goal.id,
+                amountCents: cents,
+                note: note.isEmpty ? nil : note
+            )
+            isLoading = false
+            
+            if viewModel.errorMessage == nil {
+                isPresented = false
+            } else {
+                errorMessage = viewModel.errorMessage
             }
         }
     }

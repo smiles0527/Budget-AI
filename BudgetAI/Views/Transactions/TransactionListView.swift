@@ -19,15 +19,19 @@ struct TransactionListView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
+            ZStack {
+                AppColors.backgroundDark.ignoresSafeArea()
+                
+                VStack {
                 // Search bar
                 HStack {
                     Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.white.opacity(0.5))
                         .accessibilityHidden(true)
                     
                     TextField("Search transactions...", text: $searchText)
                         .textFieldStyle(.plain)
+                        .foregroundColor(.white)
                         .accessibilityLabel("Search transactions")
                         .onSubmit {
                             if !searchText.isEmpty {
@@ -49,13 +53,13 @@ struct TransactionListView: View {
                             }
                         }) {
                             Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.white.opacity(0.5))
                         }
                         .accessibilityLabel("Clear search")
                     }
                 }
                 .padding()
-                .background(Color.gray.opacity(0.1))
+                .background(Color.white.opacity(0.1))
                 .cornerRadius(10)
                 .padding(.horizontal)
                 .accessibilityElement(children: .combine)
@@ -66,8 +70,10 @@ struct TransactionListView: View {
                         ForEach(0..<5, id: \.self) { _ in
                             TransactionRowSkeleton()
                         }
+                        .listRowBackground(Color.white.opacity(0.05))
                     }
                     .listStyle(PlainListStyle())
+                    .scrollContentBackground(.hidden)
                 } else if viewModel.transactions.isEmpty {
                     EmptyStateView.noTransactions {
                         // Navigate to add transaction
@@ -80,6 +86,7 @@ struct TransactionListView: View {
                                 TransactionRow(transaction: transaction, viewModel: viewModel)
                             }
                             .listRowSeparator(.visible)
+                            .listRowBackground(Color.white.opacity(0.05))
                         }
                         
                         if viewModel.hasMore {
@@ -89,10 +96,12 @@ struct TransactionListView: View {
                                 }
                             }
                             .frame(maxWidth: .infinity)
-                            .foregroundColor(.blue)
+                            .foregroundColor(AppColors.primary)
+                            .listRowBackground(Color.white.opacity(0.05))
                         }
                     }
                     .listStyle(PlainListStyle())
+                    .scrollContentBackground(.hidden)
                     .refreshable {
                         await viewModel.loadTransactions(refresh: true)
                     }
@@ -113,8 +122,12 @@ struct TransactionListView: View {
                         }
                     }
                 }
+                }
             }
             .navigationTitle("Transactions")
+            .toolbarBackground(AppColors.backgroundDark, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingFilters = true }) {
@@ -160,6 +173,7 @@ struct TransactionListView: View {
                 await viewModel.loadTransactions(refresh: true)
             }
         }
+        .preferredColorScheme(.dark)
     }
     
     private func applyFilters() async {
@@ -199,15 +213,16 @@ struct TransactionRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(transaction.merchant ?? "Unknown Merchant")
                     .font(.headline)
+                    .foregroundColor(.white)
                     .accessibilityLabel("Merchant: \(transaction.merchant ?? "Unknown Merchant")")
                 
                 Text(transaction.category.capitalized)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.6))
                 
                 Text(viewModel.formatDate(transaction.txn_date))
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.6))
             }
             
             Spacer()
@@ -215,7 +230,7 @@ struct TransactionRow: View {
             // Amount
             Text(viewModel.formatAmount(cents: transaction.total_cents))
                 .font(.headline)
-                .foregroundColor(.primary)
+                .foregroundColor(AppColors.accent)
                 .accessibilityLabel("Amount: \(viewModel.formatAmount(cents: transaction.total_cents))")
         }
         .padding(.vertical, 4)

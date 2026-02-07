@@ -803,7 +803,7 @@ struct UserResponse: Codable {
 struct User: Codable {
     let id: String
     let email: String
-    let auth_provider: String
+    let auth_provider: String?
     let created_at: String
 }
 

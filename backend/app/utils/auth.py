@@ -38,7 +38,7 @@ async def get_current_user(
 
     u = await db.execute(
         text(
-            "SELECT id, email, created_at FROM users WHERE id = :uid AND deleted_at IS NULL"
+            "SELECT id, email, auth_provider, created_at FROM users WHERE id = :uid AND deleted_at IS NULL"
         ),
         {"uid": row["user_id"]},
     )

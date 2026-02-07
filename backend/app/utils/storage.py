@@ -19,6 +19,20 @@ def _client():
     )
 
 
+def _public_client():
+    """Client for generating presigned URLs with the public endpoint."""
+    endpoint = settings.s3_public_endpoint or settings.s3_endpoint
+    return boto3.client(
+        "s3",
+        endpoint_url=endpoint,
+        aws_access_key_id=settings.s3_access_key,
+        aws_secret_access_key=settings.s3_secret_key,
+        region_name=settings.s3_region,
+        use_ssl=settings.s3_use_ssl,
+        config=Config(signature_version="s3v4"),
+    )
+
+
 def ensure_bucket():
     s3 = _client()
     try:
@@ -38,7 +52,7 @@ def ensure_bucket():
 
 
 def presign_put(object_key: str, content_type: Optional[str] = None, expires: int = 900) -> str:
-    s3 = _client()
+    s3 = _public_client()  # Use public client for correct signature
     params = {"Bucket": settings.s3_bucket, "Key": object_key}
     if content_type:
         params["ContentType"] = content_type
@@ -47,7 +61,7 @@ def presign_put(object_key: str, content_type: Optional[str] = None, expires: in
         Params=params,
         ExpiresIn=expires,
     )
-    return _rewrite_public(url)
+    return url  # No rewrite needed - already using public endpoint
 
 
 def download_bytes(object_key: str) -> bytes:
@@ -65,13 +79,13 @@ def upload_bytes(object_key: str, data: bytes, content_type: Optional[str] = Non
 
 
 def presign_get(object_key: str, expires: int = 900) -> str:
-    s3 = _client()
+    s3 = _public_client()  # Use public client for correct signature
     url = s3.generate_presigned_url(
         ClientMethod="get_object",
         Params={"Bucket": settings.s3_bucket, "Key": object_key},
         ExpiresIn=expires,
     )
-    return _rewrite_public(url)
+    return url  # No rewrite needed - already using public endpoint
 
 
 def head_object(object_key: str):

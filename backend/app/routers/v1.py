@@ -421,6 +421,21 @@ async def receipts_confirm(body: ReceiptConfirm, user=Depends(get_current_user),
         ),
         {"rid": body.receipt_id},
     )
+    
+    # Increment usage counter for scans
+    month_key = date.today().strftime("%Y-%m")
+    await db.execute(
+        text(
+            """
+            INSERT INTO usage_counters (user_id, month_key, scans_count, last_reset_at)
+            VALUES (:uid, :mk, 1, now())
+            ON CONFLICT (user_id, month_key) 
+            DO UPDATE SET scans_count = usage_counters.scans_count + 1
+            """
+        ),
+        {"uid": user["id"], "mk": month_key},
+    )
+    
     await db.commit()
     
     # Check for badge awards (will be re-checked after OCR completes, but check here too)
@@ -1005,7 +1020,8 @@ class SavingsGoalCreate(BaseModel):
 
 @router.post("/savings/goals")
 async def savings_goals_create(body: SavingsGoalCreate, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    start = body.start_date or date.today().isoformat()
+    start = date.fromisoformat(body.start_date) if body.start_date else date.today()
+    target_dt = date.fromisoformat(body.target_date) if body.target_date else None
     res = await db.execute(
         text(
             """
@@ -1020,7 +1036,7 @@ async def savings_goals_create(body: SavingsGoalCreate, user=Depends(get_current
             "cat": body.category,
             "target": body.target_cents,
             "start": start,
-            "target_date": body.target_date,
+            "target_date": target_dt,
         },
     )
     goal_id = res.scalar_one()

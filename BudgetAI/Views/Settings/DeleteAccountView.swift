@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct DeleteAccountView: View {
-    @StateObject private var authManager = AuthManager.shared
+    @ObservedObject private var authManager = AuthManager.shared
     @State private var showingConfirmation = false
     @State private var confirmationText = ""
     @State private var isDeleting = false

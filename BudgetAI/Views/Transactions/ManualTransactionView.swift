@@ -10,7 +10,7 @@ import SwiftUI
 struct ManualTransactionView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel = TransactionsViewModel()
-    @StateObject private var authManager = AuthManager.shared
+    @ObservedObject private var authManager = AuthManager.shared
     
     @State private var merchant = ""
     @State private var txnDate = Date()

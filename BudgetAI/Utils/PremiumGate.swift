@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@MainActor
 class PremiumGate {
     static func isPremium() -> Bool {
         let authManager = AuthManager.shared
@@ -24,7 +25,7 @@ class PremiumGate {
 }
 
 struct PremiumGateView<Content: View, LockedContent: View>: View {
-    @StateObject private var authManager = AuthManager.shared
+    @ObservedObject private var authManager = AuthManager.shared
     @State private var showingUpgrade = false
     
     let content: Content

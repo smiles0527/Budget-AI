@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+@MainActor
 class AuthManager: ObservableObject {
     static let shared = AuthManager()
     
@@ -62,7 +63,6 @@ class AuthManager: ObservableObject {
         subscription = nil
     }
     
-    @MainActor
     func refreshUser() async {
         do {
             let response = try await apiClient.getCurrentUser()

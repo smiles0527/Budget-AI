@@ -11,7 +11,7 @@ import UIKit
 #endif
 
 struct SettingsView: View {
-    @StateObject private var authManager = AuthManager.shared
+    @ObservedObject private var authManager = AuthManager.shared
     @StateObject private var profileViewModel = ProfileViewModel()
     @State private var showingEditProfile = false
     
@@ -329,7 +329,7 @@ struct ExportStatusView: View {
 }
 
 struct SubscriptionView: View {
-    @StateObject private var authManager = AuthManager.shared
+    @ObservedObject private var authManager = AuthManager.shared
     @StateObject private var viewModel = SubscriptionViewModel()
     @State private var showingCancelAlert = false
     @State private var showingCheckout = false

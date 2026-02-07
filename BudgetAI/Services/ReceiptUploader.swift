@@ -50,6 +50,11 @@ class ReceiptUploader: ObservableObject {
             size: imageData.count
         )
         
+        // Post notification that receipt was uploaded (triggers usage refresh)
+        await MainActor.run {
+            NotificationCenter.default.post(name: .receiptUploaded, object: nil)
+        }
+        
         // Step 4: Return receipt (will be processed asynchronously)
         return try await apiClient.getReceipt(id: uploadResponse.receipt_id)
     }
@@ -83,5 +88,9 @@ enum ReceiptUploadError: Error {
     case uploadFailed
     case processingFailed
     case processingTimeout
+}
+
+extension Notification.Name {
+    static let receiptUploaded = Notification.Name("receiptUploaded")
 }
 

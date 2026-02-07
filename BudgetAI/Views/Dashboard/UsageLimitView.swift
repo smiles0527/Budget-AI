@@ -9,7 +9,7 @@ import SwiftUI
 
 struct UsageLimitView: View {
     @StateObject private var viewModel = UsageViewModel()
-    @StateObject private var authManager = AuthManager.shared
+    @ObservedObject private var authManager = AuthManager.shared
     @State private var showingUpgrade = false
     
     var isPremium: Bool {
@@ -85,6 +85,16 @@ struct UsageLimitView: View {
             .task {
                 await viewModel.loadUsage()
             }
+            .onAppear {
+                Task {
+                    await viewModel.loadUsage()
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .receiptUploaded)) { _ in
+                Task {
+                    await viewModel.loadUsage()
+                }
+            }
         }
     }
     
@@ -113,7 +123,7 @@ struct UsageLimitView: View {
 
 struct UpgradeView: View {
     @Environment(\.dismiss) var dismiss
-    @StateObject private var authManager = AuthManager.shared
+    @ObservedObject private var authManager = AuthManager.shared
     @State private var isLoading = false
     @State private var checkoutURL: String?
     

@@ -43,7 +43,7 @@ struct DashboardView: View {
                             }
                             
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Budgeteer Level 5")
+                                Text("Budgeteer Level \(viewModel.userLevel)")
                                     .font(AppTypography.h4)
                                     .foregroundColor(.white)
                                 
@@ -57,14 +57,14 @@ struct DashboardView: View {
                                             
                                             Rectangle()
                                                 .fill(AppColors.primary)
-                                                .frame(width: g.size.width * 0.7) // Mock 70% XP
+                                                .frame(width: g.size.width * viewModel.xpProgress)
                                                 .cornerRadius(4)
                                         }
                                     }
                                     .frame(height: 6)
                                     .frame(width: 150)
                                     
-                                    Text("450 XP to Level 6")
+                                    Text("\(viewModel.xpToNextLevel) XP to Level \(viewModel.userLevel + 1)")
                                         .font(AppTypography.small)
                                         .foregroundColor(.white.opacity(0.6))
                                 }
@@ -82,10 +82,12 @@ struct DashboardView: View {
                                     Image(systemName: "bell.fill")
                                         .foregroundColor(.white)
                                     
-                                    Circle()
-                                        .fill(AppColors.error)
-                                        .frame(width: 10, height: 10)
-                                        .offset(x: 10, y: -10)
+                                    if !viewModel.userBadges.isEmpty {
+                                        Circle()
+                                            .fill(AppColors.error)
+                                            .frame(width: 10, height: 10)
+                                            .offset(x: 10, y: -10)
+                                    }
                                 }
                             }
                         }
@@ -107,9 +109,15 @@ struct DashboardView: View {
                                                 .font(.system(size: 32, weight: .black, design: .rounded))
                                                 .foregroundColor(AppColors.textPrimary)
                                             
-                                            Text("/ \(viewModel.formatAmount(cents: 200000))") // Placeholder limit
-                                                .font(AppTypography.bodyBold)
-                                                .foregroundColor(AppColors.textPrimary.opacity(0.6))
+                                            if viewModel.totalBudgetLimit > 0 {
+                                                Text("/ \(viewModel.formatAmount(cents: viewModel.totalBudgetLimit))")
+                                                    .font(AppTypography.bodyBold)
+                                                    .foregroundColor(AppColors.textPrimary.opacity(0.6))
+                                            } else {
+                                                Text("spent this month")
+                                                    .font(AppTypography.bodyBold)
+                                                    .foregroundColor(AppColors.textPrimary.opacity(0.6))
+                                            }
                                         }
                                     }
                                     Spacer()
@@ -119,25 +127,38 @@ struct DashboardView: View {
                                 }
                                 
                                 // HP Bar (Budget Health)
-                                GeometryReader { g in
-                                    ZStack(alignment: .leading) {
-                                        Rectangle()
-                                            .fill(Color.black.opacity(0.1))
-                                            .cornerRadius(8)
-                                        
-                                        Rectangle()
-                                            .fill(LinearGradient(colors: [AppColors.success, AppColors.primaryDark], startPoint: .leading, endPoint: .trailing))
-                                            .frame(width: g.size.width * 0.65)
-                                            .cornerRadius(8)
-                                            .overlay(
-                                                Rectangle()
-                                                    .fill(Color.white.opacity(0.3))
-                                                    .frame(width: g.size.width * 0.65, height: 2)
-                                                    .offset(y: -5)
-                                            )
+                                if viewModel.totalBudgetLimit > 0 {
+                                    GeometryReader { g in
+                                        ZStack(alignment: .leading) {
+                                            Rectangle()
+                                                .fill(Color.black.opacity(0.1))
+                                                .cornerRadius(8)
+                                            
+                                            Rectangle()
+                                                .fill(LinearGradient(
+                                                    colors: viewModel.budgetHealthProgress > 0.3 
+                                                        ? [AppColors.success, AppColors.primaryDark] 
+                                                        : [AppColors.error, AppColors.accent],
+                                                    startPoint: .leading, 
+                                                    endPoint: .trailing
+                                                ))
+                                                .frame(width: g.size.width * viewModel.budgetHealthProgress)
+                                                .cornerRadius(8)
+                                                .overlay(
+                                                    Rectangle()
+                                                        .fill(Color.white.opacity(0.3))
+                                                        .frame(width: g.size.width * viewModel.budgetHealthProgress, height: 2)
+                                                        .offset(y: -5)
+                                                )
+                                        }
                                     }
+                                    .frame(height: 16)
+                                } else {
+                                    // No budget set - show prompt
+                                    Text("Set a budget to track your progress!")
+                                        .font(AppTypography.small)
+                                        .foregroundColor(AppColors.textPrimary.opacity(0.7))
                                 }
-                                .frame(height: 16)
                             }
                             .padding(20)
                             .background(
@@ -146,12 +167,33 @@ struct DashboardView: View {
                             )
                             .shadow(color: AppColors.primary.opacity(0.3), radius: 15, y: 5)
                             .padding(.horizontal)
-                        } else {
+                        } else if viewModel.isLoading {
                              // Loading State
                              RoundedRectangle(cornerRadius: 24)
                                 .fill(Color.white.opacity(0.05))
                                 .frame(height: 140)
+                                .overlay(ProgressView().tint(.white))
                                 .padding(.horizontal)
+                        } else {
+                            // Empty State - No Data Yet
+                            VStack(spacing: 12) {
+                                Image(systemName: "chart.bar.doc.horizontal")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(AppColors.primary.opacity(0.5))
+                                Text("No spending data yet")
+                                    .font(AppTypography.body)
+                                    .foregroundColor(.white.opacity(0.7))
+                                Text("Add your first transaction to see your stats!")
+                                    .font(AppTypography.small)
+                                    .foregroundColor(.white.opacity(0.5))
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(30)
+                            .background(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .fill(Color.white.opacity(0.05))
+                            )
+                            .padding(.horizontal)
                         }
                         
                         // MARK: - Resources (CategoriesGrid)
@@ -200,13 +242,31 @@ struct DashboardView: View {
                             .padding(.horizontal)
                             
                             VStack(spacing: 12) {
-                                ForEach(0..<5) { i in
-                                    BattleRow(
-                                        title: ["Grocery Run", "Fuel Up", "Netflix Sub", "Coffee Break", "Gym Membership"][i],
-                                        amount: ["-$124.50", "-$45.00", "-$15.99", "-$4.50", "-$29.99"][i],
-                                        date: "Today",
-                                        isCrit: i == 0
-                                    )
+                                if viewModel.recentTransactions.isEmpty {
+                                    // Empty state
+                                    VStack(spacing: 12) {
+                                        Image(systemName: "tray")
+                                            .font(.system(size: 40))
+                                            .foregroundColor(.white.opacity(0.3))
+                                        Text("No transactions yet")
+                                            .font(AppTypography.body)
+                                            .foregroundColor(.white.opacity(0.5))
+                                        Text("Scan a receipt or add a transaction to get started!")
+                                            .font(AppTypography.small)
+                                            .foregroundColor(.white.opacity(0.3))
+                                            .multilineTextAlignment(.center)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 40)
+                                } else {
+                                    ForEach(viewModel.recentTransactions.prefix(5), id: \.id) { transaction in
+                                        BattleRow(
+                                            title: transaction.merchant ?? transaction.category.capitalized,
+                                            amount: viewModel.formatAmount(cents: -transaction.total_cents),
+                                            date: formatTransactionDate(transaction.txn_date),
+                                            isCrit: transaction.total_cents > 10000 // "Critical hit" for > $100
+                                        )
+                                    }
                                 }
                             }
                             .padding(.horizontal)
@@ -218,9 +278,11 @@ struct DashboardView: View {
                 }
             }
             .navigationBarHidden(true)
-            .task {
+            .task(id: selectedPeriod) {
                 await viewModel.loadDashboard(period: selectedPeriod)
-                await viewModel.loadTrends(months: 6)
+            }
+            .refreshable {
+                await viewModel.loadDashboard(period: selectedPeriod)
             }
         }
     }
@@ -241,6 +303,35 @@ struct DashboardView: View {
         case "transport": return AppColors.rare
         case "entertainment": return AppColors.epic
         default: return AppColors.primary
+        }
+    }
+    
+    func formatTransactionDate(_ dateString: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+        
+        guard let date = formatter.date(from: dateString) else {
+            // Try alternative format
+            let altFormatter = DateFormatter()
+            altFormatter.dateFormat = "yyyy-MM-dd"
+            guard let altDate = altFormatter.date(from: dateString) else {
+                return dateString
+            }
+            return formatRelativeDate(altDate)
+        }
+        return formatRelativeDate(date)
+    }
+    
+    private func formatRelativeDate(_ date: Date) -> String {
+        let calendar = Calendar.current
+        if calendar.isDateInToday(date) {
+            return "Today"
+        } else if calendar.isDateInYesterday(date) {
+            return "Yesterday"
+        } else {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            return formatter.string(from: date)
         }
     }
 }

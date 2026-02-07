@@ -233,11 +233,11 @@ struct DashboardView: View {
                                     .font(AppTypography.h4)
                                     .foregroundColor(.white)
                                 Spacer()
-                                Button("View All") {
-                                    // Action
+                                NavigationLink(destination: TransactionListView()) {
+                                    Text("View All")
+                                        .font(AppTypography.small)
+                                        .foregroundColor(AppColors.primary)
                                 }
-                                .font(AppTypography.small)
-                                .foregroundColor(AppColors.primary)
                             }
                             .padding(.horizontal)
                             

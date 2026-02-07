@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct LoginView: View {
-    @StateObject private var authManager = AuthManager.shared
+    @ObservedObject private var authManager = AuthManager.shared
     @State private var email = ""
     @State private var password = ""
     @State private var isLoading = false
@@ -40,14 +40,18 @@ struct LoginView: View {
                 AppColors.backgroundDark
                     .ignoresSafeArea()
                 
-                // Grid Pattern (Simulated)
-                Image(systemName: "grid") // Placeholder for pattern
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 800, height: 800)
-                    .foregroundColor(AppColors.primary.opacity(0.03))
-                    .rotationEffect(.degrees(45))
-                    .ignoresSafeArea()
+                // Grid Pattern (Simulated) - constrained to screen
+                GeometryReader { geometry in
+                    Image(systemName: "grid")
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: geometry.size.width * 1.5, height: geometry.size.height * 1.5)
+                        .foregroundColor(AppColors.primary.opacity(0.03))
+                        .rotationEffect(.degrees(45))
+                        .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+                }
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
                 
                 ScrollView {
                     VStack(spacing: 20) {
@@ -76,7 +80,7 @@ struct LoginView: View {
                                         .font(.system(size: 24))
                                         .foregroundColor(AppColors.primary)
                                 )
-                                .frame(maxWidth: .infinity)
+                                .frame(maxWidth: .infinity, alignment: .center)
                             
                             // Inputs
                             VStack(alignment: .leading, spacing: 12) {
@@ -87,10 +91,10 @@ struct LoginView: View {
                                     
                                     TextField("wizard@example.com", text: $email)
                                         .textFieldStyle(GamifiedFieldStyle())
+                                        .textContentType(.emailAddress)
                                         .autocapitalization(.none)
                                         .keyboardType(.emailAddress)
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
                                 
                                 VStack(alignment: .leading, spacing: 6) {
                                     Text("PASSWORD")
@@ -99,8 +103,8 @@ struct LoginView: View {
                                     
                                     SecureField("••••••••", text: $password)
                                         .textFieldStyle(GamifiedFieldStyle())
+                                        .textContentType(.password)
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             
                             if let error = errorMessage {
@@ -139,10 +143,9 @@ struct LoginView: View {
                             .disabled(isLoading || email.isEmpty || password.isEmpty)
                             .opacity((isLoading || email.isEmpty || password.isEmpty) ? 0.6 : 1)
                         }
-                        .padding(24)
+                        .padding(20)
                         .background(Color.white.opacity(0.05))
                         .cornerRadius(20)
-                        .padding(.horizontal, 24)
                         
                         // Footer
                         HStack {
@@ -157,7 +160,7 @@ struct LoginView: View {
                             .foregroundColor(AppColors.accent)
                         }
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, 20)
                 }
             }
             .navigationBarHidden(true)
@@ -186,7 +189,7 @@ struct LoginView: View {
 // Reuse similar style for Signup
 struct SignupView: View {
     @Environment(\.dismiss) var dismiss
-    @StateObject private var authManager = AuthManager.shared
+    @ObservedObject private var authManager = AuthManager.shared
     @State private var email = ""
     @State private var password = ""
     @State private var confirmPassword = ""
@@ -204,8 +207,8 @@ struct SignupView: View {
                         .stroke(Color.white.opacity(0.1), lineWidth: 1)
                 )
                 .foregroundColor(.white)
-                .font(AppTypography.body)
-                .frame(minHeight: 50)
+                .font(.system(size: 15))
+                .frame(minHeight: 44)
         }
     }
     
@@ -227,16 +230,18 @@ struct SignupView: View {
                         }
                         .padding(.top, 20)
                         
-                        VStack(spacing: 16) {
-                            VStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 16) {
+                            VStack(alignment: .leading, spacing: 12) {
                                 VStack(alignment: .leading, spacing: 6) {
                                     Text("EMAIL")
                                         .font(.system(size: 11, weight: .semibold))
                                         .foregroundColor(AppColors.secondary)
                                     TextField("wizard@example.com", text: $email)
                                         .textFieldStyle(GamifiedFieldStyle())
+                                        .textContentType(.emailAddress)
                                         .autocapitalization(.none)
                                         .keyboardType(.emailAddress)
+                                        .tint(AppColors.primary)
                                 }
                                 
                                 VStack(alignment: .leading, spacing: 6) {
@@ -245,6 +250,8 @@ struct SignupView: View {
                                         .foregroundColor(AppColors.secondary)
                                     SecureField("••••••••", text: $password)
                                         .textFieldStyle(GamifiedFieldStyle())
+                                        .textContentType(.newPassword)
+                                        .tint(AppColors.primary)
                                 }
                                 
                                 VStack(alignment: .leading, spacing: 6) {
@@ -253,6 +260,8 @@ struct SignupView: View {
                                         .foregroundColor(AppColors.secondary)
                                     SecureField("••••••••", text: $confirmPassword)
                                         .textFieldStyle(GamifiedFieldStyle())
+                                        .textContentType(.newPassword)
+                                        .tint(AppColors.primary)
                                 }
                             }
                             
@@ -291,11 +300,11 @@ struct SignupView: View {
                             .disabled(isLoading || email.isEmpty || password.isEmpty || password != confirmPassword)
                             .opacity((isLoading || email.isEmpty || password.isEmpty || password != confirmPassword) ? 0.6 : 1)
                         }
-                        .padding(24)
+                        .padding(20)
                         .background(Color.white.opacity(0.05))
                         .cornerRadius(20)
-                        .padding(.horizontal, 20)
                     }
+                    .padding(.horizontal, 20)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AppRootView: View {
-    @StateObject private var authManager = AuthManager.shared
+    @ObservedObject private var authManager = AuthManager.shared
     @StateObject private var badgeCelebrationManager = BadgeCelebrationManager.shared
     @StateObject private var pushService = PushNotificationService.shared
     @State private var selectedTab = 0
@@ -68,7 +68,7 @@ struct AppRootView: View {
 
 struct MainTabView: View {
     @Binding var selection: Int
-    @StateObject private var authManager = AuthManager.shared
+    @ObservedObject private var authManager = AuthManager.shared
     @State private var showingReceiptCapture = false
     @State private var showingManualTransaction = false
     
@@ -161,7 +161,7 @@ struct AddMenuView: View {
 }
 
 struct ProfileView: View {
-    @StateObject private var authManager = AuthManager.shared
+    @ObservedObject private var authManager = AuthManager.shared
     @StateObject private var badgesViewModel = BadgesViewModel()
     @State private var showingLogoutAlert = false
     
@@ -518,6 +518,14 @@ struct UsageView: View {
         .navigationTitle("Usage")
         .task {
             await usageViewModel.loadUsage()
+        }
+        .refreshable {
+            await usageViewModel.loadUsage()
+        }
+        .onAppear {
+            Task {
+                await usageViewModel.loadUsage()
+            }
         }
     }
 }

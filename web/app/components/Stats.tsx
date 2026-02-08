@@ -106,7 +106,7 @@ export default function Stats() {
             trigger: card,
             start: "top 85%",
             end: "top 40%",
-            toggleActions: "restart none restart none",
+            toggleActions: "play reset play reset",
           },
         }
       );

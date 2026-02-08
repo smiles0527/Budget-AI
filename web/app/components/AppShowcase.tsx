@@ -138,7 +138,7 @@ export default function AppShowcase() {
           scrollTrigger: {
             trigger: heading,
             start: "top 85%",
-            toggleActions: "restart none restart none",
+            toggleActions: "play reset play reset",
           },
         }
       );
@@ -168,7 +168,7 @@ export default function AppShowcase() {
           scrollTrigger: {
             trigger: phone,
             start: "top 90%",
-            toggleActions: "restart none restart none",
+            toggleActions: "play reset play reset",
           },
         }
       );

@@ -9,6 +9,7 @@ import Problem from "./components/Problem";
 import Features from "./components/Features";
 import HowItWorks from "./components/HowItWorks";
 import AppShowcase from "./components/AppShowcase";
+import AppGallery from "./components/AppGallery";
 import Stats from "./components/Stats";
 import Comparison from "./components/Comparison";
 import Testimonials from "./components/Testimonials";
@@ -34,6 +35,7 @@ export default function Home() {
         <Features />
         <HowItWorks />
         <AppShowcase />
+        <AppGallery />
         <Stats />
         <Comparison />
         <Testimonials />

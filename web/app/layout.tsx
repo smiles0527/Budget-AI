@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
-const manrope = Manrope({
+const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "500", "700", "800"],
+  weight: ["400", "500", "700"],
 });
 
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light">
+    <html lang="en" className="dark">
       <head>
         <link
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
@@ -27,7 +27,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${manrope.variable} antialiased bg-background-light dark:bg-background-dark text-text-main dark:text-text-main-dark font-(--font-display) transition-colors duration-300 min-h-screen flex flex-col`}
+        className={`${spaceGrotesk.variable} antialiased bg-[#050a09] text-[#e2e8f0] font-(--font-display) min-h-screen flex flex-col noise`}
       >
         {children}
       </body>

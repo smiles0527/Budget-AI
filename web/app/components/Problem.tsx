@@ -1,10 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import { motion } from "framer-motion";
 
 const painPoints = [
   {
@@ -40,106 +36,16 @@ const frustrations = [
 ];
 
 export default function Problem() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!sectionRef.current) return;
-    const section = sectionRef.current;
-
-    // Heading — clip-path reveal wipe
-    const heading = section.querySelector(".problem-heading");
-    if (heading) {
-      gsap.fromTo(
-        heading,
-        { clipPath: "inset(0 100% 0 0)", opacity: 0 },
-        {
-          clipPath: "inset(0 0% 0 0)",
-          opacity: 1,
-          duration: 1.2,
-          ease: "power4.inOut",
-          scrollTrigger: {
-            trigger: heading,
-            start: "top 85%",
-            end: "+=300",
-            scrub: 1,
-          },
-        }
-      );
-    }
-
-    // Stat cards — blur-in with stagger
-    const statCards = section.querySelectorAll(".stat-card");
-    statCards.forEach((card, i) => {
-      gsap.fromTo(
-        card,
-        { y: 40, opacity: 0, filter: "blur(12px)" },
-        {
-          y: 0,
-          opacity: 1,
-          filter: "blur(0px)",
-          duration: 0.8,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: card,
-            start: "top 90%",
-            end: "+=300",
-            scrub: 1,
-          },
-        }
-      );
-    });
-
-    // Frustration pills — pop-in with elastic scale
-    const pills = section.querySelectorAll(".frustration-pill");
-    pills.forEach((pill, i) => {
-      gsap.fromTo(
-        pill,
-        { scale: 0, opacity: 0 },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 0.6,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: pill,
-            start: "top 90%",
-            end: "+=300",
-            scrub: 1,
-          },
-        }
-      );
-    });
-
-    // Bottom text flies up
-    const bottom = section.querySelector(".problem-bottom");
-    if (bottom) {
-      gsap.fromTo(
-        bottom,
-        { y: 60, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: bottom,
-            start: "top 90%",
-            end: "+=300",
-            scrub: 1,
-          },
-        }
-      );
-    }
-
-    return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
-  }, []);
-
   return (
-    <section ref={sectionRef} className="w-full max-w-6xl mb-20">
+    <section className="w-full max-w-6xl mb-20">
       {/* Heading */}
-      <div className="problem-heading text-center mb-10">
+      <motion.div
+        initial={{ y: 40, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: false, amount: 0.2 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="text-center mb-10"
+      >
         <span className="text-xs font-bold uppercase tracking-widest text-neon-pink text-glow-pink">
           The Problem
         </span>
@@ -154,16 +60,20 @@ export default function Problem() {
           Complex bank apps, kiddie finance games, or soul-crushing spreadsheets —
           none of them get it.
         </p>
-      </div>
+      </motion.div>
 
       {/* Two-column: stats left, frustrations right */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
         {/* Left: Stat cards */}
         <div className="space-y-4">
-          {painPoints.map((point) => (
-            <div
+          {painPoints.map((point, i) => (
+            <motion.div
               key={point.stat}
-              className="stat-card glass border-gradient rounded-2xl p-5 flex items-center gap-5 group hover:scale-[1.02] transition-transform duration-300"
+              initial={{ y: 40, opacity: 0, filter: "blur(10px)" }}
+              whileInView={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
+              className="glass border-gradient rounded-2xl p-5 flex items-center gap-5 group hover:scale-[1.02] transition-transform duration-300"
             >
               <span className={`material-symbols-outlined text-3xl ${point.color} shrink-0`}>{point.icon}</span>
               <div>
@@ -175,7 +85,7 @@ export default function Problem() {
                 </div>
                 <p className="text-white/60 text-sm mt-1">{point.source}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
@@ -185,26 +95,36 @@ export default function Problem() {
             Sound familiar?
           </p>
           <div className="flex flex-wrap gap-2.5">
-            {frustrations.map((item) => (
-              <div
+            {frustrations.map((item, i) => (
+              <motion.div
                 key={item.text}
-                className="frustration-pill glass border border-white/10 rounded-full px-5 py-2.5 flex items-center gap-2 hover:border-neon-pink/30 hover:bg-neon-pink/5 transition-all duration-300 cursor-default"
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.4, delay: i * 0.05, type: "spring", stiffness: 300, damping: 20 }}
+                className="glass border border-white/10 rounded-full px-5 py-2.5 flex items-center gap-2 hover:border-neon-pink/30 hover:bg-neon-pink/5 transition-all duration-300 cursor-default"
               >
                 <span className="material-symbols-outlined text-white/60 text-[18px]">{item.icon}</span>
                 <span className="text-white/75 text-sm font-medium">{item.text}</span>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </div>
 
       {/* Bottom hook */}
-      <div className="problem-bottom text-center">
+      <motion.div
+        initial={{ y: 40, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: false, amount: 0.5 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="text-center"
+      >
         <p className="text-2xl md:text-3xl font-bold">
           What if budgeting was as easy as{" "}
           <span className="gradient-text-fast">taking a photo?</span>
         </p>
-      </div>
+      </motion.div>
     </section>
   );
 }

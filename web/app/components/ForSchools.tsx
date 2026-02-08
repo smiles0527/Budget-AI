@@ -1,11 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const audiences = [
   {
@@ -35,62 +30,15 @@ const audiences = [
 ];
 
 export default function ForSchools() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!sectionRef.current) return;
-    const section = sectionRef.current;
-
-    const heading = section.querySelector(".schools-heading");
-    if (heading) {
-      gsap.fromTo(
-        heading,
-        { y: 60, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: heading,
-            start: "top 85%",
-            end: "+=300",
-            scrub: 1,
-          },
-        }
-      );
-    }
-
-    const cards = section.querySelectorAll(".school-card");
-    cards.forEach((card, i) => {
-      // Elastic spring from below
-      gsap.fromTo(
-        card,
-        { y: 60, opacity: 0, scale: 0.9 },
-        {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          duration: 1.2,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: card,
-            start: "top 90%",
-            end: "+=300",
-            scrub: 1,
-          },
-        }
-      );
-    });
-
-    return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
-  }, []);
-
   return (
-    <section ref={sectionRef} className="w-full max-w-6xl mb-20">
-      <div className="schools-heading text-center mb-10">
+    <section className="w-full max-w-6xl mb-20">
+      <motion.div
+        initial={{ y: 60, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: false, amount: 0.3 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="text-center mb-10"
+      >
         <span className="text-xs font-bold uppercase tracking-widest text-neon-purple text-glow-purple">
           Beyond Consumers
         </span>
@@ -101,13 +49,17 @@ export default function ForSchools() {
         <p className="text-white/70 mt-3 max-w-2xl mx-auto">
           SnapBudget isn&apos;t just a consumer app. Schools, parents, and nonprofits use it to teach real financial skills.
         </p>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {audiences.map((a) => (
-          <div
+        {audiences.map((a, i) => (
+          <motion.div
             key={a.title}
-            className="school-card glass border border-white/5 rounded-2xl p-7 flex flex-col hover:border-white/10 hover:-translate-y-2 transition-all duration-300 group"
+            initial={{ y: 60, opacity: 0, scale: 0.9 }}
+            whileInView={{ y: 0, opacity: 1, scale: 1 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ type: "spring", stiffness: 150, damping: 18, delay: i * 0.1 }}
+            className="glass border border-white/5 rounded-2xl p-7 flex flex-col hover:border-white/10 hover:-translate-y-2 transition-all duration-300 group"
           >
             <div
               className="w-14 h-14 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform"
@@ -137,7 +89,7 @@ export default function ForSchools() {
                 </li>
               ))}
             </ul>
-          </div>
+          </motion.div>
         ))}
       </div>
 

@@ -1,11 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const plans = [
   {
@@ -46,49 +41,15 @@ const plans = [
 ];
 
 export default function Pricing() {
-  const cardsRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!cardsRef.current) return;
-    const cards = cardsRef.current.querySelectorAll(".pricing-card");
-
-    cards.forEach((card, i) => {
-      // Free card flies from left, Premium from right
-      gsap.fromTo(
-        card,
-        {
-          x: i === 0 ? -300 : 300,
-          y: 60,
-          rotateY: i === 0 ? 25 : -25,
-          opacity: 0,
-          scale: 0.8,
-        },
-        {
-          x: 0,
-          y: 0,
-          rotateY: 0,
-          opacity: 1,
-          scale: 1,
-          duration: 1.2,
-          ease: "back.out(1.4)",
-          scrollTrigger: {
-            trigger: card,
-            start: "top 85%",
-            end: "top 45%",
-            scrub: 1,
-          },
-        }
-      );
-    });
-
-    return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
-  }, []);
-
   return (
     <section className="w-full max-w-5xl mb-20">
-      <div className="text-center mb-10">
+      <motion.div
+        initial={{ y: 40, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: false, amount: 0.3 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="text-center mb-10"
+      >
         <span className="text-xs font-bold uppercase tracking-widest text-neon-pink text-glow-pink">
           Pricing
         </span>
@@ -98,13 +59,23 @@ export default function Pricing() {
         <p className="text-white/70 mt-3 max-w-lg mx-auto">
           Start free. Upgrade when you&apos;re ready for the full experience.
         </p>
-      </div>
+      </motion.div>
 
-      <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-2 gap-8" style={{ perspective: 1200 }}>
-        {plans.map((plan) => (
-          <div
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8" style={{ perspective: 1200 }}>
+        {plans.map((plan, i) => (
+          <motion.div
             key={plan.name}
-            className={`pricing-card relative flex flex-col p-8 rounded-2xl overflow-hidden cursor-default transition-transform duration-300 hover:scale-[1.03] hover:-translate-y-3 ${
+            initial={{
+              x: i === 0 ? -200 : 200,
+              y: 40,
+              rotateY: i === 0 ? 15 : -15,
+              opacity: 0,
+              scale: 0.85,
+            }}
+            whileInView={{ x: 0, y: 0, rotateY: 0, opacity: 1, scale: 1 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ type: "spring", stiffness: 120, damping: 18, delay: i * 0.1 }}
+            className={`relative flex flex-col p-8 rounded-2xl overflow-hidden cursor-default transition-transform duration-300 hover:scale-[1.03] hover:-translate-y-3 ${
               plan.highlighted
                 ? "glass-strong border-gradient glow-primary"
                 : "glass border-gradient"
@@ -166,7 +137,7 @@ export default function Pricing() {
             >
               {plan.cta}
             </motion.button>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>

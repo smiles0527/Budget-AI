@@ -1,10 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import { motion } from "framer-motion";
 
 const testimonials = [
   {
@@ -76,66 +72,15 @@ const testimonials = [
 ];
 
 export default function Testimonials() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!sectionRef.current) return;
-    const section = sectionRef.current;
-
-    const heading = section.querySelector(".test-heading");
-    if (heading) {
-      gsap.fromTo(
-        heading,
-        { y: 60, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: heading,
-            start: "top 85%",
-            end: "+=300",
-            scrub: 1,
-          },
-        }
-      );
-    }
-
-    const cards = section.querySelectorAll(".test-card");
-    cards.forEach((card, i) => {
-      // Soft fade + blur — no harsh directional movement
-      gsap.fromTo(
-        card,
-        {
-          y: 30,
-          opacity: 0,
-          filter: "blur(10px)",
-        },
-        {
-          y: 0,
-          opacity: 1,
-          filter: "blur(0px)",
-          duration: 0.7,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: card,
-            start: "top 92%",
-            end: "+=300",
-            scrub: 1,
-          },
-        }
-      );
-    });
-
-    return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
-  }, []);
-
   return (
-    <section ref={sectionRef} className="w-full max-w-6xl mb-20">
-      <div className="test-heading text-center mb-10">
+    <section className="w-full max-w-6xl mb-20">
+      <motion.div
+        initial={{ y: 60, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: false, amount: 0.3 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="text-center mb-10"
+      >
         <span className="text-xs font-bold uppercase tracking-widest text-neon-blue text-glow-blue">
           What Users Say
         </span>
@@ -145,13 +90,17 @@ export default function Testimonials() {
         <p className="text-white/70 mt-3 max-w-lg mx-auto">
           Don&apos;t take our word for it — hear from users like you.
         </p>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {testimonials.map((t) => (
-          <div
+        {testimonials.map((t, i) => (
+          <motion.div
             key={t.name}
-            className="test-card glass border border-white/5 rounded-2xl p-6 flex flex-col hover:border-primary/20 hover:-translate-y-2 transition-all duration-300 group"
+            initial={{ y: 30, opacity: 0, filter: "blur(10px)" }}
+            whileInView={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ duration: 0.6, delay: i * 0.08, ease: "easeOut" }}
+            className="glass border border-white/5 rounded-2xl p-6 flex flex-col hover:border-primary/20 hover:-translate-y-2 transition-all duration-300 group"
           >
             {/* Stars */}
             <div className="flex gap-0.5 mb-3">
@@ -177,7 +126,7 @@ export default function Testimonials() {
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>

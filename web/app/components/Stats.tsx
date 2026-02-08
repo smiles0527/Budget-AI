@@ -1,11 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const stats = [
   {
@@ -17,7 +13,6 @@ const stats = [
     icon: "trending_up",
     glow: "glow-primary",
     color: "text-primary",
-    flyFrom: { x: -200, y: 60, rotation: -15 },
   },
   {
     value: 53,
@@ -28,7 +23,6 @@ const stats = [
     icon: "show_chart",
     glow: "glow-blue",
     color: "text-neon-blue",
-    flyFrom: { x: 0, y: 120, rotation: 10 },
   },
   {
     value: 18,
@@ -39,7 +33,6 @@ const stats = [
     icon: "rocket_launch",
     glow: "glow-purple",
     color: "text-neon-purple",
-    flyFrom: { x: 0, y: 120, rotation: -10 },
   },
   {
     value: 59,
@@ -50,7 +43,6 @@ const stats = [
     icon: "warning",
     glow: "glow-pink",
     color: "text-neon-pink",
-    flyFrom: { x: 200, y: 60, rotation: 15 },
   },
 ];
 
@@ -64,13 +56,19 @@ function CountUp({ value, prefix, suffix, color }: { value: number; prefix: stri
       setDisplay(0);
       return;
     }
-    const obj = { val: 0 };
-    gsap.to(obj, {
-      val: value,
-      duration: 2.5,
-      ease: "power2.out",
-      onUpdate: () => setDisplay(Math.round(obj.val)),
-    });
+    const duration = 2500;
+    const start = performance.now();
+    let raf: number;
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // ease-out quad
+      const eased = 1 - (1 - progress) * (1 - progress);
+      setDisplay(Math.round(eased * value));
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [isInView, value]);
 
   return (
@@ -81,47 +79,12 @@ function CountUp({ value, prefix, suffix, color }: { value: number; prefix: stri
 }
 
 export default function Stats() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const cardsRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!cardsRef.current) return;
-    const cards = cardsRef.current.querySelectorAll(".stat-card");
-
-    cards.forEach((card, i) => {
-      // Scale-bounce from center — unique to Stats
-      gsap.fromTo(
-        card,
-        {
-          scale: 0.3,
-          opacity: 0,
-        },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 0.7,
-          ease: "back.out(2.5)",
-          scrollTrigger: {
-            trigger: card,
-            start: "top 85%",
-            end: "top 40%",
-            scrub: 1,
-          },
-        }
-      );
-    });
-
-    return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
-  }, []);
-
   return (
-    <section ref={sectionRef} className="w-full max-w-6xl mb-20">
+    <section className="w-full max-w-6xl mb-20">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false }}
+        viewport={{ once: false, amount: 0.3 }}
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >
@@ -133,11 +96,15 @@ export default function Stats() {
         </h2>
       </motion.div>
 
-      <div ref={cardsRef} className="grid grid-cols-2 md:grid-cols-4 gap-5">
-        {stats.map((stat) => (
-          <div
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+        {stats.map((stat, i) => (
+          <motion.div
             key={stat.label}
-            className={`stat-card relative flex flex-col items-center text-center p-6 rounded-2xl glass border-gradient group cursor-default transition-all duration-300 hover:${stat.glow}`}
+            initial={{ scale: 0.3, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ type: "spring", stiffness: 180, damping: 14, delay: i * 0.08 }}
+            className={`relative flex flex-col items-center text-center p-6 rounded-2xl glass border-gradient group cursor-default transition-all duration-300 hover:${stat.glow}`}
           >
             {/* Background glow on hover */}
             <div className={`absolute inset-0 rounded-2xl ${stat.glow} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
@@ -154,7 +121,7 @@ export default function Stats() {
             <span className="text-[11px] font-bold text-white/55 uppercase tracking-wider relative z-10">
               {stat.source}
             </span>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>

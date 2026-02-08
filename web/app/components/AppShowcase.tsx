@@ -1,10 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import { motion } from "framer-motion";
 
 const screens = [
   {
@@ -12,6 +8,7 @@ const screens = [
     description: "See all your spending at a glance with interactive charts",
     icon: "📊",
     color: "#0df2a6",
+    flyFrom: { x: -120, rotation: -12 },
     mockContent: (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -49,6 +46,7 @@ const screens = [
     description: "Snap a photo and AI does the rest in seconds",
     icon: "📸",
     color: "#00c9ff",
+    flyFrom: { y: 80, rotation: 0 },
     mockContent: (
       <div className="space-y-3">
         <div className="glass rounded-xl p-3 border border-neon-blue/20">
@@ -86,6 +84,7 @@ const screens = [
     description: "Earn rewards for hitting your savings goals",
     icon: "🏆",
     color: "#a855f7",
+    flyFrom: { x: 120, rotation: 12 },
     mockContent: (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -119,70 +118,15 @@ const screens = [
 ];
 
 export default function AppShowcase() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!sectionRef.current) return;
-    const section = sectionRef.current;
-
-    const heading = section.querySelector(".showcase-heading");
-    if (heading) {
-      gsap.fromTo(
-        heading,
-        { y: 80, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: heading,
-            start: "top 85%",
-            end: "+=300",
-            scrub: 1,
-          },
-        }
-      );
-    }
-
-    // Phone mockups fly in from different directions
-    const phones = section.querySelectorAll(".phone-mockup");
-    const flyConfigs = [
-      { x: -200, rotation: -12 },
-      { y: 120, rotation: 0 },
-      { x: 200, rotation: 12 },
-    ];
-    phones.forEach((phone, i) => {
-      const cfg = flyConfigs[i];
-      gsap.fromTo(
-        phone,
-        { x: cfg.x || 0, y: cfg.y || 80, rotation: cfg.rotation, opacity: 0, scale: 0.7 },
-        {
-          x: 0,
-          y: 0,
-          rotation: 0,
-          opacity: 1,
-          scale: 1,
-          duration: 1.2,
-          ease: "back.out(1.4)",
-          scrollTrigger: {
-            trigger: phone,
-            start: "top 90%",
-            end: "+=300",
-            scrub: 1,
-          },
-        }
-      );
-    });
-
-    return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
-  }, []);
-
   return (
-    <section ref={sectionRef} className="w-full max-w-6xl mb-32">
-      <div className="showcase-heading text-center mb-14">
+    <section className="w-full max-w-6xl mb-32">
+      <motion.div
+        initial={{ y: 60, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: false, amount: 0.3 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="text-center mb-14"
+      >
         <span className="text-xs font-bold uppercase tracking-widest text-neon-blue text-glow-blue">
           📱 See It In Action
         </span>
@@ -192,11 +136,24 @@ export default function AppShowcase() {
         <p className="text-white/70 mt-3 max-w-lg mx-auto">
           Designed for the way you actually spend money.
         </p>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {screens.map((screen) => (
-          <div key={screen.title} className="phone-mockup flex flex-col items-center">
+        {screens.map((screen, i) => (
+          <motion.div
+            key={screen.title}
+            initial={{
+              x: screen.flyFrom.x || 0,
+              y: screen.flyFrom.y || 60,
+              rotate: screen.flyFrom.rotation,
+              opacity: 0,
+              scale: 0.7,
+            }}
+            whileInView={{ x: 0, y: 0, rotate: 0, opacity: 1, scale: 1 }}
+            viewport={{ once: false, amount: 0.25 }}
+            transition={{ type: "spring", stiffness: 120, damping: 18, delay: i * 0.1 }}
+            className="flex flex-col items-center"
+          >
             {/* Phone frame */}
             <div
               className="relative w-full max-w-[260px] rounded-[2rem] p-1 group"
@@ -241,7 +198,7 @@ export default function AppShowcase() {
               <h3 className="text-lg font-bold text-white/90">{screen.title}</h3>
               <p className="text-sm text-white/60 mt-1 max-w-[220px]">{screen.description}</p>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>

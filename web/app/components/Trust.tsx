@@ -1,10 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import { motion } from "framer-motion";
 
 const trustPoints = [
   {
@@ -52,65 +48,15 @@ const trustPoints = [
 ];
 
 export default function Trust() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!sectionRef.current) return;
-    const section = sectionRef.current;
-
-    const heading = section.querySelector(".trust-heading");
-    if (heading) {
-      gsap.fromTo(
-        heading,
-        { y: 60, opacity: 0, scale: 0.95 },
-        {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          duration: 1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: heading,
-            start: "top 85%",
-            end: "+=300",
-            scrub: 1,
-          },
-        }
-      );
-    }
-
-    const cards = section.querySelectorAll(".trust-card");
-    cards.forEach((card, i) => {
-      // Clip-path circle expand from icon corner
-      gsap.fromTo(
-        card,
-        {
-          clipPath: "circle(0% at 15% 15%)",
-          opacity: 0,
-        },
-        {
-          clipPath: "circle(150% at 15% 15%)",
-          opacity: 1,
-          duration: 1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: card,
-            start: "top 92%",
-            end: "+=300",
-            scrub: 1,
-          },
-        }
-      );
-    });
-
-    return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
-  }, []);
-
   return (
-    <section ref={sectionRef} className="w-full max-w-6xl mb-20">
-      <div className="trust-heading text-center mb-8">
+    <section className="w-full max-w-6xl mb-20">
+      <motion.div
+        initial={{ y: 60, opacity: 0, scale: 0.95 }}
+        whileInView={{ y: 0, opacity: 1, scale: 1 }}
+        viewport={{ once: false, amount: 0.3 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="text-center mb-8"
+      >
         <span className="text-xs font-bold uppercase tracking-widest text-neon-blue text-glow-blue">
           Your Data Is Safe
         </span>
@@ -121,13 +67,17 @@ export default function Trust() {
         <p className="text-white/70 mt-3 max-w-2xl mx-auto">
           We know Gen Z cares about privacy. That&apos;s why we built SnapBudget with bank-level security &mdash; without ever needing your bank login.
         </p>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {trustPoints.map((point) => (
-          <div
+        {trustPoints.map((point, i) => (
+          <motion.div
             key={point.title}
-            className="trust-card glass border border-white/5 rounded-2xl p-6 hover:border-white/10 hover:-translate-y-1 transition-all duration-300 group"
+            initial={{ clipPath: "circle(0% at 15% 15%)", opacity: 0 }}
+            whileInView={{ clipPath: "circle(150% at 15% 15%)", opacity: 1 }}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ duration: 0.8, delay: i * 0.08, ease: "easeOut" }}
+            className="glass border border-white/5 rounded-2xl p-6 hover:border-white/10 hover:-translate-y-1 transition-all duration-300 group"
           >
             <div
               className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
@@ -140,7 +90,7 @@ export default function Trust() {
             </div>
             <h3 className="text-lg font-bold text-white/85 mb-2">{point.title}</h3>
             <p className="text-sm text-white/60 leading-relaxed">{point.description}</p>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>

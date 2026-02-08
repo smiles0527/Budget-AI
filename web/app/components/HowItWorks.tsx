@@ -1,10 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import { motion } from "framer-motion";
 
 const steps = [
   {
@@ -50,87 +46,15 @@ const steps = [
 ];
 
 export default function HowItWorks() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const timelineRef = useRef<HTMLDivElement>(null);
-  const lineRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!timelineRef.current || !lineRef.current) return;
-
-    // Animate the horizontal connecting line growing — triggered, not scrubbed
-    gsap.fromTo(
-      lineRef.current,
-      { scaleX: 0 },
-      {
-        scaleX: 1,
-        duration: 1.5,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: timelineRef.current,
-          start: "top 75%",
-          end: "+=300",
-          scrub: 1,
-        },
-      }
-    );
-
-    // Cards cascade in with blur-to-sharp + stagger
-    const cards = timelineRef.current.querySelectorAll(".step-card");
-    cards.forEach((card, i) => {
-      gsap.fromTo(
-        card,
-        {
-          y: 50,
-          opacity: 0,
-          scale: 0.85,
-          filter: "blur(8px)",
-        },
-        {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          filter: "blur(0px)",
-          duration: 0.8,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: card,
-            start: "top 90%",
-            end: "top 50%",
-            scrub: 1,
-          },
-        }
-      );
-
-      // Spin the step number on enter
-      const number = card.querySelector(".step-number");
-      if (number) {
-        gsap.fromTo(
-          number,
-          { scale: 0, rotation: -180 },
-          {
-            scale: 1,
-            rotation: 0,
-            duration: 0.8,
-            ease: "back.out(2)",
-            scrollTrigger: {
-              trigger: card,
-              start: "top 80%",
-              end: "+=300",
-              scrub: 1,
-            },
-          }
-        );
-      }
-    });
-
-    return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
-  }, []);
-
   return (
-    <section ref={sectionRef} className="w-full max-w-6xl mb-20">
-      <div className="text-center mb-10">
+    <section className="w-full max-w-6xl mb-20">
+      <motion.div
+        initial={{ y: 40, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: false, amount: 0.3 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="text-center mb-10"
+      >
         <span className="text-xs font-bold uppercase tracking-widest text-neon-purple text-glow-purple">
           How It Works
         </span>
@@ -140,26 +64,39 @@ export default function HowItWorks() {
         <p className="text-white/70 mt-3 max-w-xl mx-auto">
           No spreadsheets. No bank logins. Just snap, and SnapBudget handles the rest.
         </p>
-      </div>
+      </motion.div>
 
-      <div ref={timelineRef} className="relative">
+      <div className="relative">
         {/* Horizontal glowing line (desktop) */}
-        <div
-          ref={lineRef}
+        <motion.div
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          viewport={{ once: false, amount: 0.3 }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
           className="absolute top-6 left-0 right-0 h-0.5 origin-left hidden md:block z-0"
           style={{
             background: "linear-gradient(90deg, #00c9ff, #a855f7, #0df2a6, #ff6bcb)",
             boxShadow: "0 0 15px rgba(13,242,166,0.4), 0 0 30px rgba(168,85,247,0.2)",
-            transform: "scaleX(0)",
           }}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-          {steps.map((step) => (
-            <div key={step.number} className="step-card relative flex flex-col items-center text-center group">
+          {steps.map((step, i) => (
+            <motion.div
+              key={step.number}
+              initial={{ y: 50, opacity: 0, scale: 0.85, filter: "blur(8px)" }}
+              whileInView={{ y: 0, opacity: 1, scale: 1, filter: "blur(0px)" }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
+              className="relative flex flex-col items-center text-center group"
+            >
               {/* Step number circle */}
-              <div
-                className="step-number relative z-10 w-12 h-12 rounded-full flex items-center justify-center text-sm font-extrabold mb-5 shrink-0"
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                whileInView={{ scale: 1, rotate: 0 }}
+                viewport={{ once: false, amount: 0.5 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20, delay: i * 0.1 + 0.15 }}
+                className="relative z-10 w-12 h-12 rounded-full flex items-center justify-center text-sm font-extrabold mb-5 shrink-0"
                 style={{
                   background: step.accent,
                   boxShadow: `0 0 20px ${step.accent}60, 0 0 40px ${step.accent}30`,
@@ -167,7 +104,7 @@ export default function HowItWorks() {
                 }}
               >
                 {step.number}
-              </div>
+              </motion.div>
 
               {/* Card */}
               <div className="relative p-5 rounded-2xl glass border-gradient overflow-hidden cursor-default w-full grow">
@@ -193,7 +130,7 @@ export default function HowItWorks() {
                   <p className="text-xs text-white/60 leading-relaxed">{step.description}</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

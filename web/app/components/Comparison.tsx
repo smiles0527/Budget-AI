@@ -1,10 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import { motion } from "framer-motion";
 
 interface Competitor {
   name: string;
@@ -47,84 +43,15 @@ const snapFeatures = [
 ];
 
 export default function Comparison() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!sectionRef.current) return;
-    const section = sectionRef.current;
-
-    // Heading
-    const heading = section.querySelector(".comp-heading");
-    if (heading) {
-      gsap.fromTo(
-        heading,
-        { y: 60, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: heading,
-            start: "top 85%",
-            end: "+=300",
-            scrub: 1,
-          },
-        }
-      );
-    }
-
-    // Competitor cards — staggered slide-in from left with clipPath
-    const compCards = section.querySelectorAll(".comp-card");
-    compCards.forEach((card, i) => {
-      gsap.fromTo(
-        card,
-        { clipPath: "inset(0 100% 0 0)", opacity: 0 },
-        {
-          clipPath: "inset(0 0% 0 0)",
-          opacity: 1,
-          duration: 0.8,
-          ease: "power3.inOut",
-          scrollTrigger: {
-            trigger: card,
-            start: "top 90%",
-            end: "+=300",
-            scrub: 1,
-          },
-        }
-      );
-    });
-
-    // SnapBudget card — scale-in from center
-    const snapCard = section.querySelector(".snap-card");
-    if (snapCard) {
-      gsap.fromTo(
-        snapCard,
-        { scale: 0.8, opacity: 0, filter: "blur(8px)" },
-        {
-          scale: 1,
-          opacity: 1,
-          filter: "blur(0px)",
-          duration: 1,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: snapCard,
-            start: "top 85%",
-            end: "+=300",
-            scrub: 1,
-          },
-        }
-      );
-    }
-
-    return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
-  }, []);
-
   return (
-    <section ref={sectionRef} className="w-full max-w-6xl mb-20">
-      <div className="comp-heading text-center mb-10">
+    <section className="w-full max-w-6xl mb-20">
+      <motion.div
+        initial={{ y: 60, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: false, amount: 0.3 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="text-center mb-10"
+      >
         <span className="text-xs font-bold uppercase tracking-widest text-neon-purple text-glow-purple">
           Why Us?
         </span>
@@ -134,15 +61,19 @@ export default function Comparison() {
         <p className="text-white/70 mt-3 max-w-2xl mx-auto">
           Other tools were built for different people. SnapBudget was built for <span className="text-white/80 font-semibold">you</span>.
         </p>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left: Competitor cards */}
         <div className="space-y-4">
-          {competitors.map((comp) => (
-            <div
+          {competitors.map((comp, i) => (
+            <motion.div
               key={comp.name}
-              className="comp-card glass border border-white/5 rounded-2xl p-6 hover:border-neon-pink/20 transition-colors duration-300"
+              initial={{ clipPath: "inset(0 100% 0 0)", opacity: 0 }}
+              whileInView={{ clipPath: "inset(0 0% 0 0)", opacity: 1 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.7, delay: i * 0.1, ease: "easeOut" }}
+              className="glass border border-white/5 rounded-2xl p-6 hover:border-neon-pink/20 transition-colors duration-300"
             >
               <div className="flex items-center gap-3 mb-4">
                 <span className="material-symbols-outlined text-3xl text-white/60">{comp.icon}</span>
@@ -171,12 +102,18 @@ export default function Comparison() {
                   ))}
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {/* Right: SnapBudget card */}
-        <div className="snap-card glass-strong border-gradient glow-primary rounded-2xl p-8 flex flex-col justify-center relative overflow-hidden">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0, filter: "blur(8px)" }}
+          whileInView={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
+          viewport={{ once: false, amount: 0.3 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="glass-strong border-gradient glow-primary rounded-2xl p-8 flex flex-col justify-center relative overflow-hidden"
+        >
           {/* Background glow */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#0df2a6]/8 to-[#00c9ff]/5 pointer-events-none" />
 
@@ -210,7 +147,7 @@ export default function Comparison() {
               This is the app that should&apos;ve existed years ago.
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

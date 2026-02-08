@@ -73,7 +73,7 @@ export default function AppGallery() {
           scrollTrigger: {
             trigger: heading,
             start: "top 85%",
-            toggleActions: "play none none none",
+            toggleActions: "restart none restart none",
           },
         }
       );
@@ -94,7 +94,7 @@ export default function AppGallery() {
           scrollTrigger: {
             trigger: card,
             start: "top 90%",
-            toggleActions: "play none none none",
+            toggleActions: "restart none restart none",
           },
         }
       );

@@ -60,7 +60,7 @@ export default function Problem() {
           scrollTrigger: {
             trigger: heading,
             start: "top 85%",
-            toggleActions: "play none none none",
+            toggleActions: "restart none restart none",
           },
         }
       );
@@ -82,7 +82,7 @@ export default function Problem() {
           scrollTrigger: {
             trigger: card,
             start: "top 90%",
-            toggleActions: "play none none none",
+            toggleActions: "restart none restart none",
           },
         }
       );
@@ -103,7 +103,7 @@ export default function Problem() {
           scrollTrigger: {
             trigger: pill,
             start: "top 90%",
-            toggleActions: "play none none none",
+            toggleActions: "restart none restart none",
           },
         }
       );
@@ -123,7 +123,7 @@ export default function Problem() {
           scrollTrigger: {
             trigger: bottom,
             start: "top 90%",
-            toggleActions: "play none none none",
+            toggleActions: "restart none restart none",
           },
         }
       );

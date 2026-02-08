@@ -67,7 +67,7 @@ export default function Comparison() {
           scrollTrigger: {
             trigger: heading,
             start: "top 85%",
-            toggleActions: "play none none none",
+            toggleActions: "restart none restart none",
           },
         }
       );
@@ -88,7 +88,7 @@ export default function Comparison() {
           scrollTrigger: {
             trigger: card,
             start: "top 90%",
-            toggleActions: "play none none none",
+            toggleActions: "restart none restart none",
           },
         }
       );
@@ -109,7 +109,7 @@ export default function Comparison() {
           scrollTrigger: {
             trigger: snapCard,
             start: "top 85%",
-            toggleActions: "play none none none",
+            toggleActions: "restart none restart none",
           },
         }
       );

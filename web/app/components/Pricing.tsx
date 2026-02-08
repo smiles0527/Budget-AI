@@ -75,7 +75,7 @@ export default function Pricing() {
             trigger: card,
             start: "top 85%",
             end: "top 45%",
-            toggleActions: "play none none none",
+            toggleActions: "restart none restart none",
           },
         }
       );

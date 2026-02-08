@@ -42,7 +42,7 @@ export default function Hero() {
     if (!section) return;
 
     const timer = setTimeout(() => {
-      // Triggered fade-out: plays once when you scroll past, stays faded
+      // Triggered fade-out: fades when scrolling past, reverses back in when scrolling up
       const elements = [
         { el: headingRef.current, props: { scale: 0.85, opacity: 0, y: -40, filter: "blur(8px)" } },
         { el: subtitleRef.current, props: { opacity: 0, y: -30 } },
@@ -61,7 +61,7 @@ export default function Hero() {
           scrollTrigger: {
             trigger: section,
             start: "60% top",
-            toggleActions: "play none none none",
+            toggleActions: "play none none reverse",
           },
         });
       });

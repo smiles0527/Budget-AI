@@ -56,11 +56,14 @@ const stats = [
 
 function CountUp({ value, prefix, suffix, color }: { value: number; prefix: string; suffix: string; color: string }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  const isInView = useInView(ref, { once: false, margin: "-50px" });
   const [display, setDisplay] = useState(0);
 
   useEffect(() => {
-    if (!isInView) return;
+    if (!isInView) {
+      setDisplay(0);
+      return;
+    }
     const obj = { val: 0 };
     gsap.to(obj, {
       val: value,
@@ -103,7 +106,7 @@ export default function Stats() {
             trigger: card,
             start: "top 85%",
             end: "top 40%",
-            toggleActions: "play none none none",
+            toggleActions: "restart none restart none",
           },
         }
       );
@@ -119,7 +122,7 @@ export default function Stats() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
+        viewport={{ once: false }}
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >

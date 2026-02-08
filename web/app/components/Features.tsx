@@ -70,7 +70,7 @@ export default function Features() {
             trigger: card,
             start: "top 90%",
             end: "top 50%",
-            toggleActions: "play none none none",
+            toggleActions: "restart none restart none",
           },
         }
       );
@@ -107,7 +107,7 @@ export default function Features() {
         scrollTrigger: {
           trigger: headingRef.current,
           start: "top 85%",
-          toggleActions: "play none none none",
+          toggleActions: "restart none restart none",
         },
       }
     );

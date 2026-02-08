@@ -95,7 +95,7 @@ export default function Testimonials() {
           scrollTrigger: {
             trigger: heading,
             start: "top 85%",
-            toggleActions: "play none none none",
+            toggleActions: "restart none restart none",
           },
         }
       );
@@ -121,7 +121,7 @@ export default function Testimonials() {
           scrollTrigger: {
             trigger: card,
             start: "top 92%",
-            toggleActions: "play none none none",
+            toggleActions: "restart none restart none",
           },
         }
       );

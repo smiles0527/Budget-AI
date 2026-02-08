@@ -68,7 +68,7 @@ export default function HowItWorks() {
         scrollTrigger: {
           trigger: timelineRef.current,
           start: "top 75%",
-          toggleActions: "play none none none",
+          toggleActions: "restart none restart none",
         },
       }
     );
@@ -96,7 +96,7 @@ export default function HowItWorks() {
             trigger: card,
             start: "top 90%",
             end: "top 50%",
-            toggleActions: "play none none none",
+            toggleActions: "restart none restart none",
           },
         }
       );
@@ -115,7 +115,7 @@ export default function HowItWorks() {
             scrollTrigger: {
               trigger: card,
               start: "top 80%",
-              toggleActions: "play none none none",
+              toggleActions: "restart none restart none",
             },
           }
         );

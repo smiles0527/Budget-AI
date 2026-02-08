@@ -75,7 +75,7 @@ export default function Pricing() {
             trigger: card,
             start: "top 85%",
             end: "top 45%",
-            toggleActions: "play reset play reset",
+            scrub: 1,
           },
         }
       );

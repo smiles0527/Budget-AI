@@ -135,7 +135,8 @@ export default function AppGallery() {
             scrollTrigger: {
               trigger: intro,
               start: "top 85%",
-              toggleActions: "play reset play reset",
+              end: "+=300",
+              scrub: 1,
             },
           }
         );
@@ -166,7 +167,8 @@ export default function AppGallery() {
               scrollTrigger: {
                 trigger: row,
                 start: "top 80%",
-                toggleActions: "play reset play reset",
+                end: "+=300",
+                scrub: 1,
               },
             }
           );
@@ -185,7 +187,8 @@ export default function AppGallery() {
               scrollTrigger: {
                 trigger: row,
                 start: "top 80%",
-                toggleActions: "play reset play reset",
+                end: "+=300",
+                scrub: 1,
               },
             }
           );
@@ -200,11 +203,12 @@ export default function AppGallery() {
               opacity: 1,
               duration: 0.6,
               delay: 0.35,
-              ease: "elastic.out(1, 0.5)",
+              ease: "power3.out",
               scrollTrigger: {
                 trigger: row,
                 start: "top 80%",
-                toggleActions: "play reset play reset",
+                end: "+=300",
+                scrub: 1,
               },
             }
           );

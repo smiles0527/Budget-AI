@@ -35,7 +35,7 @@ export default function CTA() {
           trigger: section,
           start: "top 80%",
           end: "top 30%",
-          toggleActions: "play reset play reset",
+          scrub: 1,
         },
       }
     );
@@ -45,7 +45,8 @@ export default function CTA() {
       scrollTrigger: {
         trigger: section,
         start: "top 75%",
-        toggleActions: "play reset play reset",
+        end: "+=300",
+        scrub: 1,
       },
     });
     tl.fromTo(badge, { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 0.3)
@@ -65,7 +66,6 @@ export default function CTA() {
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
-        delay: i * 0.3,
       });
     });
 

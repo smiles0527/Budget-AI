@@ -67,7 +67,8 @@ export default function Comparison() {
           scrollTrigger: {
             trigger: heading,
             start: "top 85%",
-            toggleActions: "play reset play reset",
+            end: "+=300",
+            scrub: 1,
           },
         }
       );
@@ -83,12 +84,12 @@ export default function Comparison() {
           clipPath: "inset(0 0% 0 0)",
           opacity: 1,
           duration: 0.8,
-          delay: i * 0.12,
           ease: "power3.inOut",
           scrollTrigger: {
             trigger: card,
             start: "top 90%",
-            toggleActions: "play reset play reset",
+            end: "+=300",
+            scrub: 1,
           },
         }
       );
@@ -109,7 +110,8 @@ export default function Comparison() {
           scrollTrigger: {
             trigger: snapCard,
             start: "top 85%",
-            toggleActions: "play reset play reset",
+            end: "+=300",
+            scrub: 1,
           },
         }
       );

@@ -54,7 +54,8 @@ export default function ForSchools() {
           scrollTrigger: {
             trigger: heading,
             start: "top 85%",
-            toggleActions: "play reset play reset",
+            end: "+=300",
+            scrub: 1,
           },
         }
       );
@@ -71,12 +72,12 @@ export default function ForSchools() {
           opacity: 1,
           scale: 1,
           duration: 1.2,
-          delay: i * 0.15,
-          ease: "elastic.out(1, 0.6)",
+          ease: "power3.out",
           scrollTrigger: {
             trigger: card,
             start: "top 90%",
-            toggleActions: "play reset play reset",
+            end: "+=300",
+            scrub: 1,
           },
         }
       );

@@ -95,7 +95,8 @@ export default function Testimonials() {
           scrollTrigger: {
             trigger: heading,
             start: "top 85%",
-            toggleActions: "play reset play reset",
+            end: "+=300",
+            scrub: 1,
           },
         }
       );
@@ -116,12 +117,12 @@ export default function Testimonials() {
           opacity: 1,
           filter: "blur(0px)",
           duration: 0.7,
-          delay: i * 0.08,
           ease: "power2.out",
           scrollTrigger: {
             trigger: card,
             start: "top 92%",
-            toggleActions: "play reset play reset",
+            end: "+=300",
+            scrub: 1,
           },
         }
       );

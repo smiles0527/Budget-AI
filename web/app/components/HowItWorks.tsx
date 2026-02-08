@@ -68,7 +68,8 @@ export default function HowItWorks() {
         scrollTrigger: {
           trigger: timelineRef.current,
           start: "top 75%",
-          toggleActions: "play reset play reset",
+          end: "+=300",
+          scrub: 1,
         },
       }
     );
@@ -90,13 +91,12 @@ export default function HowItWorks() {
           scale: 1,
           filter: "blur(0px)",
           duration: 0.8,
-          delay: i * 0.15,
           ease: "power2.out",
           scrollTrigger: {
             trigger: card,
             start: "top 90%",
             end: "top 50%",
-            toggleActions: "play reset play reset",
+            scrub: 1,
           },
         }
       );
@@ -115,7 +115,8 @@ export default function HowItWorks() {
             scrollTrigger: {
               trigger: card,
               start: "top 80%",
-              toggleActions: "play reset play reset",
+              end: "+=300",
+              scrub: 1,
             },
           }
         );

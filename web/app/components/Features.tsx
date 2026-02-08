@@ -64,13 +64,12 @@ export default function Features() {
           y: 0,
           opacity: 1,
           duration: 1,
-          delay: i * 0.15,
           ease: "power3.out",
           scrollTrigger: {
             trigger: card,
             start: "top 90%",
             end: "top 50%",
-            toggleActions: "play reset play reset",
+            scrub: 1,
           },
         }
       );
@@ -84,7 +83,6 @@ export default function Features() {
           repeat: -1,
           yoyo: true,
           ease: "sine.inOut",
-          delay: i * 0.3,
         });
       }
     });
@@ -107,7 +105,8 @@ export default function Features() {
         scrollTrigger: {
           trigger: headingRef.current,
           start: "top 85%",
-          toggleActions: "play reset play reset",
+          end: "+=300",
+          scrub: 1,
         },
       }
     );

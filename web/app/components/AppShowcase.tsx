@@ -138,7 +138,8 @@ export default function AppShowcase() {
           scrollTrigger: {
             trigger: heading,
             start: "top 85%",
-            toggleActions: "play reset play reset",
+            end: "+=300",
+            scrub: 1,
           },
         }
       );
@@ -163,12 +164,12 @@ export default function AppShowcase() {
           opacity: 1,
           scale: 1,
           duration: 1.2,
-          delay: i * 0.15,
           ease: "back.out(1.4)",
           scrollTrigger: {
             trigger: phone,
             start: "top 90%",
-            toggleActions: "play reset play reset",
+            end: "+=300",
+            scrub: 1,
           },
         }
       );

@@ -54,7 +54,6 @@ export default function FloatingIcons() {
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
-        delay: i * 0.3,
       });
     });
 

@@ -100,13 +100,12 @@ export default function Stats() {
           scale: 1,
           opacity: 1,
           duration: 0.7,
-          delay: i * 0.1,
           ease: "back.out(2.5)",
           scrollTrigger: {
             trigger: card,
             start: "top 85%",
             end: "top 40%",
-            toggleActions: "play reset play reset",
+            scrub: 1,
           },
         }
       );

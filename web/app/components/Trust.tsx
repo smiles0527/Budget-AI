@@ -72,7 +72,8 @@ export default function Trust() {
           scrollTrigger: {
             trigger: heading,
             start: "top 85%",
-            toggleActions: "play reset play reset",
+            end: "+=300",
+            scrub: 1,
           },
         }
       );
@@ -91,12 +92,12 @@ export default function Trust() {
           clipPath: "circle(150% at 15% 15%)",
           opacity: 1,
           duration: 1,
-          delay: i * 0.1,
           ease: "power3.out",
           scrollTrigger: {
             trigger: card,
             start: "top 92%",
-            toggleActions: "play reset play reset",
+            end: "+=300",
+            scrub: 1,
           },
         }
       );

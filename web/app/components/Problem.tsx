@@ -60,7 +60,8 @@ export default function Problem() {
           scrollTrigger: {
             trigger: heading,
             start: "top 85%",
-            toggleActions: "play reset play reset",
+            end: "+=300",
+            scrub: 1,
           },
         }
       );
@@ -77,12 +78,12 @@ export default function Problem() {
           opacity: 1,
           filter: "blur(0px)",
           duration: 0.8,
-          delay: i * 0.15,
           ease: "power2.out",
           scrollTrigger: {
             trigger: card,
             start: "top 90%",
-            toggleActions: "play reset play reset",
+            end: "+=300",
+            scrub: 1,
           },
         }
       );
@@ -98,12 +99,12 @@ export default function Problem() {
           scale: 1,
           opacity: 1,
           duration: 0.6,
-          delay: i * 0.06,
-          ease: "elastic.out(1, 0.5)",
+          ease: "power3.out",
           scrollTrigger: {
             trigger: pill,
             start: "top 90%",
-            toggleActions: "play reset play reset",
+            end: "+=300",
+            scrub: 1,
           },
         }
       );
@@ -123,7 +124,8 @@ export default function Problem() {
           scrollTrigger: {
             trigger: bottom,
             start: "top 90%",
-            toggleActions: "play reset play reset",
+            end: "+=300",
+            scrub: 1,
           },
         }
       );

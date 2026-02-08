@@ -17,17 +17,29 @@ export default function PresentationEmbed() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const ADMIN_PASSWORD = "admin123";
+  const [saving, setSaving] = useState(false);
 
-  // Restore saved presentation on mount
+  // Fetch global presentation URL on mount
   useEffect(() => {
-    const saved = localStorage.getItem("snapbudget-embed-url");
-    if (saved) {
-      setEmbedUrl(saved);
-      setIsLoaded(true);
-    }
+    fetch("/api/presentation")
+      .then((r) => r.json())
+      .then((data: { url?: string }) => {
+        if (data.url) {
+          setEmbedUrl(data.url);
+          setIsLoaded(true);
+        }
+      })
+      .catch(() => {
+        // Fallback to localStorage if API unavailable
+        const saved = localStorage.getItem("snapbudget-embed-url");
+        if (saved) {
+          setEmbedUrl(saved);
+          setIsLoaded(true);
+        }
+      });
   }, []);
 
-  const handleEmbed = () => {
+  const handleEmbed = async () => {
     if (!inputValue.trim()) return;
 
     let url = inputValue.trim();
@@ -45,18 +57,39 @@ export default function PresentationEmbed() {
       }
     }
 
+    setSaving(true);
+    try {
+      const res = await fetch("/api/presentation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, password: ADMIN_PASSWORD }),
+      });
+      if (!res.ok) throw new Error("Save failed");
+    } catch {
+      // Fallback to localStorage if API unavailable
+      localStorage.setItem("snapbudget-embed-url", url);
+    }
+    setSaving(false);
+
     setEmbedUrl(url);
     setIsLoaded(true);
     setIsEditing(false);
-    localStorage.setItem("snapbudget-embed-url", url);
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     setEmbedUrl("");
     setIsLoaded(false);
     setInputValue("");
     setIsEditing(false);
-    localStorage.removeItem("snapbudget-embed-url");
+    try {
+      await fetch("/api/presentation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: "", password: ADMIN_PASSWORD }),
+      });
+    } catch {
+      localStorage.removeItem("snapbudget-embed-url");
+    }
   };
 
   const handleChangeRequest = () => {

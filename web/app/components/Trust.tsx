@@ -53,7 +53,7 @@ export default function Trust() {
       <motion.div
         initial={{ y: 60, opacity: 0, scale: 0.95 }}
         whileInView={{ y: 0, opacity: 1, scale: 1 }}
-        viewport={{ once: false, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="text-center mb-8"
       >
@@ -75,7 +75,7 @@ export default function Trust() {
             key={point.title}
             initial={{ clipPath: "circle(0% at 15% 15%)", opacity: 0 }}
             whileInView={{ clipPath: "circle(150% at 15% 15%)", opacity: 1 }}
-            viewport={{ once: false, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.15 }}
             transition={{ duration: 0.8, delay: i * 0.08, ease: "easeOut" }}
             className="glass border border-white/5 rounded-2xl p-6 hover:border-white/10 hover:-translate-y-1 transition-all duration-300 group"
           >

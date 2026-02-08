@@ -48,7 +48,7 @@ const stats = [
 
 function CountUp({ value, prefix, suffix, color }: { value: number; prefix: string; suffix: string; color: string }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: false, margin: "-50px" });
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
   const [display, setDisplay] = useState(0);
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function Stats() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.5 }}
         className="text-center mb-10"
       >
@@ -102,7 +102,7 @@ export default function Stats() {
             key={stat.label}
             initial={{ scale: 0.3, opacity: 0 }}
             whileInView={{ scale: 1, opacity: 1 }}
-            viewport={{ once: false, amount: 0.3 }}
+            viewport={{ once: true, amount: 0.15 }}
             transition={{ type: "spring", stiffness: 180, damping: 14, delay: i * 0.08 }}
             className={`relative flex flex-col items-center text-center p-6 rounded-2xl glass border-gradient group cursor-default transition-all duration-300 hover:${stat.glow}`}
           >

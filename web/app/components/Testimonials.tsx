@@ -77,7 +77,7 @@ export default function Testimonials() {
       <motion.div
         initial={{ y: 60, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
-        viewport={{ once: false, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="text-center mb-10"
       >
@@ -98,7 +98,7 @@ export default function Testimonials() {
             key={t.name}
             initial={{ y: 30, opacity: 0, filter: "blur(10px)" }}
             whileInView={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-            viewport={{ once: false, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.15 }}
             transition={{ duration: 0.6, delay: i * 0.08, ease: "easeOut" }}
             className="glass border border-white/5 rounded-2xl p-6 flex flex-col hover:border-primary/20 hover:-translate-y-2 transition-all duration-300 group"
           >

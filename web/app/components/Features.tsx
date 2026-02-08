@@ -38,7 +38,7 @@ export default function Features() {
       <motion.div
         initial={{ y: 40, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
-        viewport={{ once: false, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="text-center mb-10"
       >
@@ -56,7 +56,7 @@ export default function Features() {
             key={feature.title}
             initial={{ rotateX: -60, y: 30, opacity: 0 }}
             whileInView={{ rotateX: 0, y: 0, opacity: 1 }}
-            viewport={{ once: false, amount: 0.3 }}
+            viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.7, delay: i * 0.12, ease: "easeOut" }}
             style={{ transformPerspective: 800, transformOrigin: "center bottom" }}
             className="relative flex flex-col items-center text-center p-8 rounded-2xl glass border-gradient group cursor-default overflow-hidden"

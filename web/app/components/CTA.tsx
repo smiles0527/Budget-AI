@@ -6,9 +6,9 @@ export default function CTA() {
   return (
     <section className="w-full max-w-5xl mb-20" style={{ perspective: 1400 }}>
       <motion.div
-        initial={{ scale: 0.7, opacity: 0, filter: "blur(10px)" }}
+        initial={{ scale: 0.85, opacity: 0, filter: "blur(6px)" }}
         whileInView={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
-        viewport={{ once: false, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="relative overflow-hidden rounded-3xl p-10 md:p-16 text-center"
         style={{ background: "linear-gradient(135deg, rgba(13,242,166,0.15) 0%, rgba(0,201,255,0.1) 50%, rgba(168,85,247,0.15) 100%)", border: "1px solid rgba(13,242,166,0.2)" }}
@@ -27,7 +27,7 @@ export default function CTA() {
           <motion.span
             initial={{ y: -20, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.5, delay: 0.15 }}
             className="inline-flex items-center gap-2 glass text-primary text-xs font-bold px-6 py-2.5 rounded-full mb-8"
           >
@@ -38,7 +38,7 @@ export default function CTA() {
           <motion.h2
             initial={{ y: 20, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.5, delay: 0.25 }}
             className="text-4xl md:text-6xl font-extrabold mb-5 leading-tight"
           >
@@ -50,7 +50,7 @@ export default function CTA() {
           <motion.p
             initial={{ y: 20, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.5, delay: 0.35 }}
             className="text-white/70 max-w-xl mx-auto mb-10 leading-relaxed text-lg"
           >
@@ -60,7 +60,7 @@ export default function CTA() {
           <motion.div
             initial={{ y: 20, opacity: 0, scale: 0.95 }}
             whileInView={{ y: 0, opacity: 1, scale: 1 }}
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.2 }}
             transition={{ type: "spring", stiffness: 200, damping: 18, delay: 0.45 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-5"
           >
@@ -85,7 +85,7 @@ export default function CTA() {
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.4, delay: 0.6 }}
             className="text-white/60 text-sm mt-10"
           >

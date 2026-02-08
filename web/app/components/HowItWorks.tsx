@@ -51,7 +51,7 @@ export default function HowItWorks() {
       <motion.div
         initial={{ y: 40, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
-        viewport={{ once: false, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="text-center mb-10"
       >
@@ -71,7 +71,7 @@ export default function HowItWorks() {
         <motion.div
           initial={{ scaleX: 0 }}
           whileInView={{ scaleX: 1 }}
-          viewport={{ once: false, amount: 0.3 }}
+          viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
           className="absolute top-6 left-0 right-0 h-0.5 origin-left hidden md:block z-0"
           style={{
@@ -86,7 +86,7 @@ export default function HowItWorks() {
               key={step.number}
               initial={{ y: 50, opacity: 0, scale: 0.85, filter: "blur(8px)" }}
               whileInView={{ y: 0, opacity: 1, scale: 1, filter: "blur(0px)" }}
-              viewport={{ once: false, amount: 0.3 }}
+              viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
               className="relative flex flex-col items-center text-center group"
             >
@@ -94,7 +94,7 @@ export default function HowItWorks() {
               <motion.div
                 initial={{ scale: 0, rotate: -180 }}
                 whileInView={{ scale: 1, rotate: 0 }}
-                viewport={{ once: false, amount: 0.5 }}
+                viewport={{ once: true, amount: 0.3 }}
                 transition={{ type: "spring", stiffness: 260, damping: 20, delay: i * 0.1 + 0.15 }}
                 className="relative z-10 w-12 h-12 rounded-full flex items-center justify-center text-sm font-extrabold mb-5 shrink-0"
                 style={{

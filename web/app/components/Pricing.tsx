@@ -46,7 +46,7 @@ export default function Pricing() {
       <motion.div
         initial={{ y: 40, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
-        viewport={{ once: false, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="text-center mb-10"
       >
@@ -66,14 +66,14 @@ export default function Pricing() {
           <motion.div
             key={plan.name}
             initial={{
-              x: i === 0 ? -200 : 200,
+              x: i === 0 ? -80 : 80,
               y: 40,
-              rotateY: i === 0 ? 15 : -15,
+              rotateY: i === 0 ? 8 : -8,
               opacity: 0,
-              scale: 0.85,
+              scale: 0.9,
             }}
             whileInView={{ x: 0, y: 0, rotateY: 0, opacity: 1, scale: 1 }}
-            viewport={{ once: false, amount: 0.3 }}
+            viewport={{ once: true, amount: 0.1 }}
             transition={{ type: "spring", stiffness: 120, damping: 18, delay: i * 0.1 }}
             className={`relative flex flex-col p-8 rounded-2xl overflow-hidden cursor-default transition-transform duration-300 hover:scale-[1.03] hover:-translate-y-3 ${
               plan.highlighted

@@ -48,7 +48,7 @@ export default function Comparison() {
       <motion.div
         initial={{ y: 60, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
-        viewport={{ once: false, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="text-center mb-10"
       >
@@ -71,8 +71,7 @@ export default function Comparison() {
               key={comp.name}
               initial={{ clipPath: "inset(0 100% 0 0)", opacity: 0 }}
               whileInView={{ clipPath: "inset(0 0% 0 0)", opacity: 1 }}
-              viewport={{ once: false, amount: 0.3 }}
-              transition={{ duration: 0.7, delay: i * 0.1, ease: "easeOut" }}
+              viewport={{ once: true, amount: 0.15 }}              transition={{ duration: 0.7, delay: i * 0.1, ease: "easeOut" }}
               className="glass border border-white/5 rounded-2xl p-6 hover:border-neon-pink/20 transition-colors duration-300"
             >
               <div className="flex items-center gap-3 mb-4">
@@ -110,7 +109,7 @@ export default function Comparison() {
         <motion.div
           initial={{ scale: 0.8, opacity: 0, filter: "blur(8px)" }}
           whileInView={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
-          viewport={{ once: false, amount: 0.3 }}
+          viewport={{ once: true, amount: 0.15 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
           className="glass-strong border-gradient glow-primary rounded-2xl p-8 flex flex-col justify-center relative overflow-hidden"
         >

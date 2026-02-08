@@ -33,9 +33,9 @@ export default function ForSchools() {
   return (
     <section className="w-full max-w-6xl mb-20">
       <motion.div
-        initial={{ y: 60, opacity: 0 }}
+        initial={{ y: 40, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
-        viewport={{ once: false, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="text-center mb-10"
       >
@@ -55,9 +55,9 @@ export default function ForSchools() {
         {audiences.map((a, i) => (
           <motion.div
             key={a.title}
-            initial={{ y: 60, opacity: 0, scale: 0.9 }}
+            initial={{ y: 40, opacity: 0, scale: 0.95 }}
             whileInView={{ y: 0, opacity: 1, scale: 1 }}
-            viewport={{ once: false, amount: 0.3 }}
+            viewport={{ once: true, amount: 0.1 }}
             transition={{ type: "spring", stiffness: 150, damping: 18, delay: i * 0.1 }}
             className="glass border border-white/5 rounded-2xl p-7 flex flex-col hover:border-white/10 hover:-translate-y-2 transition-all duration-300 group"
           >

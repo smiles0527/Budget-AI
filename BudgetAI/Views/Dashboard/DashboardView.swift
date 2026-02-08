@@ -44,7 +44,7 @@ struct DashboardView: View {
                 }
                 
                 ScrollView {
-                    VStack(spacing: 14) {
+                    VStack(spacing: 18) {
                         
                         // MARK: - Header (Player Stats)
                         HStack(spacing: 12) {
@@ -113,7 +113,7 @@ struct DashboardView: View {
                         
                         // MARK: - War Chest (Budget Overview)
                         if let summary = viewModel.summary {
-                            VStack(spacing: 10) {
+                            VStack(spacing: 12) {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text("WAR CHEST")
@@ -177,7 +177,7 @@ struct DashboardView: View {
                                         .foregroundColor(.white.opacity(0.5))
                                 }
                             }
-                            .padding(14)
+                            .padding(18)
                             .background(
                                 RoundedRectangle(cornerRadius: 24)
                                     .fill(
@@ -231,7 +231,7 @@ struct DashboardView: View {
                         }
                         
                         // MARK: - Resources (CategoriesGrid)
-                        VStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 12) {
                             HStack(spacing: 6) {
                                 Image(systemName: "cube.fill")
                                     .font(.system(size: 12))
@@ -266,7 +266,7 @@ struct DashboardView: View {
                         }
                         
                         // MARK: - Recent Battles (Transactions)
-                        VStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 12) {
                             HStack {
                                 HStack(spacing: 6) {
                                     Image(systemName: "shield.lefthalf.filled")
@@ -291,7 +291,7 @@ struct DashboardView: View {
                             }
                             .padding(.horizontal)
                             
-                            VStack(spacing: 6) {
+                            VStack(spacing: 8) {
                                 if viewModel.recentTransactions.isEmpty {
                                     // Empty state
                                     VStack(spacing: 8) {
@@ -434,8 +434,8 @@ struct ResourceCard: View {
                 .font(.system(size: 16, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
         }
-        .padding(12)
-        .frame(width: 120, height: 110)
+        .padding(14)
+        .frame(width: 130, height: 120)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.white.opacity(0.05))
@@ -494,7 +494,7 @@ struct BattleRow: View {
             }
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color.white.opacity(0.04))

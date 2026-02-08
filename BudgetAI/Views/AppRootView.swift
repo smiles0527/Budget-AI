@@ -197,7 +197,7 @@ struct ProfileView: View {
                 }
                 
                 ScrollView {
-                    VStack(spacing: 12) {
+                    VStack(spacing: 16) {
                         // MARK: - Header
                         profileHeader
                         
@@ -215,7 +215,7 @@ struct ProfileView: View {
                         
                         Spacer(minLength: 20)
                     }
-                    .padding(.horizontal, 14)
+                    .padding(.horizontal, 16)
                 }
             }
             .navigationBarHidden(true)
@@ -295,7 +295,7 @@ struct ProfileView: View {
                     .tracking(1)
             }
         }
-        .padding(14)
+        .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color.white.opacity(0.06))
@@ -350,7 +350,7 @@ struct ProfileView: View {
                 }
             }
         }
-        .padding(12)
+        .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color.white.opacity(0.04))
@@ -504,8 +504,8 @@ struct SettingsRow: View {
                 .font(.system(size: 10, weight: .semibold))
                 .foregroundColor(Color.white.opacity(0.25))
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
         .background(Color.white.opacity(0.03))
     }
 }

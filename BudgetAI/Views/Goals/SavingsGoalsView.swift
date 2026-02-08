@@ -112,7 +112,7 @@ struct QuestCard: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
                 ZStack {
                     Circle()
@@ -162,7 +162,7 @@ struct QuestCard: View {
                         .shadow(color: questColor.opacity(0.4), radius: 3)
                 }
             }
-            .frame(height: 5)
+            .frame(height: 6)
             
             HStack {
                 Text("\(viewModel.formatAmount(cents: goal.contributed_cents ?? 0)) saved")
@@ -171,7 +171,7 @@ struct QuestCard: View {
                 Spacer()
             }
         }
-        .padding(12)
+        .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color.white.opacity(0.05))

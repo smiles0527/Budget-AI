@@ -126,7 +126,7 @@ struct TransactionListView: View {
 
     private var mainContent: some View {
         ScrollView {
-            VStack(spacing: 10) {
+            VStack(spacing: 14) {
                 pageHeader
                 searchBar
                 quickStats
@@ -222,7 +222,7 @@ struct TransactionListView: View {
     }
 
     private var transactionCards: some View {
-        LazyVStack(spacing: 6) {
+        LazyVStack(spacing: 8) {
             ForEach(viewModel.transactions, id: \.id) { transaction in
                 NavigationLink(destination: TransactionDetailView(transaction: transaction)) {
                     TransactionCard(transaction: transaction, viewModel: viewModel)
@@ -509,7 +509,7 @@ struct TransactionCard: View {
             chevron
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
         .background(cardBackground)
         .overlay(cardBorder)
         .accessibilityElement(children: .combine)
@@ -520,9 +520,9 @@ struct TransactionCard: View {
         ZStack {
             Circle()
                 .fill(catColor.opacity(0.18))
-                .frame(width: 36, height: 36)
+                .frame(width: 40, height: 40)
             Image(systemName: catIcon)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(catColor)
         }
         .shadow(color: catColor.opacity(0.35), radius: 4, y: 1)

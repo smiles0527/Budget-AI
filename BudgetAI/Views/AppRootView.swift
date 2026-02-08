@@ -167,110 +167,58 @@ struct ProfileView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Profile Header
-                    VStack(spacing: 16) {
-                        Circle()
-                            .fill(Color.blue)
-                            .frame(width: 80, height: 80)
-                            .overlay(
-                                Image(systemName: "person.fill")
-                                    .foregroundColor(.white)
-                                    .font(.system(size: 40))
-                            )
+            ZStack {
+                AppColors.backgroundDark.ignoresSafeArea()
+                
+                // Background glows
+                VStack {
+                    Circle()
+                        .fill(AppColors.epic.opacity(0.08))
+                        .frame(width: 300, height: 300)
+                        .blur(radius: 100)
+                        .offset(x: -120, y: -180)
+                    Spacer()
+                }
+                VStack {
+                    Spacer()
+                    Circle()
+                        .fill(AppColors.rare.opacity(0.06))
+                        .frame(width: 250, height: 250)
+                        .blur(radius: 80)
+                        .offset(x: 140, y: 40)
+                }
+                VStack {
+                    Circle()
+                        .fill(AppColors.primary.opacity(0.05))
+                        .frame(width: 200, height: 200)
+                        .blur(radius: 70)
+                        .offset(x: 80, y: 100)
+                    Spacer()
+                }
+                
+                ScrollView {
+                    VStack(spacing: 12) {
+                        // MARK: - Header
+                        profileHeader
                         
-                        VStack(spacing: 4) {
-                            Text(authManager.currentUser?.email ?? "User")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                            
-                            if let subscription = authManager.subscription {
-                                Text(subscription.plan.capitalized)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
+                        // MARK: - Player Card
+                        playerCard
+                        
+                        // MARK: - Badges
+                        badgesSection
+                        
+                        // MARK: - Menu
+                        menuSection
+                        
+                        // MARK: - Logout
+                        logoutButton
+                        
+                        Spacer(minLength: 20)
                     }
-                    .padding(.top)
-                    
-                    // Badges
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Text("Badges")
-                                .font(.headline)
-                            
-                            Spacer()
-                            
-                            NavigationLink(destination: BadgeCollectionView()) {
-                                Text("View All")
-                                    .font(.subheadline)
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                        .padding(.horizontal)
-                        
-                        if badgesViewModel.userBadges.isEmpty {
-                            Text("No badges earned yet. Start tracking to earn your first badge!")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .padding(.horizontal)
-                        } else {
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 12) {
-                                    ForEach(badgesViewModel.userBadges.prefix(5), id: \.code) { badge in
-                                        BadgeCard(badge: badge)
-                                    }
-                                }
-                                .padding(.horizontal)
-                            }
-                        }
-                    }
-                    
-                    // Settings List
-                    VStack(spacing: 0) {
-                        NavigationLink(destination: BudgetsView()) {
-                            SettingsRow(icon: "chart.pie.fill", title: "Budgets", color: .blue)
-                        }
-                        
-                        NavigationLink(destination: BudgetAlertsView()) {
-                            SettingsRow(icon: "bell.fill", title: "Alerts", color: .orange)
-                        }
-                        
-                        NavigationLink(destination: UsageView()) {
-                            SettingsRow(icon: "chart.bar.fill", title: "Usage", color: .green)
-                        }
-                        
-                        NavigationLink(destination: TagsView()) {
-                            SettingsRow(icon: "tag.fill", title: "Tags", color: .purple)
-                        }
-                        
-                        NavigationLink(destination: LinkedAccountsView()) {
-                            SettingsRow(icon: "creditcard.fill", title: "Linked Accounts", color: .blue)
-                        }
-                        
-                        NavigationLink(destination: CategoryComparisonView()) {
-                            SettingsRow(icon: "chart.bar.xaxis", title: "Category Comparison", color: .orange)
-                        }
-                        
-                        NavigationLink(destination: ReceiptGalleryView()) {
-                            SettingsRow(icon: "doc.text.image.fill", title: "Receipt Gallery", color: .blue)
-                        }
-                        
-                        NavigationLink(destination: SettingsView()) {
-                            SettingsRow(icon: "gear", title: "Settings", color: .gray)
-                        }
-                        
-                        Button(action: { showingLogoutAlert = true }) {
-                            SettingsRow(icon: "arrow.right.square", title: "Logout", color: .red)
-                        }
-                    }
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(12)
-                    .padding(.horizontal)
+                    .padding(.horizontal, 14)
                 }
             }
-            .navigationTitle("Profile")
+            .navigationBarHidden(true)
             .task {
                 await badgesViewModel.loadUserBadges()
             }
@@ -286,27 +234,246 @@ struct ProfileView: View {
             }
         }
     }
+    
+    // MARK: - Profile Header
+    private var profileHeader: some View {
+        HStack {
+            Image(systemName: "person.text.rectangle.fill")
+                .font(.system(size: 14))
+                .foregroundColor(AppColors.epic)
+            Text("PLAYER PROFILE")
+                .font(.system(size: 16, weight: .black, design: .rounded))
+                .foregroundColor(.white)
+                .tracking(2)
+            Spacer()
+        }
+        .padding(.top, 8)
+    }
+    
+    // MARK: - Player Card
+    private var playerCard: some View {
+        HStack(spacing: 14) {
+            // Avatar
+            ZStack {
+                Circle()
+                    .stroke(LinearGradient(colors: [AppColors.accent, AppColors.epic, AppColors.rare], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 2.5)
+                    .frame(width: 56, height: 56)
+                
+                Image(systemName: "person.fill")
+                    .font(.system(size: 24))
+                    .foregroundColor(AppColors.accent)
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(authManager.currentUser?.email ?? "Player")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                
+                if let subscription = authManager.subscription {
+                    HStack(spacing: 4) {
+                        Image(systemName: subscription.plan == "free" ? "shield" : "shield.checkered")
+                            .font(.system(size: 10))
+                        Text(subscription.plan.uppercased())
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .tracking(1)
+                    }
+                    .foregroundColor(subscription.plan == "free" ? AppColors.rare : AppColors.legendary)
+                }
+            }
+            
+            Spacer()
+            
+            // Badge count
+            VStack(spacing: 2) {
+                Text("\(badgesViewModel.userBadges.count)")
+                    .font(.system(size: 20, weight: .black, design: .rounded))
+                    .foregroundColor(AppColors.accent)
+                Text("BADGES")
+                    .font(.system(size: 8, weight: .bold, design: .rounded))
+                    .foregroundColor(Color.white.opacity(0.5))
+                    .tracking(1)
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.06))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(LinearGradient(colors: [AppColors.epic.opacity(0.4), AppColors.rare.opacity(0.2), Color.clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1)
+                )
+        )
+    }
+    
+    // MARK: - Badges Section
+    private var badgesSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "star.circle.fill")
+                    .font(.system(size: 13))
+                    .foregroundColor(AppColors.accent)
+                Text("TROPHIES")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundColor(Color.white.opacity(0.7))
+                    .tracking(1.5)
+                
+                Spacer()
+                
+                NavigationLink(destination: BadgeCollectionView()) {
+                    HStack(spacing: 3) {
+                        Text("View All")
+                            .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 9, weight: .bold))
+                    }
+                    .foregroundColor(AppColors.epic)
+                }
+            }
+            
+            if badgesViewModel.userBadges.isEmpty {
+                HStack {
+                    Image(systemName: "sparkles")
+                        .foregroundColor(AppColors.accent.opacity(0.5))
+                    Text("No trophies yet — start your quest!")
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundColor(Color.white.opacity(0.4))
+                }
+                .padding(.vertical, 10)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(badgesViewModel.userBadges.prefix(6), id: \.code) { badge in
+                            BadgeCard(badge: badge)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.04))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                )
+        )
+    }
+    
+    // MARK: - Menu Section
+    private var menuSection: some View {
+        VStack(spacing: 1) {
+            NavigationLink(destination: BudgetsView()) {
+                SettingsRow(icon: "chart.pie.fill", title: "Budgets", color: AppColors.rare)
+            }
+            NavigationLink(destination: BudgetAlertsView()) {
+                SettingsRow(icon: "bell.badge.fill", title: "Alerts", color: AppColors.accent)
+            }
+            NavigationLink(destination: UsageView()) {
+                SettingsRow(icon: "flame.fill", title: "Usage", color: AppColors.primary)
+            }
+            NavigationLink(destination: TagsView()) {
+                SettingsRow(icon: "tag.fill", title: "Tags", color: AppColors.epic)
+            }
+            NavigationLink(destination: LinkedAccountsView()) {
+                SettingsRow(icon: "link.circle.fill", title: "Linked Accounts", color: AppColors.rare)
+            }
+            NavigationLink(destination: CategoryComparisonView()) {
+                SettingsRow(icon: "chart.bar.xaxis", title: "Category Comparison", color: Color.orange)
+            }
+            NavigationLink(destination: ReceiptGalleryView()) {
+                SettingsRow(icon: "photo.stack.fill", title: "Receipt Gallery", color: AppColors.info)
+            }
+            NavigationLink(destination: SettingsView()) {
+                SettingsRow(icon: "gearshape.fill", title: "Settings", color: Color.white.opacity(0.5))
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.04))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+    
+    // MARK: - Logout Button
+    private var logoutButton: some View {
+        Button(action: { showingLogoutAlert = true }) {
+            HStack {
+                Image(systemName: "rectangle.portrait.and.arrow.right")
+                    .font(.system(size: 14, weight: .semibold))
+                Text("LOGOUT")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .tracking(1)
+            }
+            .foregroundColor(AppColors.error)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(AppColors.error.opacity(0.1))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(AppColors.error.opacity(0.3), lineWidth: 1)
+                    )
+            )
+        }
+    }
 }
 
 struct BadgeCard: View {
     let badge: UserBadge
     
+    private var badgeIcon: String {
+        let code = badge.code.lowercased()
+        if code.contains("streak") { return "flame.fill" }
+        if code.contains("sav") { return "shield.checkered" }
+        if code.contains("budget") { return "chart.pie.fill" }
+        if code.contains("receipt") || code.contains("scan") { return "doc.text.viewfinder" }
+        if code.contains("first") { return "star.circle.fill" }
+        return "trophy.fill"
+    }
+    
+    private var badgeColor: Color {
+        let code = badge.code.lowercased()
+        if code.contains("streak") { return Color.orange }
+        if code.contains("sav") { return AppColors.primary }
+        if code.contains("budget") { return AppColors.rare }
+        if code.contains("receipt") || code.contains("scan") { return AppColors.epic }
+        return AppColors.accent
+    }
+    
     var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "star.fill")
-                .font(.title)
-                .foregroundColor(.yellow)
+        VStack(spacing: 6) {
+            ZStack {
+                Circle()
+                    .fill(badgeColor.opacity(0.15))
+                    .frame(width: 40, height: 40)
+                
+                Image(systemName: badgeIcon)
+                    .font(.system(size: 18))
+                    .foregroundColor(badgeColor)
+            }
             
             Text(badge.name)
-                .font(.caption)
-                .fontWeight(.medium)
+                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                .foregroundColor(.white)
                 .multilineTextAlignment(.center)
+                .lineLimit(2)
         }
-        .frame(width: 80, height: 100)
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .frame(width: 70, height: 78)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.white.opacity(0.06))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(badgeColor.opacity(0.3), lineWidth: 1)
+                )
+        )
     }
 }
 
@@ -316,23 +483,30 @@ struct SettingsRow: View {
     let color: Color
     
     var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundColor(color)
-                .frame(width: 24)
+        HStack(spacing: 12) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 7)
+                    .fill(color.opacity(0.15))
+                    .frame(width: 30, height: 30)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(color)
+            }
             
             Text(title)
-                .font(.body)
+                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .foregroundColor(.white)
             
             Spacer()
             
             Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundColor(Color.white.opacity(0.25))
         }
-        .padding()
-        .background(Color.white)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color.white.opacity(0.03))
     }
 }
 

@@ -53,22 +53,27 @@ struct AppColors {
 
 // MARK: - Typography
 struct AppTypography {
-    // Headings (Spline Sans proxy)
+    // Headings
     static let h1 = Font.system(size: 32, weight: .black, design: .rounded)
     static let h2 = Font.system(size: 28, weight: .bold, design: .rounded)
     static let h3 = Font.system(size: 24, weight: .bold, design: .rounded)
     static let h4 = Font.system(size: 20, weight: .semibold, design: .rounded)
     
-    // Body (Oxanium proxy)
-    static let body = Font.system(size: 17, weight: .regular, design: .monospaced)
-    static let bodyBold = Font.system(size: 17, weight: .bold, design: .monospaced)
+    // Body
+    static let body = Font.system(size: 16, weight: .regular, design: .rounded)
+    static let bodyBold = Font.system(size: 16, weight: .bold, design: .rounded)
     
     // Caption
     static let caption = Font.system(size: 14, weight: .medium, design: .rounded)
     static let captionBold = Font.system(size: 14, weight: .bold, design: .rounded)
     
     // Small
-    static let small = Font.system(size: 12, weight: .medium, design: .monospaced)
+    static let small = Font.system(size: 12, weight: .medium, design: .rounded)
+    
+    // Numbers (monospaced digits for alignment in stats/amounts)
+    static let number = Font.system(size: 16, weight: .bold, design: .rounded).monospacedDigit()
+    static let numberLarge = Font.system(size: 24, weight: .black, design: .rounded).monospacedDigit()
+    static let numberSmall = Font.system(size: 12, weight: .semibold, design: .rounded).monospacedDigit()
 }
 
 // MARK: - Spacing

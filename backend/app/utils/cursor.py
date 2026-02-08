@@ -2,9 +2,19 @@ import base64
 import hmac
 import json
 import hashlib
+from datetime import date, datetime
 from typing import Any, Dict, Optional
 
 from ..config import settings
+
+
+class _CursorEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, (date, datetime)):
+            return o.isoformat()
+        if hasattr(o, 'hex'):  # UUID
+            return str(o)
+        return super().default(o)
 
 
 def _sign(payload: bytes) -> str:
@@ -13,7 +23,7 @@ def _sign(payload: bytes) -> str:
 
 
 def encode_cursor(data: Dict[str, Any]) -> str:
-    raw = json.dumps(data, separators=(",", ":")).encode("utf-8")
+    raw = json.dumps(data, separators=(",", ":"), cls=_CursorEncoder).encode("utf-8")
     sig = _sign(raw)
     token = base64.urlsafe_b64encode(raw).decode("utf-8").rstrip("=") + "." + sig
     return token

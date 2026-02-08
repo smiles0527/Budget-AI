@@ -18,36 +18,37 @@ struct SavingsGoalsView: View {
                 
                 VStack(spacing: 24) {
                     // Header
-                    VStack(spacing: 8) {
+                    VStack(spacing: 6) {
                         Text("Quest Log")
-                            .font(AppTypography.h2)
+                            .font(.system(size: 22, weight: .black, design: .rounded))
                             .foregroundColor(.white)
-                            .shadow(color: AppColors.primary.opacity(0.5), radius: 10)
+                            .shadow(color: AppColors.epic.opacity(0.4), radius: 8)
                         
                         // Total Loot Summary
-                        HStack {
+                        HStack(spacing: 4) {
                             Image(systemName: "bag.fill.badge.plus")
+                                .font(.system(size: 12))
                                 .foregroundColor(AppColors.accent)
-                            Text("Total Loot Stashed: \(viewModel.formatAmount(cents: totalSaved))")
-                                .font(AppTypography.bodyBold)
+                            Text("Loot Stashed: \(viewModel.formatAmount(cents: totalSaved))")
+                                .font(.system(size: 12, weight: .bold, design: .rounded))
                                 .foregroundColor(AppColors.accent)
                         }
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 16)
+                        .padding(.vertical, 5)
+                        .padding(.horizontal, 12)
                         .background(AppColors.accent.opacity(0.1))
-                        .cornerRadius(20)
+                        .cornerRadius(14)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 20)
+                            RoundedRectangle(cornerRadius: 14)
                                 .stroke(AppColors.accent.opacity(0.3), lineWidth: 1)
                         )
                     }
-                    .padding(.top, 20)
+                    .padding(.top, 14)
                     
                     if viewModel.goals.isEmpty {
                         EmptyQuestState(action: { showingCreateGoal = true })
                     } else {
                         ScrollView {
-                            VStack(spacing: 16) {
+                            VStack(spacing: 8) {
                                 ForEach(viewModel.goals, id: \.id) { goal in
                                     NavigationLink(destination: QuestDetailView(goal: goal, viewModel: viewModel)) {
                                         QuestCard(goal: goal, viewModel: viewModel)
@@ -103,82 +104,81 @@ struct QuestCard: View {
         viewModel.progressPercentage(goal: goal)
     }
     
+    private var questColor: Color {
+        if progress >= 100 { return AppColors.accent }
+        else if progress >= 60 { return AppColors.primary }
+        else if progress >= 30 { return AppColors.rare }
+        else { return AppColors.epic }
+    }
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
                 ZStack {
                     Circle()
-                        .fill(AppColors.epic.opacity(0.2))
-                        .frame(width: 40, height: 40)
+                        .fill(questColor.opacity(0.2))
+                        .frame(width: 32, height: 32)
                     
-                    Image(systemName: "flag.fill")
-                        .foregroundColor(AppColors.epic)
+                    Image(systemName: progress >= 100 ? "trophy.fill" : "flag.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(questColor)
                 }
+                .shadow(color: questColor.opacity(0.3), radius: 3, y: 1)
                 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text(goal.name)
-                        .font(AppTypography.bodyBold)
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                     
                     Text("Target: \(viewModel.formatAmount(cents: goal.target_cents))")
-                        .font(AppTypography.small)
-                        .foregroundColor(.white.opacity(0.7))
+                        .font(.system(size: 9, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.5))
                 }
                 
                 Spacer()
                 
-                // Badge or Icon based on progress
-                if progress >= 100 {
-                    Image(systemName: "trophy.fill")
-                        .foregroundColor(AppColors.accent)
-                        .font(.title2)
-                }
+                Text("\(Int(progress))%")
+                    .font(.system(size: 14, weight: .black, design: .rounded))
+                    .foregroundColor(questColor)
             }
             
             // Progress Bar
-            VStack(alignment: .leading, spacing: 4) {
-                GeometryReader { g in
-                    ZStack(alignment: .leading) {
-                        Rectangle()
-                            .fill(Color.black.opacity(0.3))
-                            .cornerRadius(4)
-                        
-                        Rectangle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [AppColors.success, AppColors.primary],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
+            GeometryReader { g in
+                ZStack(alignment: .leading) {
+                    Rectangle()
+                        .fill(Color.white.opacity(0.06))
+                        .cornerRadius(3)
+                    
+                    Rectangle()
+                        .fill(
+                            LinearGradient(
+                                colors: [questColor, questColor.opacity(0.7)],
+                                startPoint: .leading,
+                                endPoint: .trailing
                             )
-                            .frame(width: g.size.width * CGFloat(min(progress, 100.0) / 100.0))
-                            .cornerRadius(4)
-                            .shadow(color: AppColors.primary.opacity(0.5), radius: 5)
-                    }
-                }
-                .frame(height: 8)
-                
-                HStack {
-                    Text("\(Int(progress))% Complete")
-                        .font(AppTypography.small)
-                        .foregroundColor(AppColors.primary)
-                    
-                    Spacer()
-                    
-                    Text("\(viewModel.formatAmount(cents: goal.contributed_cents ?? 0)) Saved")
-                        .font(AppTypography.small)
-                        .foregroundColor(.white.opacity(0.7))
+                        )
+                        .frame(width: g.size.width * CGFloat(min(progress, 100.0) / 100.0))
+                        .cornerRadius(3)
+                        .shadow(color: questColor.opacity(0.4), radius: 3)
                 }
             }
+            .frame(height: 5)
+            
+            HStack {
+                Text("\(viewModel.formatAmount(cents: goal.contributed_cents ?? 0)) saved")
+                    .font(.system(size: 9, weight: .medium, design: .rounded))
+                    .foregroundColor(questColor.opacity(0.8))
+                Spacer()
+            }
         }
-        .padding()
+        .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 14)
                 .fill(Color.white.opacity(0.05))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(progress >= 100 ? AppColors.accent : Color.white.opacity(0.1), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(questColor.opacity(progress >= 100 ? 0.4 : 0.12), lineWidth: 1)
         )
     }
 }

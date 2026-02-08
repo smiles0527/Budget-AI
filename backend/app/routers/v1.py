@@ -772,18 +772,33 @@ async def budgets_get(user=Depends(get_current_user), db: AsyncSession = Depends
 
 @router.get("/dashboard/summary")
 async def dashboard_summary(user=Depends(get_current_user), db: AsyncSession = Depends(get_db), period: str = "month", anchor: Optional[str] = None):
+    from datetime import date, timedelta
+    from dateutil.relativedelta import relativedelta
+    
     # Default anchor is today
     if not anchor:
-        row = await db.execute(text("SELECT CURRENT_DATE::text as d"))
-        anchor = row.scalar_one()
-    # Compute month range in SQL
+        anchor_date = date.today()
+    else:
+        anchor_date = date.fromisoformat(anchor)
+    
+    # Validate period and compute date range
+    if period == "day":
+        start_date = anchor_date
+        end_date = anchor_date
+    elif period == "week":
+        start_date = anchor_date - timedelta(days=anchor_date.weekday())
+        end_date = start_date + timedelta(days=6)
+    elif period == "year":
+        start_date = date(anchor_date.year, 1, 1)
+        end_date = date(anchor_date.year, 12, 31)
+    else:  # month (default)
+        start_date = date(anchor_date.year, anchor_date.month, 1)
+        next_month = start_date + relativedelta(months=1)
+        end_date = next_month - timedelta(days=1)
+    
     res = await db.execute(
-        text(
-            """
-            SELECT * FROM get_dashboard_summary(:uid, date_trunc(:period, :anchor::date)::date, (date_trunc(:period, :anchor::date) + INTERVAL '1 ' || :period - INTERVAL '1 day')::date)
-            """
-        ),
-        {"uid": user["id"], "period": period, "anchor": anchor},
+        text("SELECT * FROM get_dashboard_summary(:uid, :start_date, :end_date)"),
+        {"uid": user["id"], "start_date": start_date, "end_date": end_date},
     )
     row = res.mappings().first()
     return dict(row) if row else {"total_spend_cents": 0, "txn_count": 0, "avg_txn_cents": 0}
@@ -791,16 +806,33 @@ async def dashboard_summary(user=Depends(get_current_user), db: AsyncSession = D
 
 @router.get("/dashboard/categories")
 async def dashboard_categories(user=Depends(get_current_user), db: AsyncSession = Depends(get_db), period: str = "month", anchor: Optional[str] = None):
+    from datetime import date, timedelta
+    from dateutil.relativedelta import relativedelta
+    
+    # Default anchor is today
     if not anchor:
-        row = await db.execute(text("SELECT CURRENT_DATE::text as d"))
-        anchor = row.scalar_one()
+        anchor_date = date.today()
+    else:
+        anchor_date = date.fromisoformat(anchor)
+    
+    # Validate period and compute date range
+    if period == "day":
+        start_date = anchor_date
+        end_date = anchor_date
+    elif period == "week":
+        start_date = anchor_date - timedelta(days=anchor_date.weekday())
+        end_date = start_date + timedelta(days=6)
+    elif period == "year":
+        start_date = date(anchor_date.year, 1, 1)
+        end_date = date(anchor_date.year, 12, 31)
+    else:  # month (default)
+        start_date = date(anchor_date.year, anchor_date.month, 1)
+        next_month = start_date + relativedelta(months=1)
+        end_date = next_month - timedelta(days=1)
+    
     res = await db.execute(
-        text(
-            """
-            SELECT * FROM get_dashboard_categories(:uid, date_trunc(:period, :anchor::date)::date, (date_trunc(:period, :anchor::date) + INTERVAL '1 ' || :period - INTERVAL '1 day')::date)
-            """
-        ),
-        {"uid": user["id"], "period": period, "anchor": anchor},
+        text("SELECT * FROM get_dashboard_categories(:uid, :start_date, :end_date)"),
+        {"uid": user["id"], "start_date": start_date, "end_date": end_date},
     )
     return {"items": [dict(r) for r in res.mappings().all()]}
 

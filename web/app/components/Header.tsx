@@ -41,6 +41,15 @@ export default function Header() {
       <div className="flex items-center gap-3">
         <motion.div whileHover={{ scale: 1.08, y: -2 }} whileTap={{ scale: 0.95 }}>
           <Link
+            href="/showcase"
+            className="inline-flex items-center gap-2 px-4 py-2.5 glass text-white/80 rounded-full font-medium text-sm border border-white/10 hover:border-neon-purple/30 hover:text-neon-purple transition-all duration-300"
+          >
+            <span className="material-symbols-outlined text-[18px]">phone_iphone</span>
+            <span className="hidden sm:inline">Showcase</span>
+          </Link>
+        </motion.div>
+        <motion.div whileHover={{ scale: 1.08, y: -2 }} whileTap={{ scale: 0.95 }}>
+          <Link
             href="#slideshow"
             className="inline-flex items-center gap-2 px-4 py-2.5 glass text-white/80 rounded-full font-medium text-sm border border-white/10 hover:border-primary/30 hover:text-primary transition-all duration-300"
           >

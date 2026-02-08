@@ -136,16 +136,16 @@ export default function PresentationEmbed() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 p-8 w-full max-w-sm mx-4"
+              className="glass-strong rounded-2xl shadow-2xl border border-white/10 p-8 w-full max-w-sm mx-4"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center text-amber-500">
+                <div className="w-10 h-10 bg-neon-purple/10 rounded-full flex items-center justify-center text-neon-purple">
                   <span className="material-symbols-outlined">lock</span>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-text-main dark:text-white">Admin Access</h3>
-                  <p className="text-xs text-text-muted dark:text-text-muted-dark">Enter password to change the presentation</p>
+                  <h3 className="text-lg font-bold text-white">Admin Access</h3>
+                  <p className="text-xs text-white/60">Enter password to change the presentation</p>
                 </div>
               </div>
               <input
@@ -153,8 +153,8 @@ export default function PresentationEmbed() {
                 value={passwordInput}
                 onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(false); }}
                 onKeyDown={(e) => e.key === "Enter" && handlePasswordSubmit()}
-                className={`block w-full px-4 py-2.5 border rounded-lg bg-gray-50 dark:bg-gray-800 text-text-main dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm ${
-                  passwordError ? "border-red-400 focus:ring-red-400 focus:border-red-400" : "border-gray-200 dark:border-gray-700"
+                className={`block w-full px-4 py-2.5 border rounded-lg bg-white/5 text-white placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm ${
+                  passwordError ? "border-red-400 focus:ring-red-400 focus:border-red-400" : "border-white/10"
                 }`}
                 placeholder="Password"
                 autoFocus
@@ -168,13 +168,13 @@ export default function PresentationEmbed() {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setShowPasswordModal(false)}
-                  className="grow py-2 px-4 rounded-lg border border-gray-200 dark:border-gray-700 text-text-muted hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium transition-colors cursor-pointer"
+                  className="grow py-2 px-4 rounded-lg border border-white/10 text-white/70 hover:bg-white/5 text-sm font-medium transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handlePasswordSubmit}
-                  className="grow py-2 px-4 rounded-lg bg-primary hover:bg-green-400 text-black text-sm font-semibold transition-colors cursor-pointer"
+                  className="grow py-2 px-4 rounded-lg bg-linear-to-r from-[#0df2a6] to-[#00c9ff] text-black text-sm font-bold transition-colors cursor-pointer glow-primary"
                 >
                   Unlock
                 </button>
@@ -204,11 +204,11 @@ export default function PresentationEmbed() {
             >
               <div className="flex items-center gap-3">
                 <span className="text-primary material-symbols-outlined text-xl">account_balance_wallet</span>
-                <span className="text-white/70 text-sm font-medium">SnapBudget — Presentation</span>
+                <span className="text-white/80 text-sm font-medium">SnapBudget — Presentation</span>
               </div>
               <button
                 onClick={handleExitFullscreen}
-                className="text-white/60 hover:text-white transition-colors flex items-center gap-2 text-sm cursor-pointer"
+                className="text-white/75 hover:text-white transition-colors flex items-center gap-2 text-sm cursor-pointer"
               >
                 <span>Exit</span>
                 <span className="material-symbols-outlined text-[18px]">fullscreen_exit</span>
@@ -236,6 +236,7 @@ export default function PresentationEmbed() {
 
       {/* Normal embed section */}
       <motion.section
+        id="slideshow"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
@@ -244,10 +245,10 @@ export default function PresentationEmbed() {
         <div className="absolute -inset-1 bg-linear-to-r from-primary/30 to-blue-400/30 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
         <div
           ref={containerRef}
-          className="relative w-full aspect-video bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col"
+          className="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl border border-white/10 flex flex-col" style={{ background: 'rgba(10, 18, 16, 0.8)' }}
         >
           {/* Window Controls */}
-          <div className="h-10 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4">
+          <div className="h-10 bg-white/[0.03] border-b border-white/5 flex items-center justify-between px-4">
             <div className="flex items-center gap-2">
               <button
                 onClick={handleReset}
@@ -265,10 +266,10 @@ export default function PresentationEmbed() {
                 title="Fullscreen"
               />
             </div>
-            <div className="text-xs font-mono text-text-muted dark:text-text-muted-dark opacity-60">
+            <div className="text-xs font-mono text-white/50">
               {isLoaded ? "Presentation Loaded" : "Embed Presentation"}
             </div>
-            <div className="flex gap-2 text-text-muted dark:text-text-muted-dark">
+            <div className="flex gap-2 text-white/50">
               <button
                 onClick={handleShare}
                 disabled={!isLoaded}
@@ -291,7 +292,7 @@ export default function PresentationEmbed() {
           </div>
 
           {/* Main Content */}
-          <div className="grow relative bg-gray-50 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
+          <div className="grow relative bg-white/[0.02] flex items-center justify-center overflow-hidden">
             {isLoaded && !isEditing ? (
               <iframe
                 ref={iframeRef}
@@ -302,14 +303,14 @@ export default function PresentationEmbed() {
               />
             ) : isEditing ? (
               <div className="flex flex-col items-center justify-center w-full h-full p-6">
-                <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8 flex flex-col items-center">
-                  <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center mb-6 text-amber-500 dark:text-amber-400">
+                <div className="w-full max-w-lg glass-strong rounded-2xl shadow-xl border border-white/10 p-8 flex flex-col items-center">
+                  <div className="w-16 h-16 bg-neon-purple/10 rounded-full flex items-center justify-center mb-6 text-neon-purple">
                     <span className="material-symbols-outlined text-3xl">swap_horiz</span>
                   </div>
-                  <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">
+                  <h3 className="text-xl font-bold text-white mb-2">
                     Change Presentation
                   </h3>
-                  <p className="text-sm text-text-muted dark:text-text-muted-dark text-center mb-8">
+                  <p className="text-sm text-white/60 text-center mb-8">
                     Paste a new presentation link to replace the current one.
                   </p>
                   <div className="w-full flex flex-col sm:flex-row gap-3">
@@ -322,14 +323,14 @@ export default function PresentationEmbed() {
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleEmbed()}
-                        className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg leading-5 bg-gray-50 dark:bg-gray-800 text-text-main dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
+                        className="block w-full pl-10 pr-3 py-2.5 border border-white/10 rounded-lg leading-5 bg-white/5 text-white placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
                         placeholder="Paste new Slideshow Link"
                         autoFocus
                       />
                     </div>
                     <button
                       onClick={handleEmbed}
-                      className="bg-primary hover:bg-green-400 text-black font-semibold py-2.5 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm hover:shadow cursor-pointer"
+                      className="bg-linear-to-r from-[#0df2a6] to-[#00c9ff] text-black font-bold py-2.5 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 glow-primary cursor-pointer"
                     >
                       <span>Update</span>
                       <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
@@ -337,7 +338,7 @@ export default function PresentationEmbed() {
                   </div>
                   <button
                     onClick={() => setIsEditing(false)}
-                    className="mt-4 text-xs text-text-muted hover:text-text-main dark:hover:text-white transition-colors cursor-pointer"
+                    className="mt-4 text-xs text-white/50 hover:text-white transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -345,14 +346,14 @@ export default function PresentationEmbed() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center w-full h-full p-6">
-                <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8 flex flex-col items-center">
-                  <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mb-6 text-blue-500 dark:text-blue-400">
+                <div className="w-full max-w-lg glass-strong rounded-2xl shadow-xl border border-white/10 p-8 flex flex-col items-center">
+                  <div className="w-16 h-16 bg-neon-blue/10 rounded-full flex items-center justify-center mb-6 text-neon-blue">
                     <span className="material-symbols-outlined text-3xl">add_link</span>
                   </div>
-                  <h3 className="text-xl font-bold text-text-main dark:text-white mb-2">
+                  <h3 className="text-xl font-bold text-white mb-2">
                     Embed your Presentation
                   </h3>
-                  <p className="text-sm text-text-muted dark:text-text-muted-dark text-center mb-8">
+                  <p className="text-sm text-white/60 text-center mb-8">
                     Paste a public link from Canva or Google Slides to instantly preview your deck right here.
                   </p>
                   <div className="w-full flex flex-col sm:flex-row gap-3">
@@ -365,25 +366,25 @@ export default function PresentationEmbed() {
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleEmbed()}
-                        className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg leading-5 bg-gray-50 dark:bg-gray-800 text-text-main dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
+                        className="block w-full pl-10 pr-3 py-2.5 border border-white/10 rounded-lg leading-5 bg-white/5 text-white placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
                         placeholder="Paste Slideshow Link (Canva/Google Slides)"
                       />
                     </div>
                     <button
                       onClick={handleEmbed}
-                      className="bg-primary hover:bg-green-400 text-black font-semibold py-2.5 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm hover:shadow cursor-pointer"
+                      className="bg-linear-to-r from-[#0df2a6] to-[#00c9ff] text-black font-bold py-2.5 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 glow-primary cursor-pointer"
                     >
                       <span>Embed</span>
                       <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                     </button>
                   </div>
-                  <div className="mt-6 flex items-center gap-4 text-xs text-text-muted dark:text-text-muted-dark">
-                    <div className="flex items-center gap-1.5 opacity-60">
-                      <span className="w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
+                  <div className="mt-6 flex items-center gap-4 text-xs text-white/50">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 bg-neon-blue/40 rounded-full"></span>
                       <span>Supports Canva</span>
                     </div>
-                    <div className="flex items-center gap-1.5 opacity-60">
-                      <span className="w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 bg-neon-purple/40 rounded-full"></span>
                       <span>Supports Google Slides</span>
                     </div>
                   </div>
@@ -393,10 +394,10 @@ export default function PresentationEmbed() {
           </div>
 
           {/* Bottom Bar */}
-          <div className="h-12 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between px-6">
+          <div className="h-12 bg-white/[0.03] border-t border-white/5 flex items-center justify-between px-6">
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${isLoaded ? "bg-green-400" : "bg-gray-300 dark:bg-gray-600"}`}></div>
-              <span className="text-xs font-medium text-text-muted dark:text-text-muted-dark">
+              <div className={`w-2 h-2 rounded-full ${isLoaded ? "bg-primary" : "bg-white/15"}`} style={isLoaded ? { boxShadow: '0 0 8px rgba(13,242,166,0.5)' } : {}}></div>
+              <span className="text-xs font-medium text-white/60">
                 {isLoaded ? "Presentation loaded" : "No presentation loaded"}
               </span>
             </div>
@@ -404,7 +405,7 @@ export default function PresentationEmbed() {
               {isLoaded ? (
                 <button
                   onClick={handleFullscreen}
-                  className="bg-primary/10 hover:bg-primary/20 text-primary font-semibold text-xs px-4 py-1.5 rounded-full transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs px-4 py-1.5 rounded-full transition-colors flex items-center gap-1.5 cursor-pointer" style={{ textShadow: '0 0 8px rgba(13,242,166,0.4)' }}
                 >
                   <span className="material-symbols-outlined text-[16px]">slideshow</span>
                   Present
@@ -412,7 +413,7 @@ export default function PresentationEmbed() {
               ) : (
                 <button
                   disabled
-                  className="bg-gray-100 dark:bg-gray-800 text-text-muted font-semibold text-xs px-4 py-1.5 rounded-full opacity-50 flex items-center gap-1.5 cursor-not-allowed"
+                  className="bg-white/5 text-white/40 font-semibold text-xs px-4 py-1.5 rounded-full opacity-50 flex items-center gap-1.5 cursor-not-allowed"
                 >
                   <span className="material-symbols-outlined text-[16px]">slideshow</span>
                   Present

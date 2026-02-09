@@ -23,7 +23,7 @@ def create_manual_txn(token: str, total: int = 100):
 
 
 def test_transactions_pagination():
-    token = signup_and_login("ci2@example.com", "secret")
+    token = signup_and_login("ci2@example.com", "secretpw1")
     # Seed over a page
     for i in range(60):
         create_manual_txn(token, total=100 + i)

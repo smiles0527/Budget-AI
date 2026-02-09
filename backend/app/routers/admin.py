@@ -23,7 +23,8 @@ class MerchantRule(BaseModel):
 
 
 @router.get("/merchant")
-async def list_merchant_rules(db: AsyncSession = Depends(get_db)):
+async def list_merchant_rules(x_admin_secret: str | None = Header(default=None), db: AsyncSession = Depends(get_db)):
+    _check_admin(x_admin_secret)
     res = await db.execute(text("SELECT id, merchant_pattern, category, confidence, active, created_at FROM merchant_rules ORDER BY created_at DESC"))
     return {"items": [dict(r) for r in res.mappings().all()]}
 
@@ -50,7 +51,8 @@ class KeywordRule(BaseModel):
 
 
 @router.get("/keyword")
-async def list_keyword_rules(db: AsyncSession = Depends(get_db)):
+async def list_keyword_rules(x_admin_secret: str | None = Header(default=None), db: AsyncSession = Depends(get_db)):
+    _check_admin(x_admin_secret)
     res = await db.execute(text("SELECT id, keyword, scope, category, confidence, active, created_at FROM keyword_rules ORDER BY created_at DESC"))
     return {"items": [dict(r) for r in res.mappings().all()]}
 

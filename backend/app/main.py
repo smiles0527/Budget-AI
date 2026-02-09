@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import ORJSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -31,7 +31,7 @@ def create_app() -> FastAPI:
         app.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],
-            allow_credentials=True,
+            allow_credentials=False,
             allow_methods=["*"],
             allow_headers=["*"],
             max_age=600,
@@ -62,6 +62,9 @@ def create_app() -> FastAPI:
         response.headers.setdefault("Referrer-Policy", "no-referrer")
         response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
         response.headers.setdefault("X-XSS-Protection", "0")
+        response.headers.setdefault("Content-Security-Policy", "default-src 'self'")
+        if settings.env != "dev":
+            response.headers.setdefault("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
         return response
 
     @app.get("/healthz")
@@ -84,7 +87,9 @@ def create_app() -> FastAPI:
         return {"ready": ok, "db": db_ok, "storage": storage_ok}
 
     @app.get("/metrics")
-    async def metrics():
+    async def metrics(x_admin_secret: str | None = Header(default=None)):
+        if settings.env != "dev" and (not settings.admin_secret or x_admin_secret != settings.admin_secret):
+            raise HTTPException(status_code=403, detail="Forbidden")
         return metrics_endpoint()
 
     app.include_router(v1_router)

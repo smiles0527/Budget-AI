@@ -13,7 +13,7 @@ def signup_and_login(email: str, password: str) -> str:
 
 
 def test_export_flow():
-    token = signup_and_login("ci@example.com", "secret")
+    token = signup_and_login("ci@example.com", "secretpw1")
     headers = {"Authorization": f"Bearer {token}"}
 
     r = requests.post(f"{BASE}/v1/export/csv", json={"from_date": "2000-01-01", "to_date": "2100-01-01"}, headers=headers)

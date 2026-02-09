@@ -36,6 +36,8 @@ class SignupRequest(BaseModel):
 
 @router.post("/auth/signup")
 async def signup(payload: SignupRequest, db: AsyncSession = Depends(get_db)):
+    if len(payload.password) < 8:
+        raise AppError("WEAK_PASSWORD", "Password must be at least 8 characters", status_code=400)
     # Create user
     try:
         user_res = await db.execute(
@@ -224,7 +226,15 @@ async def logout(authorization: Optional[str] = Header(default=None), db: AsyncS
     token = authorization[7:]
     if "." not in token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    session_id = token.split(".", 1)[0]
+    session_id, secret = token.split(".", 1)
+    # Verify the token secret before revoking (prevents enumeration attacks)
+    res = await db.execute(
+        text("SELECT refresh_token_hash FROM sessions WHERE id = :sid AND revoked_at IS NULL AND expires_at > now()"),
+        {"sid": session_id},
+    )
+    row = res.mappings().first()
+    if not row or not verify_password(secret, row["refresh_token_hash"]):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     await db.execute(text("UPDATE sessions SET revoked_at = now() WHERE id = :sid"), {"sid": session_id})
     await db.commit()
     return {"ok": True}

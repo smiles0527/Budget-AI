@@ -36,7 +36,6 @@ class Settings(BaseSettings):
 
     google_client_ids: str = ""  # comma-separated
     apple_audience: str = ""  # bundle or service id
-    admin_secret: str = ""
 
     # Admin operations (rules management). If empty, write operations allowed only in dev.
     admin_secret: str = ""
@@ -63,7 +62,29 @@ class Settings(BaseSettings):
     def allowed_mime_list(self) -> list[str]:
         return [m.strip().lower() for m in self.upload_allowed_mime.split(",") if m.strip()]
 
+    def validate_production(self) -> None:
+        """Refuse to start with insecure defaults in production."""
+        import sys
+        if self.env == "dev":
+            return
+        problems: list[str] = []
+        if self.db_password == "password":
+            problems.append("DB_PASSWORD is still the default 'password'")
+        if self.cursor_secret == "dev-change-me":
+            problems.append("CURSOR_SECRET is still the default 'dev-change-me'")
+        if self.s3_access_key == "minioadmin":
+            problems.append("S3_ACCESS_KEY is still 'minioadmin'")
+        if self.cors_origins.strip() == "*":
+            problems.append("CORS_ORIGINS is '*' — set explicit origins for production")
+        if not self.admin_secret:
+            problems.append("ADMIN_SECRET is empty — admin endpoints unprotected")
+        if problems:
+            msg = "SECURITY: Refusing to start with insecure defaults:\n" + "\n".join(f"  - {p}" for p in problems)
+            print(msg, file=sys.stderr)
+            sys.exit(1)
+
 
 settings = Settings()
+settings.validate_production()
 
     

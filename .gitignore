@@ -51,10 +51,15 @@ DerivedData/
 
 # IDE
 .idea/
+.vs/
 .vscode/
 *.swp
 *.swo
 *~
+
+# Build logs
+build_errors.txt
+build_log*.txt
 
 # Environment variables
 .env

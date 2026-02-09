@@ -35,10 +35,12 @@ paths-ignore:
   # Documentation
   - 'docs/**'
   - '**/*.md'
-  # Config files
-  - '**/*.json'
-  - '**/*.yml'
-  - '**/*.yaml'
+  # Config files (excluding package manifests which should be analyzed)
+  - '**/docker-compose.yml'
+  - '**/.eslintrc.json'
+  - '**/tsconfig.json'
+  - '**/next.config.ts'
+  - '**/postcss.config.mjs'
   # Database migrations (SQL)
   - 'db/migrations/**'
 

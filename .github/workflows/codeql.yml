@@ -54,7 +54,7 @@ jobs:
     - name: Build Swift project
       if: matrix.language == 'swift'
       run: |
-        xcodebuild -project BudgetAI.xcodeproj -scheme BudgetAI -destination 'platform=iOS Simulator,name=iPhone 15' clean build CODE_SIGNING_ALLOWED=NO
+        xcodebuild -project BudgetAI.xcodeproj -scheme BudgetAI -destination 'generic/platform=iOS Simulator' clean build CODE_SIGNING_ALLOWED=NO
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3

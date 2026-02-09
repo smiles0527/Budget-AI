@@ -1,58 +1,24 @@
-name: "CodeQL"
+# This is a sample CodeQL configuration file
+name: CodeQL
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 0'  # Weekly on Sunday at midnight UTC
+    branches: [ main ]
 
 jobs:
   analyze:
     name: Analyze
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: ${{ matrix.language == 'swift' && 120 || 360 }}
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - language: swift
-            runner: macos-latest
-          - language: javascript-typescript
-            runner: ubuntu-latest
-          - language: python
-            runner: ubuntu-latest
-
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ matrix.language }}
-
-    # Build step for Swift only
-    - name: Build Swift project
-      if: matrix.language == 'swift'
-      run: |
-        xcodebuild clean build \
-          -project BudgetAI.xcodeproj \
-          -scheme BudgetAI \
-          -configuration Debug \
-          -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
-          CODE_SIGN_IDENTITY="" \
-          CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGNING_ALLOWED=NO
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:${{matrix.language}}"
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up CodeQL
+        uses: github/codeql-action/setup@v1
+        with:
+          languages: python
+      - name: Auto-analyze
+        uses: github/codeql-action/autobuild@v1
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v1

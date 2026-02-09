@@ -5,7 +5,7 @@ pydantic-settings==2.4.0
 SQLAlchemy[asyncio]==2.0.35
 asyncpg==0.31.0
 python-multipart==0.0.22
-orjson==3.11.5
+orjson==3.11.7
 passlib[bcrypt]==1.7.4
 boto3==1.42.44
 pytesseract==0.3.13

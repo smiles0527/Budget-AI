@@ -1,0 +1,62 @@
+name: "CodeQL Analysis"
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sundays at midnight UTC
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: ${{ matrix.timeout }}
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Python analysis for backend and worker
+          - language: python
+            os: ubuntu-latest
+            timeout: 360
+            build-mode: none
+          # Swift analysis for iOS app
+          - language: swift
+            os: macos-latest
+            timeout: 360
+            build-mode: manual
+          # JavaScript/TypeScript analysis for web frontend
+          - language: javascript-typescript
+            os: ubuntu-latest
+            timeout: 360
+            build-mode: none
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Initializes the CodeQL tools for scanning.
+    - name: Initialize CodeQL
+      uses: github/codeql-action/codeql-init@v3
+      with:
+        languages: ${{ matrix.language }}
+        build-mode: ${{ matrix.build-mode }}
+        config-file: ./.github/codeql/codeql-config.yml
+
+    # For Swift, we need to build the project
+    - name: Build Swift project
+      if: matrix.language == 'swift'
+      run: |
+        xcodebuild -project BudgetAI.xcodeproj -scheme BudgetAI -destination 'platform=iOS Simulator,name=iPhone 15' clean build CODE_SIGNING_ALLOWED=NO
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{matrix.language}}"

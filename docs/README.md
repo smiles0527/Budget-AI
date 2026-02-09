@@ -9,7 +9,6 @@ This directory contains detailed documentation for the Budget AI project.
 - **[MOBILE.md](MOBILE.md)** - iOS app integration status, API reference, and mobile-specific documentation
 - **[FIGMA.md](FIGMA.md)** - Design system integration with Figma, including setup and sync instructions
 - **[ROADMAP.md](ROADMAP.md)** - Feature roadmap, planned enhancements, and development priorities
-- **[IOS_SETUP.md](IOS_SETUP.md)** - iOS-specific setup instructions, troubleshooting, and device configuration
 
 ## Quick Links
 

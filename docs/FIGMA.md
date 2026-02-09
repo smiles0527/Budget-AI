@@ -1,5 +1,7 @@
 # Figma Integration Setup
 
+> ⚠️ **Status: Not yet configured.** The `FigmaService.swift` file exists but still has placeholder credentials. The design system (`DesignSystem.swift`) works with hardcoded values. Follow the steps below if you want to enable live Figma sync in the future.
+
 This guide explains how to integrate Figma designs into the iOS app so your UI designer can work in Figma and have those designs automatically sync to the app.
 
 ## Overview

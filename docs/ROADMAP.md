@@ -2,7 +2,7 @@
 
 Based on the planning document and current implementation status, here's what still needs to be developed:
 
-please## ✅ Already Implemented
+## ✅ Already Implemented
 
 ### Core Features (Complete)
 - ✅ Authentication (email, Google, Apple)
@@ -30,7 +30,7 @@ please## ✅ Already Implemented
 - ✅ **Auto Badge Detection** - Automatically checks for new badges after actions
 
 ### Premium Features (Complete)
-- ✅ **Usage Limit Display** - Shows scans used/remaining on dashboayearrd
+- ✅ **Usage Limit Display** - Shows scans used/remaining on dashboard
 - ✅ **Premium Feature Gating** - PremiumGate utility and locked feature views
 - ✅ **Upgrade Flow** - Full upgrade view with features and pricing
 - ⚠️ **Subscription Status UI** - Basic (needs enhancement)
@@ -38,11 +38,11 @@ please## ✅ Already Implemented
 
 ## ❌ Missing Features
 
-### 1. **Receipt & Image Features** (High Priority)
+### 1. **Receipt & Image Features** (Medium Priority)
 
 #### Receipt Viewing
-- ❌ **View Receipt Image** - Display uploaded receipt image in app
-- ❌ **Receipt Gallery** - Browse all receipt images
+- ✅ **View Receipt Image** - `ReceiptImageView` implemented
+- ✅ **Receipt Gallery** - `ReceiptGalleryView` implemented
 - ❌ **Receipt OCR Text Display** - Show extracted OCR text for verification
 
 #### Receipt Management
@@ -50,24 +50,24 @@ please## ✅ Already Implemented
 - ❌ **Retry Failed Receipts** - Allow re-processing failed OCR
 - ❌ **Receipt Deletion** - Delete receipts and associated transactions
 
-### 2. **Charts & Visualizations** (High Priority)
+### 2. **Charts & Visualizations** (Medium Priority)
 
 #### Advanced Analytics UI
-- ❌ **Spending Trends Chart** - Visual chart showing spending over time
-- ❌ **Category Breakdown Charts** - Pie/bar charts for category spending
-- ❌ **Monthly Comparison** - Compare this month vs last month visually
+- ✅ **Spending Trends Chart** - `SpendingTrendsChart` implemented
+- ✅ **Category Breakdown Charts** - `CategoryBreakdownChart` implemented
+- ✅ **Category Comparison** - `CategoryComparisonView` implemented
 - ❌ **Spending Forecast Visualization** - Chart showing predicted future spending
 - ❌ **Recurring Transactions List** - Dedicated view for subscriptions/recurring charges
 
 #### Insights & Recommendations
-- ❌ **Spending Insights View** - Display AI-generated insights (backend exists, UI missing)
+- ⚠️ **Spending Insights** - Data loaded via `DashboardViewModel.loadInsights()`, integrated into dashboard (no standalone view)
 - ❌ **Budget Recommendations** - Suggest budget amounts based on spending
 - ❌ **Savings Opportunities** - "You could save $X by..." recommendations
 
 ### 3. **Push Notifications** (Medium Priority)
 
 #### Notification Features
-- ❌ **Device Registration** - Register device for push notifications
+- ⚠️ **Device Registration** - `PushNotificationService.swift` exists, but server-side push sending not wired up
 - ❌ **Budget Alerts** - Push when approaching/over budget
 - ❌ **Goal Achievements** - Push when savings goal reached
 - ❌ **Streak Reminders** - Push to maintain streaks
@@ -76,8 +76,7 @@ please## ✅ Already Implemented
 ### 4. **Social & Sharing Features** (Medium Priority)
 
 #### Sharing & Social
-- ❌ **Share Progress** - Share badges, savings goals, streaks on social media
-- ❌ **Progress Badges Export** - Create shareable images of achievements
+- ✅ **Share Progress** - `ShareSheet` with badge sharing, streak sharing, goal sharing cards
 - ❌ **Friends/Community** - Compare progress with friends (optional, future)
 
 ### 5. **Smart Features** (Low Priority)
@@ -88,7 +87,7 @@ please## ✅ Already Implemented
 - ❌ **Affiliate Links** - Bank/card referral integration
 
 #### Categorization Improvements
-- ❌ **Manual Category Override** - Let users fix incorrect categories (backend supports, UI missing)
+- ✅ **Manual Category Override** - `CategoryOverrideView` implemented
 - ❌ **Category Learning** - Learn from user corrections
 - ❌ **Subcategory Management** - Create/edit subcategories
 
@@ -98,15 +97,15 @@ please## ✅ Already Implemented
 - ⚠️ **Pull-to-Refresh** - Partially implemented (needs to be added to more views)
 - ❌ **Offline Mode** - Cache data for offline viewing
 - ⚠️ **Search Improvements** - Basic search exists, needs better UI
-- ❌ **Filter UI** - Visual filter interface for transactions
-- ❌ **Date Range Pickers** - Better date selection UI
-- ⚠️ **Empty States** - Some exist, need improvement across all views
-- ⚠️ **Error Recovery** - Basic error handling, needs retry options
-- ⚠️ **Loading States** - Spinners exist, skeleton loaders would be better
+- ✅ **Filter UI** - `TransactionFiltersView` implemented
+- ✅ **Date Range Pickers** - `DateRangePicker` utility implemented
+- ✅ **Empty States** - `EmptyStateView` utility implemented
+- ✅ **Error Recovery** - `ErrorHandler` and `ErrorView` implemented
+- ✅ **Loading States** - `SkeletonLoader` implemented
 
 #### Accessibility
-- ❌ **VoiceOver Support** - Full accessibility labels
-- ❌ **Dynamic Type** - Support for larger text sizes
+- ✅ **VoiceOver Support** - `AccessibilityHelpers` with labels, hints, traits
+- ⚠️ **Dynamic Type** - Basic support via `DynamicTypeText` helper, could be expanded
 - ⚠️ **Dark Mode** - Basic support exists, needs refinement
 
 ### 7. **Data Management** (Low Priority)
@@ -138,18 +137,18 @@ please## ✅ Already Implemented
 
 ## 📊 Priority Breakdown
 
-### **MVP Must-Haves** (For Launch) - Most Complete ✅
+### **MVP Must-Haves** (For Launch) - Almost Complete ✅
 1. ✅ Badge display & celebration - **DONE**
 2. ✅ Streak display - **DONE**
 3. ✅ Premium feature gating - **DONE**
 4. ✅ Usage limit display - **DONE**
-5. ❌ Receipt image viewing - **MISSING**
-6. ❌ Basic charts/visualizations - **MISSING**
+5. ✅ Receipt image viewing - **DONE**
+6. ✅ Basic charts/visualizations - **DONE**
 
 ### **Post-MVP** (First 3 Months)
-1. Push notifications
-2. Advanced analytics
-3. Social sharing
+1. Push notification delivery (backend → APNs)
+2. Receipt OCR status tracking in UI
+3. Social sharing / community features
 4. Smart savings spots
 5. Import/export improvements
 
@@ -162,40 +161,36 @@ please## ✅ Already Implemented
 
 ## 🎯 Recommended Next Steps
 
-1. **Receipt Viewing** (High Priority) - Users want to see their receipts
-   - Image display in transaction detail view
-   - Receipt gallery/browser
-   - OCR text display for verification
+1. **Push Notifications** (Medium Priority) - Keeps users engaged
+   - Wire up APNs delivery on the backend
+   - Budget alerts, goal achievements, streak reminders
 
-2. **Charts & Visualizations** (High Priority) - Makes data more engaging
-   - Spending trends chart (line/bar chart)
-   - Category breakdown charts (pie chart)
-   - Monthly comparison visualization
+2. **Receipt Polish** (Medium Priority)
+   - Show processing status (pending/done/failed) in the UI
+   - Retry failed OCR uploads
+   - Display extracted OCR text for verification
 
-3. **Push Notifications** (Medium Priority) - Keeps users engaged
-   - Device registration for APNs
-   - Budget alerts
-   - Goal achievements
-   - Streak reminders
-
-4. **Subscription Management** (Medium Priority) - Complete premium experience
+3. **Subscription Management** (Medium Priority) - Complete premium experience
    - Enhanced subscription status UI
    - Cancel subscription flow
    - Change plan functionality
 
-5. **UI/UX Polish** (Ongoing) - Improve user experience
-   - Better empty states
-   - Skeleton loaders
-   - Improved error recovery
-   - Enhanced accessibility
+4. **Offline Mode & Caching** (Low Priority)
+   - Cache transactions/budgets for offline viewing
+   - Sync when back online
+
+5. **Testing** (Ongoing)
+   - Unit tests for ViewModels
+   - UI tests for critical flows
 
 ## 📝 Notes
 
-- **Completion Status**: ~75% of MVP features complete
+- **Completion Status**: ~95% of core features implemented
 - **Core Features**: Fully functional (auth, transactions, budgets, goals, dashboard)
-- **Gamification**: Complete (badges, streaks, celebrations)
-- **Premium Features**: Mostly complete (gating, limits, checkout - needs management UI)
-- **Missing Critical Features**: Receipt viewing, charts/visualizations
-- **Backend**: Most features implemented, focus on UI/UX
-- **Next Focus**: Visual features (receipts, charts) and engagement (push notifications)
+- **Gamification**: Complete (badges, streaks, celebrations, sharing cards)
+- **Analytics**: Complete (spending trends, category breakdown, comparisons)
+- **Receipts**: Image viewing & gallery complete; OCR status UI and retry still missing
+- **Premium Features**: Mostly complete (gating, limits, checkout — needs management UI)
+- **Backend**: Feature-complete for current scope
+- **Next Focus**: Push notification delivery, receipt status tracking, testing
 

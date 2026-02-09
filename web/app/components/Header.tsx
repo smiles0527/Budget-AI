@@ -19,7 +19,7 @@ export default function Header() {
       transition={{ duration: 0.6, ease: "easeOut" }}
       className={`w-full px-6 md:px-12 flex items-center justify-between z-50 sticky top-0 transition-all duration-500 ${
         scrolled
-          ? "py-3 md:py-4 glass-strong shadow-lg shadow-primary/5"
+          ? "py-3 md:py-4 bg-[#050a09]/80 backdrop-blur-xl border-b border-white/5"
           : "py-4 md:py-6 bg-transparent"
       }`}
     >

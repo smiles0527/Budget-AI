@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const KV_KEY = "snapbudget:presentation-url";
 
 /* Fall back gracefully if Redis isn't configured yet */
@@ -28,6 +28,12 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { url, password } = body as { url?: string; password?: string };
 
+  if (!ADMIN_PASSWORD) {
+    return NextResponse.json(
+      { error: "ADMIN_PASSWORD env var not set" },
+      { status: 500 }
+    );
+  }
   if (password !== ADMIN_PASSWORD) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

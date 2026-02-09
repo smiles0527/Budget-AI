@@ -16,7 +16,7 @@ export default function PresentationEmbed() {
   const containerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const ADMIN_PASSWORD = "admin123";
+  const [adminPassword, setAdminPassword] = useState("");
   const [saving, setSaving] = useState(false);
 
   // Fetch global presentation URL on mount
@@ -62,7 +62,7 @@ export default function PresentationEmbed() {
       const res = await fetch("/api/presentation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, password: ADMIN_PASSWORD }),
+        body: JSON.stringify({ url, password: adminPassword }),
       });
       if (!res.ok) throw new Error("Save failed");
     } catch {
@@ -85,7 +85,7 @@ export default function PresentationEmbed() {
       await fetch("/api/presentation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: "", password: ADMIN_PASSWORD }),
+        body: JSON.stringify({ url: "", password: adminPassword }),
       });
     } catch {
       localStorage.removeItem("snapbudget-embed-url");
@@ -98,15 +98,30 @@ export default function PresentationEmbed() {
     setPasswordError(false);
   };
 
-  const handlePasswordSubmit = () => {
-    if (passwordInput === ADMIN_PASSWORD) {
-      setShowPasswordModal(false);
-      setIsEditing(true);
-      setPasswordInput("");
-      setPasswordError(false);
-    } else {
+  const handlePasswordSubmit = async () => {
+    if (!passwordInput.trim()) {
       setPasswordError(true);
+      return;
     }
+    // Verify password server-side — never compare in the browser
+    try {
+      const res = await fetch("/api/presentation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: embedUrl || "", password: passwordInput }),
+      });
+      if (res.status === 401) {
+        setPasswordError(true);
+        return;
+      }
+    } catch {
+      // Network error — allow through, API will verify on actual save
+    }
+    setAdminPassword(passwordInput);
+    setShowPasswordModal(false);
+    setIsEditing(true);
+    setPasswordInput("");
+    setPasswordError(false);
   };
 
   const handleShare = useCallback(() => {

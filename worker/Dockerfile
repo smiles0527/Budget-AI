@@ -12,6 +12,9 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY backend/app /app/app
 COPY worker/main.py /app/worker/main.py
 
+RUN adduser --disabled-password --no-create-home appuser
+USER appuser
+
 CMD ["python", "-m", "worker.main"]
 
 

@@ -48,7 +48,7 @@ jobs:
       with:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
-        config-file: ./.github/codeql/codeql-config.yml
+        queries: security-extended,security-and-quality
 
     # For Swift, we need to build the project
     - name: Build Swift project

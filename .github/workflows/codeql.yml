@@ -1,3 +1,17 @@
+# ⚠️ CRITICAL: This workflow CANNOT run until default CodeQL setup is disabled
+# 
+# ERROR: "CodeQL analyses from advanced configurations cannot be processed 
+#         when the default setup is enabled"
+#
+# REQUIRED ACTION (Repository Owner):
+# 1. Go to: Settings → Security → Code security and analysis
+# 2. Find "CodeQL analysis" with "Default" label
+# 3. Click "..." menu → "Switch to advanced"
+# 4. See .github/CODEQL_SETUP.md for detailed instructions
+#
+# This workflow is correctly configured but GitHub blocks it when default 
+# setup is enabled. This is a repository setting that must be changed.
+
 name: "CodeQL Analysis"
 
 on:

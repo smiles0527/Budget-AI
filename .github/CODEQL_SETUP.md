@@ -1,82 +1,134 @@
-# CodeQL Setup Instructions
+# ⚠️ CRITICAL: CodeQL Setup Instructions
 
-## ⚠️ IMPORTANT: Action Required by Repository Owner
+## 🚨 ACTION REQUIRED - Repository Owner Must Complete This Step
 
-The CodeQL workflow has been successfully configured, but **it cannot run until the repository's default CodeQL setup is disabled**. This is a one-time repository configuration change.
+**The CodeQL workflow CANNOT run until you disable the default CodeQL setup.**
 
-## Current Status
+### Current Error
 
-✅ Custom CodeQL workflow configured for Python, Swift, and JavaScript/TypeScript  
-✅ Workflow file is valid and properly configured  
-❌ **Blocked**: Repository has default CodeQL setup enabled, causing conflicts
-
-## Error Message
-
-When the workflow runs, you'll see:
 ```
-CodeQL analyses from advanced configurations cannot be processed when the default setup is enabled
+Code Scanning could not process the submitted SARIF file:
+CodeQL analyses from advanced configurations cannot be processed 
+when the default setup is enabled
 ```
 
-## Solution (Repository Owner Must Complete)
+### What This Means
 
-### Step 1: Disable Default CodeQL Setup
+Your repository has GitHub's **default CodeQL setup** enabled. This setting **completely blocks** any custom CodeQL workflows from working. The workflow configuration is correct, but GitHub will not process the results until you change this setting.
+
+---
+
+## 🔧 How to Fix (5 Minutes)
+
+### Step 1: Navigate to Code Scanning Settings
 
 1. Go to your repository on GitHub.com
-2. Click **Settings** tab
-3. In the left sidebar, click **Security** → **Code scanning**
-4. Find "CodeQL analysis" with a "Default" label
-5. Click the **"..."** menu button next to it
-6. Select **"Switch to advanced"** or **"Disable CodeQL"**
-7. Confirm the action
+2. Click the **Settings** tab (top right)
+3. In the left sidebar, scroll down to **Security**
+4. Click **Code security and analysis**
+5. Scroll to the **Code scanning** section
 
-### Step 2: Verify the Custom Workflow Works
+### Step 2: Disable Default Setup
 
-After disabling the default setup:
-1. The existing pull request checks will automatically re-run
-2. Or you can manually re-run the failed workflow from the Actions tab
-3. All three language analyses should complete successfully
+You'll see "CodeQL analysis" with a **"Default"** badge or label:
 
-## What This Workflow Provides
+1. Click the **"..."** menu (three dots) next to "CodeQL analysis"
+2. You'll see options:
+   - **"Switch to advanced"** (recommended) - Use this if you want to keep using CodeQL
+   - **"Disable CodeQL"** - Use this if you want to completely disable it
 
-Once enabled, you get:
+3. Click **"Switch to advanced"**
+4. Confirm the action
 
-- **Comprehensive Security Scanning**
-  - Python code (backend + worker)
-  - Swift code (iOS app + tests)
-  - JavaScript/TypeScript code (web frontend)
+### Step 3: Verify It Works
 
-- **Advanced Query Suites**
-  - `security-extended` - Extended security analysis
-  - `security-and-quality` - Code quality + security checks
+After switching to advanced:
+- The PR checks will automatically re-run
+- Or you can manually trigger them from the Actions tab
+- All three language analyses (Python, Swift, JavaScript/TypeScript) should complete successfully
 
-- **Automated Scanning**
-  - Every push to main/develop branches
-  - Every pull request
-  - Weekly scheduled scans (Sunday midnight UTC)
+---
 
-## Alternative Option
+## ✅ What Happens After You Fix This
 
-If you prefer to use GitHub's default CodeQL setup instead:
-1. Keep the default setup enabled
-2. Delete this custom workflow file (`.github/workflows/codeql.yml`)
-3. The default setup will handle all languages automatically
+Once you complete the steps above:
 
-**Note**: The custom workflow provides more control over query suites, build configuration, and path filtering.
+✅ **Python analysis** will scan your backend (`backend/`) and worker (`worker/`)  
+✅ **Swift analysis** will scan your iOS app and tests  
+✅ **JavaScript/TypeScript analysis** will scan your web frontend (`web/`)  
+✅ **Automated security scans** will run on every push and PR  
+✅ **Weekly security audits** will run automatically  
 
-## Need Help?
+---
 
-If you encounter issues after following these steps, check:
-- Actions tab for detailed error logs
-- `.github/workflows/README.md` for troubleshooting guide
-- GitHub's CodeQL documentation: https://docs.github.com/en/code-security/code-scanning
+## 🤔 Why Can't Both Run?
 
-## Questions?
+GitHub doesn't allow default and advanced (custom) CodeQL setups to run simultaneously because:
+- It would create duplicate analyses
+- Results would conflict
+- It would waste CI minutes
 
-- **Q**: Why can't both run at the same time?
-  - **A**: GitHub doesn't allow custom advanced configurations when default setup is active to avoid duplicate analysis and conflicts.
+You must choose one or the other.
 
-- **Q**: Which setup is better?
-  - **A**: Default setup is easier but less customizable. Advanced (this workflow) gives full control over queries, build process, and scanning options.
+---
 
-- **Q**: Will this affect my security?
-  - **A**: No. After switching, you'll have the same (or better) security scanning with the custom workflow.
+## 📊 What You Get with This Custom Workflow
+
+The custom workflow (already configured) provides:
+
+### Advanced Query Suites
+- `security-extended` - Extended security vulnerability detection
+- `security-and-quality` - Code quality + security analysis
+
+### Multi-Language Coverage
+- **Python**: Backend API + background worker
+- **Swift**: iOS app + all test suites  
+- **JavaScript/TypeScript**: Next.js web frontend
+
+### Automated Triggers
+- Every push to `main` or `develop` branches
+- Every pull request
+- Weekly scheduled scans (Sunday midnight UTC)
+
+### Custom Build Configuration
+- Optimized Swift builds for CI
+- Generic simulator destination for compatibility
+- 360-minute timeout for complex builds
+
+---
+
+## ❓ Frequently Asked Questions
+
+### Q: Will this affect my repository's security?
+**A**: No! After switching, you'll have the same (or better) security coverage with the custom workflow.
+
+### Q: Can I switch back to default setup later?
+**A**: Yes, but you'll need to delete the custom workflow file first.
+
+### Q: What if I want to use the default setup instead?
+**A**: Delete the `.github/workflows/codeql.yml` file and keep the default setup enabled.
+
+### Q: How do I know if I've done it correctly?
+**A**: After switching to advanced, go to the Actions tab and look for the "CodeQL Analysis" workflow running. It should complete without the configuration error.
+
+### Q: Who can make this change?
+**A**: Only repository owners or administrators with "Write" or "Admin" permissions can change code scanning settings.
+
+---
+
+## 🆘 Still Having Issues?
+
+If you've completed the steps above and still see errors:
+
+1. **Check the Actions tab** for detailed error logs
+2. **Review** `.github/workflows/README.md` for troubleshooting
+3. **Verify** you have the correct permissions (Settings tab should be visible)
+4. **Wait** a few minutes after changing settings for GitHub to sync
+
+---
+
+## 📚 Additional Resources
+
+- [GitHub Code Scanning Documentation](https://docs.github.com/en/code-security/code-scanning)
+- [Switching to Advanced Setup](https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning-for-a-repository)
+- [CodeQL Action Documentation](https://github.com/github/codeql-action)

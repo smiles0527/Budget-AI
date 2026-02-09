@@ -12,6 +12,7 @@ paths:
   - BudgetAI/
   - BudgetAITests/
   - BudgetAIUITests/
+  - testapp/
   # JavaScript/TypeScript paths (web frontend)
   - web/
 

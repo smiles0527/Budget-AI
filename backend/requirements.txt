@@ -7,7 +7,7 @@ asyncpg==0.29.0
 python-multipart==0.0.22
 orjson==3.11.5
 passlib[bcrypt]==1.7.4
-boto3==1.35.20
+boto3==1.42.44
 pytesseract==0.3.13
 Pillow==10.4.0
 stripe==11.3.0

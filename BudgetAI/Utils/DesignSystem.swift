@@ -1,6 +1,6 @@
 //
 //  DesignSystem.swift
-//  testapp
+//  BudgetAI
 //
 //  Design system synced from Figma
 //  Run sync script to update from Figma: ./scripts/sync-figma-tokens.sh

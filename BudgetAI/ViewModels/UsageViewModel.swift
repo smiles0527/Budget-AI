@@ -1,6 +1,6 @@
 //
 //  UsageViewModel.swift
-//  testapp
+//  BudgetAI
 //
 //  ViewModel for usage statistics
 //

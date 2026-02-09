@@ -1,6 +1,6 @@
 //
 //  ColorExtensions.swift
-//  testapp
+//  BudgetAI
 //
 //  Color utility extensions
 //

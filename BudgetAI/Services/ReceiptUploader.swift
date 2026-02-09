@@ -1,6 +1,6 @@
 //
 //  ReceiptUploader.swift
-//  testapp
+//  BudgetAI
 //
 //  Handles receipt image upload and processing
 //

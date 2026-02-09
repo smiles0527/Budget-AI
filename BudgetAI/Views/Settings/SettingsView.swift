@@ -1,6 +1,6 @@
 //
 //  SettingsView.swift
-//  testapp
+//  BudgetAI
 //
 //  Settings screen
 //

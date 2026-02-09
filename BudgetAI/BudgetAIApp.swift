@@ -1,6 +1,6 @@
 //
-//  testappApp.swift
-//  testapp
+//  BudgetAIApp.swift
+//  BudgetAI
 //
 //  Created by Curtis Wei on 2025-08-24.
 //

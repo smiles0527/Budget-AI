@@ -1,6 +1,6 @@
 //
 //  SpendingTrendsChart.swift
-//  testapp
+//  BudgetAI
 //
 //  Chart showing spending trends over time
 //

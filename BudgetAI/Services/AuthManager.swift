@@ -1,6 +1,6 @@
 //
 //  AuthManager.swift
-//  testapp
+//  BudgetAI
 //
 //  Authentication state management
 //
@@ -24,7 +24,7 @@ class AuthManager: ObservableObject {
     }
     
     private func loadStoredToken() {
-        if let token = UserDefaults.standard.string(forKey: tokenKey) {
+        if let token = KeychainHelper.shared.read(forKey: tokenKey) {
             apiClient.setAuthToken(token)
             Task {
                 await refreshUser()
@@ -34,7 +34,7 @@ class AuthManager: ObservableObject {
     
     func login(email: String, password: String) async throws {
         let response = try await apiClient.login(email: email, password: password)
-        UserDefaults.standard.set(response.token, forKey: tokenKey)
+        KeychainHelper.shared.save(response.token, forKey: tokenKey)
         await refreshUser()
     }
     
@@ -45,19 +45,19 @@ class AuthManager: ObservableObject {
     
     func loginWithGoogle(idToken: String) async throws {
         let response = try await apiClient.loginWithGoogle(idToken: idToken)
-        UserDefaults.standard.set(response.token, forKey: tokenKey)
+        KeychainHelper.shared.save(response.token, forKey: tokenKey)
         await refreshUser()
     }
     
     func loginWithApple(identityToken: String) async throws {
         let response = try await apiClient.loginWithApple(identityToken: identityToken)
-        UserDefaults.standard.set(response.token, forKey: tokenKey)
+        KeychainHelper.shared.save(response.token, forKey: tokenKey)
         await refreshUser()
     }
     
     func logout() async throws {
         try await apiClient.logout()
-        UserDefaults.standard.removeObject(forKey: tokenKey)
+        KeychainHelper.shared.delete(forKey: tokenKey)
         isAuthenticated = false
         currentUser = nil
         subscription = nil

@@ -1,6 +1,6 @@
 //
 //  BadgeCelebrationManager.swift
-//  testapp
+//  BudgetAI
 //
 //  Manages badge celebration detection and display
 //

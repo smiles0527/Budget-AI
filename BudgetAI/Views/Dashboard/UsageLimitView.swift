@@ -1,6 +1,6 @@
 //
 //  UsageLimitView.swift
-//  testapp
+//  BudgetAI
 //
 //  Usage limit display for freemium users
 //

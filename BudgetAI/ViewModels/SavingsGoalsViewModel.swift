@@ -1,6 +1,6 @@
 //
 //  SavingsGoalsViewModel.swift
-//  testapp
+//  BudgetAI
 //
 //  ViewModel for savings goals
 //

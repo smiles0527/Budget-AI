@@ -1,6 +1,6 @@
 //
 //  TransactionsViewModel.swift
-//  testapp
+//  BudgetAI
 //
 //  ViewModel for transactions list and management
 //

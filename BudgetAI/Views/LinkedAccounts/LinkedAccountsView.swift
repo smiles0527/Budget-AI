@@ -1,6 +1,6 @@
 //
 //  LinkedAccountsView.swift
-//  testapp
+//  BudgetAI
 //
 //  Linked accounts management
 //

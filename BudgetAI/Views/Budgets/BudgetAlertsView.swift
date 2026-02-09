@@ -1,6 +1,6 @@
 //
 //  BudgetAlertsView.swift
-//  testapp
+//  BudgetAI
 //
 //  Budget alerts display
 //

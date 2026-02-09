@@ -1,6 +1,6 @@
 //
 //  CategoryOverrideView.swift
-//  testapp
+//  BudgetAI
 //
 //  Quick category override view for fixing incorrect categories
 //

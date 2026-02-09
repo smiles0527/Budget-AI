@@ -1,6 +1,6 @@
 //
 //  CurrencyFormatter.swift
-//  testapp
+//  BudgetAI
 //
 //  Currency formatting utilities
 //

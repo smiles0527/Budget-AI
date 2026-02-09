@@ -1,6 +1,6 @@
 //
 //  BadgesViewModel.swift
-//  testapp
+//  BudgetAI
 //
 //  ViewModel for badges
 //

@@ -1,6 +1,6 @@
 //
 //  CategoryComparisonView.swift
-//  testapp
+//  BudgetAI
 //
 //  Category comparison analytics view
 //

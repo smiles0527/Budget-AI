@@ -1,6 +1,6 @@
 //
 //  ShareSheet.swift
-//  testapp
+//  BudgetAI
 //
 //  Utility for sharing content (badges, goals, streaks, etc.)
 //

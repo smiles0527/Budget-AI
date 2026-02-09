@@ -1,6 +1,6 @@
 //
 //  AccessibilityHelpers.swift
-//  testapp
+//  BudgetAI
 //
 //  Accessibility helpers for VoiceOver and Dynamic Type support
 //

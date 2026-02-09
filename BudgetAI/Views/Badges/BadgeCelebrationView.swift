@@ -1,6 +1,6 @@
 //
 //  BadgeCelebrationView.swift
-//  testapp
+//  BudgetAI
 //
 //  Badge celebration animation when user earns a badge
 //

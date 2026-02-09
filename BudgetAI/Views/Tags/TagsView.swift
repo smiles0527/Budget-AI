@@ -1,6 +1,6 @@
 //
 //  TagsView.swift
-//  testapp
+//  BudgetAI
 //
 //  Tags management view
 //

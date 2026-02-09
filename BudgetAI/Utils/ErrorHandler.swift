@@ -1,6 +1,6 @@
 //
 //  ErrorHandler.swift
-//  testapp
+//  BudgetAI
 //
 //  Error handling utilities
 //

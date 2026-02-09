@@ -1,6 +1,6 @@
 //
 //  FigmaService.swift
-//  testapp
+//  BudgetAI
 //
 //  Service for fetching design tokens from Figma
 //

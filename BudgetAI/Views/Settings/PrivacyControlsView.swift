@@ -1,6 +1,6 @@
 //
 //  PrivacyControlsView.swift
-//  testapp
+//  BudgetAI
 //
 //  Privacy controls for data sharing and GDPR compliance
 //

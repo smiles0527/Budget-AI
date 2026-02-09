@@ -1,6 +1,6 @@
 //
 //  PushNotificationService.swift
-//  testapp
+//  BudgetAI
 //
 //  Push notification service for APNs integration
 //

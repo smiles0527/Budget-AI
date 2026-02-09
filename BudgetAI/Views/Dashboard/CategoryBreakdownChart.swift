@@ -1,6 +1,6 @@
 //
 //  CategoryBreakdownChart.swift
-//  testapp
+//  BudgetAI
 //
 //  Pie chart showing spending by category
 //

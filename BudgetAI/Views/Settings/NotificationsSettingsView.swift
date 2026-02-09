@@ -1,6 +1,6 @@
 //
 //  NotificationsSettingsView.swift
-//  testapp
+//  BudgetAI
 //
 //  Notification settings screen
 //

@@ -1,6 +1,6 @@
 //
 //  ReceiptImageView.swift
-//  testapp
+//  BudgetAI
 //
 //  Full-screen receipt image viewer
 //

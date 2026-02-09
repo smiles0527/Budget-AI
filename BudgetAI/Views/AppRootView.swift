@@ -1,6 +1,6 @@
 //
 //  AppRootView.swift
-//  testapp
+//  BudgetAI
 //
 //  Main app root view with authentication check
 //

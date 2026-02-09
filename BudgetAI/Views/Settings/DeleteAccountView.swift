@@ -1,6 +1,6 @@
 //
 //  DeleteAccountView.swift
-//  testapp
+//  BudgetAI
 //
 //  Account deletion confirmation
 //

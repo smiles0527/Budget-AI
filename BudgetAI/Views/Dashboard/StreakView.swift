@@ -1,6 +1,6 @@
 //
 //  StreakView.swift
-//  testapp
+//  BudgetAI
 //
 //  Streak display component for dashboard
 //

@@ -1,6 +1,6 @@
 //
 //  EmptyStateView.swift
-//  testapp
+//  BudgetAI
 //
 //  Reusable empty state component
 //

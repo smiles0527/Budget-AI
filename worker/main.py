@@ -255,8 +255,8 @@ async def process_deletion_job(db: AsyncSession, job: dict):
 
 
 async def worker_loop():
-    async with SessionLocal() as db:
-        while True:
+    while True:
+        async with SessionLocal() as db:
             job = await fetch_pending_job(db)
             if not job:
                 await asyncio.sleep(2)

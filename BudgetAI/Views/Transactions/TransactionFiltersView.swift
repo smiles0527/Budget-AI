@@ -1,6 +1,6 @@
 //
 //  TransactionFiltersView.swift
-//  testapp
+//  BudgetAI
 //
 //  Visual filter interface for transactions
 //

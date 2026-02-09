@@ -1,6 +1,6 @@
 //
 //  PremiumGate.swift
-//  testapp
+//  BudgetAI
 //
 //  Utility for premium feature gating
 //

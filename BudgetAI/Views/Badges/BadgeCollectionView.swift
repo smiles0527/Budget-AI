@@ -1,6 +1,6 @@
 //
 //  BadgeCollectionView.swift
-//  testapp
+//  BudgetAI
 //
 //  Badge collection view showing all badges with earned/unearned states
 //

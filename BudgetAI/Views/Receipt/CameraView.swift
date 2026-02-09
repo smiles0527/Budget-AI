@@ -1,6 +1,6 @@
 //
 //  CameraView.swift
-//  testapp
+//  BudgetAI
 //
 //  Camera view for receipt capture
 //

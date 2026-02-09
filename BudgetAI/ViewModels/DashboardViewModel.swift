@@ -1,6 +1,6 @@
 //
 //  DashboardViewModel.swift
-//  testapp
+//  BudgetAI
 //
 //  ViewModel for dashboard data
 //

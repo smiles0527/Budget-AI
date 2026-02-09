@@ -1,6 +1,6 @@
 //
 //  TagPickerView.swift
-//  testapp
+//  BudgetAI
 //
 //  Tag picker for adding tags to transactions
 //

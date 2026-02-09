@@ -1,6 +1,6 @@
 //
 //  ManualTransactionView.swift
-//  testapp
+//  BudgetAI
 //
 //  Manual transaction entry form (premium feature)
 //

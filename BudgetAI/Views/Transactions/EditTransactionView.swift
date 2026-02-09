@@ -1,6 +1,6 @@
 //
 //  EditTransactionView.swift
-//  testapp
+//  BudgetAI
 //
 //  Edit transaction form
 //

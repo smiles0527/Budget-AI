@@ -1,6 +1,6 @@
 //
 //  BudgetsViewModel.swift
-//  testapp
+//  BudgetAI
 //
 //  ViewModel for budgets management
 //

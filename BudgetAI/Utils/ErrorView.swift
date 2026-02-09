@@ -1,6 +1,6 @@
 //
 //  ErrorView.swift
-//  testapp
+//  BudgetAI
 //
 //  Reusable error view with retry option
 //

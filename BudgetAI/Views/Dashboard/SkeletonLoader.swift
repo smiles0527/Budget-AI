@@ -1,6 +1,6 @@
 //
 //  SkeletonLoader.swift
-//  testapp
+//  BudgetAI
 //
 //  Skeleton loading views for better perceived performance
 //

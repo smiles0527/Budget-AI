@@ -1,6 +1,6 @@
 //
 //  APIClient.swift
-//  testapp
+//  BudgetAI
 //
 //  API client for SnapBudget backend
 //

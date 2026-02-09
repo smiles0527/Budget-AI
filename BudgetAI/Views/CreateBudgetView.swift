@@ -1,6 +1,6 @@
 //
 //  CreateBudgetView.swift
-//  testapp
+//  BudgetAI
 //
 //  Create budget form with date pickers
 //

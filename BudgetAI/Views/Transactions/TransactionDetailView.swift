@@ -1,6 +1,6 @@
 //
 //  TransactionDetailView.swift
-//  testapp
+//  BudgetAI
 //
 //  Transaction detail view with items and edit/delete
 //

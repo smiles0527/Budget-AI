@@ -1,6 +1,6 @@
 //
 //  ReceiptGalleryView.swift
-//  testapp
+//  BudgetAI
 //
 //  Gallery view showing all receipt images
 //

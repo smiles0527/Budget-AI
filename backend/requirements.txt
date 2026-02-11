@@ -9,7 +9,7 @@ orjson==3.11.7
 passlib[bcrypt]==1.7.4
 boto3==1.42.45
 pytesseract==0.3.13
-Pillow==12.1.0
+Pillow==12.1.1
 stripe==11.3.0
 prometheus-client==0.24.1
 google-auth==2.48.0
